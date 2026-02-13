@@ -1,0 +1,255 @@
+import { useState } from 'react';
+import { useStore, Product } from '@/contexts/StoreContext';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
+import { Plus, Trash2, ExternalLink, Copy, Check, Image as ImageIcon } from 'lucide-react';
+import { toast } from 'sonner';
+
+const Vitrine = () => {
+  const { config, updateConfig, addProduct, removeProduct } = useStore();
+  const [showForm, setShowForm] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const [name, setName] = useState('');
+  const [photo, setPhoto] = useState('');
+  const [originalPrice, setOriginalPrice] = useState('');
+  const [discountPrice, setDiscountPrice] = useState('');
+  const [description, setDescription] = useState('');
+
+  const slug = config.storeName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  const publicUrl = `${window.location.origin}/loja/${slug}`;
+
+  const handleAddProduct = () => {
+    if (!name.trim() || !discountPrice) return;
+    const product: Product = {
+      id: crypto.randomUUID(),
+      name: name.trim(),
+      photo,
+      originalPrice: parseFloat(originalPrice.replace(',', '.')) || 0,
+      discountPrice: parseFloat(discountPrice.replace(',', '.')) || 0,
+      description: description.trim(),
+    };
+    addProduct(product);
+    setName('');
+    setPhoto('');
+    setOriginalPrice('');
+    setDiscountPrice('');
+    setDescription('');
+    setShowForm(false);
+    toast.success('Produto adicionado!');
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(publicUrl);
+    setCopied(true);
+    toast.success('Link copiado!');
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setPhoto(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => updateConfig({ logo: reader.result as string });
+    reader.readAsDataURL(file);
+  };
+
+  return (
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold font-heading">Minha Vitrine</h1>
+        <p className="text-muted-foreground mt-1">Configure seu catálogo profissional</p>
+      </div>
+
+      {/* Store Config */}
+      <Card className="p-6 border-none shadow-md space-y-5">
+        <h2 className="font-semibold font-heading text-lg">Configurações da Loja</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <Label>Nome da Loja</Label>
+            <Input
+              value={config.storeName}
+              onChange={e => updateConfig({ storeName: e.target.value })}
+              className="mt-1"
+              placeholder="Ex: Moda da Mari"
+            />
+          </div>
+          <div>
+            <Label>WhatsApp (com DDD)</Label>
+            <Input
+              value={config.whatsapp}
+              onChange={e => updateConfig({ whatsapp: e.target.value })}
+              className="mt-1"
+              placeholder="11999999999"
+            />
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-6">
+          <div>
+            <Label>Logo da Loja</Label>
+            <label className="mt-2 flex items-center justify-center w-20 h-20 rounded-xl border-2 border-dashed border-border hover:border-primary cursor-pointer transition-colors overflow-hidden">
+              {config.logo ? (
+                <img src={config.logo} alt="Logo" className="w-full h-full object-cover" />
+              ) : (
+                <ImageIcon className="w-8 h-8 text-muted-foreground" />
+              )}
+              <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
+            </label>
+          </div>
+          <div>
+            <Label>Cor Principal</Label>
+            <input
+              type="color"
+              value={config.primaryColor}
+              onChange={e => updateConfig({ primaryColor: e.target.value })}
+              className="mt-2 w-20 h-20 rounded-xl cursor-pointer border-0"
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <Switch
+            checked={config.vitrineActive}
+            onCheckedChange={v => updateConfig({ vitrineActive: v })}
+          />
+          <Label>Vitrine Ativa</Label>
+        </div>
+      </Card>
+
+      {/* Public URL */}
+      <Card className="p-5 border-none shadow-md">
+        <Label className="text-sm text-muted-foreground">Link da sua vitrine</Label>
+        <div className="flex items-center gap-2 mt-2">
+          <div className="flex-1 px-4 py-2.5 rounded-lg bg-muted text-sm font-mono truncate">
+            {publicUrl}
+          </div>
+          <button
+            onClick={handleCopy}
+            className="px-4 py-2.5 rounded-lg gradient-primary text-primary-foreground text-sm font-medium flex items-center gap-2 shadow-glow hover:opacity-90 transition-opacity"
+          >
+            {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+            {copied ? 'Copiado!' : 'Copiar'}
+          </button>
+          <a
+            href={`/loja/${slug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-2.5 rounded-lg bg-muted text-sm font-medium flex items-center gap-2 hover:bg-accent transition-colors"
+          >
+            <ExternalLink className="w-4 h-4" />
+          </a>
+        </div>
+      </Card>
+
+      {/* Products */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold font-heading">Produtos ({config.products.length})</h2>
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="px-4 py-2 rounded-lg gradient-primary text-primary-foreground text-sm font-medium flex items-center gap-2 shadow-glow hover:opacity-90 transition-opacity"
+          >
+            <Plus className="w-4 h-4" />
+            Adicionar
+          </button>
+        </div>
+
+        {showForm && (
+          <Card className="p-6 border-none shadow-md mb-4 space-y-4 animate-fade-in">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label>Nome do Produto</Label>
+                <Input value={name} onChange={e => setName(e.target.value)} className="mt-1" placeholder="Ex: Camiseta Básica" />
+              </div>
+              <div>
+                <Label>Foto do Produto</Label>
+                <label className="mt-1 flex items-center justify-center h-10 px-4 rounded-md border border-input bg-background text-sm cursor-pointer hover:bg-muted transition-colors">
+                  {photo ? '✅ Foto selecionada' : '📷 Selecionar foto'}
+                  <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
+                </label>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label>Preço Original (R$)</Label>
+                <Input value={originalPrice} onChange={e => setOriginalPrice(e.target.value)} className="mt-1" placeholder="49,90" />
+              </div>
+              <div>
+                <Label>Preço com Desconto (R$)</Label>
+                <Input value={discountPrice} onChange={e => setDiscountPrice(e.target.value)} className="mt-1" placeholder="39,90" />
+              </div>
+            </div>
+            <div>
+              <Label>Descrição Curta</Label>
+              <Textarea value={description} onChange={e => setDescription(e.target.value)} className="mt-1" placeholder="Uma breve descrição do produto..." rows={2} />
+            </div>
+            <div className="flex gap-3">
+              <button onClick={handleAddProduct} className="px-6 py-2.5 rounded-lg gradient-primary text-primary-foreground font-medium text-sm shadow-glow hover:opacity-90 transition-opacity">
+                Salvar Produto
+              </button>
+              <button onClick={() => setShowForm(false)} className="px-6 py-2.5 rounded-lg bg-muted text-muted-foreground font-medium text-sm hover:bg-accent transition-colors">
+                Cancelar
+              </button>
+            </div>
+          </Card>
+        )}
+
+        {config.products.length === 0 ? (
+          <Card className="p-8 border-none shadow-md text-center">
+            <p className="text-muted-foreground">Nenhum produto cadastrado ainda. Adicione seu primeiro produto!</p>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {config.products.map(p => (
+              <Card key={p.id} className="border-none shadow-md overflow-hidden">
+                {p.photo ? (
+                  <div className="aspect-square bg-muted">
+                    <img src={p.photo} alt={p.name} className="w-full h-full object-cover" />
+                  </div>
+                ) : (
+                  <div className="aspect-square bg-muted flex items-center justify-center">
+                    <ImageIcon className="w-12 h-12 text-muted-foreground/50" />
+                  </div>
+                )}
+                <div className="p-4">
+                  <h3 className="font-semibold text-sm">{p.name}</h3>
+                  {p.description && <p className="text-xs text-muted-foreground mt-1">{p.description}</p>}
+                  <div className="flex items-center gap-2 mt-2">
+                    {p.originalPrice > p.discountPrice && (
+                      <span className="text-xs text-muted-foreground line-through">
+                        R$ {p.originalPrice.toFixed(2).replace('.', ',')}
+                      </span>
+                    )}
+                    <span className="text-sm font-bold text-secondary">
+                      R$ {p.discountPrice.toFixed(2).replace('.', ',')}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => removeProduct(p.id)}
+                    className="mt-3 text-xs text-muted-foreground hover:text-destructive flex items-center gap-1 transition-colors"
+                  >
+                    <Trash2 className="w-3 h-3" /> Remover
+                  </button>
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default Vitrine;
