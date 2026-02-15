@@ -5,13 +5,30 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, Trash2, ExternalLink, Copy, Check, Image as ImageIcon, AlertCircle } from 'lucide-react';
+import { Plus, Trash2, ExternalLink, Copy, Check, Image as ImageIcon, AlertCircle, Download, Rocket } from 'lucide-react';
 import { toast } from 'sonner';
+import { QRCodeCanvas } from 'qrcode.react';
+import { useRef, useCallback } from 'react';
 
 const Vitrine = () => {
   const { config, updateConfig, addProduct, removeProduct } = useStore();
   const [showForm, setShowForm] = useState(false);
   const [copied, setCopied] = useState(false);
+  const qrRef = useRef<HTMLDivElement>(null);
+
+  const slug = config.storeName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  const publicUrl = `${window.location.origin}/loja/${slug}`;
+
+  const handleDownloadQR = useCallback(() => {
+    const canvas = qrRef.current?.querySelector('canvas');
+    if (!canvas) return;
+    const url = canvas.toDataURL('image/png');
+    const link = document.createElement('a');
+    link.download = `qrcode-${slug}.png`;
+    link.href = url;
+    link.click();
+    toast.success('QR Code baixado!');
+  }, [slug]);
 
   const [name, setName] = useState('');
   const [photo, setPhoto] = useState('');
@@ -20,8 +37,6 @@ const Vitrine = () => {
   const [description, setDescription] = useState('');
   const [stock, setStock] = useState('');
 
-  const slug = config.storeName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-  const publicUrl = `${window.location.origin}/loja/${slug}`;
 
   const handleAddProduct = () => {
     if (!name.trim() || !discountPrice) return;
@@ -107,10 +122,10 @@ const Vitrine = () => {
         </div>
       </Card>
 
-      {/* Public URL */}
-      <Card className="p-5 border-none shadow-md">
+      {/* Public URL + QR Code */}
+      <Card className="p-5 border-none shadow-md space-y-4">
         <Label className="text-sm text-muted-foreground">Link da sua vitrine</Label>
-        <div className="flex items-center gap-2 mt-2">
+        <div className="flex items-center gap-2">
           <div className="flex-1 px-4 py-2.5 rounded-lg bg-muted text-sm font-mono truncate">{publicUrl}</div>
           <button onClick={handleCopy} className="px-4 py-2.5 rounded-lg gradient-primary text-primary-foreground text-sm font-medium flex items-center gap-2 shadow-glow hover:opacity-90 transition-opacity">
             {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
@@ -119,6 +134,19 @@ const Vitrine = () => {
           <a href={`/loja/${slug}`} target="_blank" rel="noopener noreferrer" className="px-4 py-2.5 rounded-lg bg-muted text-sm font-medium flex items-center gap-2 hover:bg-accent transition-colors">
             <ExternalLink className="w-4 h-4" />
           </a>
+        </div>
+        <div className="flex items-center gap-4 pt-2">
+          <div ref={qrRef} className="p-3 bg-white rounded-xl shadow-sm">
+            <QRCodeCanvas value={publicUrl} size={120} />
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm font-medium">QR Code da sua loja</p>
+            <p className="text-xs text-muted-foreground">Imprima e cole no seu ponto de venda ou cartão de visita.</p>
+            <button onClick={handleDownloadQR} className="px-4 py-2 rounded-lg bg-muted text-sm font-medium flex items-center gap-2 hover:bg-accent transition-colors">
+              <Download className="w-4 h-4" />
+              Baixar PNG
+            </button>
+          </div>
         </div>
       </Card>
 
@@ -177,8 +205,13 @@ const Vitrine = () => {
         )}
 
         {config.products.length === 0 ? (
-          <Card className="p-8 border-none shadow-md text-center">
-            <p className="text-muted-foreground">Nenhum produto cadastrado ainda. Adicione seu primeiro produto!</p>
+          <Card className="p-10 border-none shadow-md text-center">
+            <Rocket className="w-12 h-12 mx-auto mb-3 text-primary/30" />
+            <p className="text-lg font-semibold font-heading">Sua vitrine está esperando!</p>
+            <p className="text-sm text-muted-foreground mt-1 mb-4">Adicione seu primeiro produto e comece a vender agora mesmo 🚀</p>
+            <button onClick={() => setShowForm(true)} className="px-6 py-3 rounded-lg gradient-primary text-primary-foreground font-medium text-sm shadow-glow hover:opacity-90 transition-opacity inline-flex items-center gap-2">
+              <Plus className="w-4 h-4" /> Cadastrar Primeiro Produto
+            </button>
           </Card>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Wallet, Store, GraduationCap, BarChart3, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Wallet, Store, GraduationCap, BarChart3, Calculator, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useStore } from '@/contexts/StoreContext';
@@ -11,6 +11,7 @@ const navItems = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/caixa', label: 'Financeiro', icon: Wallet },
   { path: '/vitrine', label: 'Minha Vitrine', icon: Store },
+  { path: '/calculadora', label: 'Calculadora', icon: Calculator },
   { path: '/relatorios', label: 'Relatórios', icon: BarChart3 },
   { path: '/academy', label: 'Academy', icon: GraduationCap },
 ];
