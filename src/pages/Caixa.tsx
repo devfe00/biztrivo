@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { TrendingUp, TrendingDown, Trash2 } from 'lucide-react';
+import { TrendingUp, TrendingDown, Trash2, Search, Wallet } from 'lucide-react';
 
 const categories = ['Venda', 'Reposição', 'Embalagem', 'Frete', 'Pessoal', 'Outros'];
 
@@ -15,6 +15,8 @@ const Caixa = () => {
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('Venda');
   const [isPersonal, setIsPersonal] = useState(false);
+  const [search, setSearch] = useState('');
+  const [filterCategory, setFilterCategory] = useState('Todas');
 
   const todayStr = new Date().toISOString().split('T')[0];
 
@@ -153,13 +155,53 @@ const Caixa = () => {
       {/* Ledger */}
       <div>
         <h2 className="text-lg font-semibold font-heading mb-4">Extrato de Hoje</h2>
-        {runningBalance.length === 0 ? (
-          <Card className="p-8 border-none shadow-md text-center">
-            <p className="text-muted-foreground">Nenhum lançamento hoje. Comece registrando!</p>
+
+        {/* Search & Filter */}
+        <div className="flex flex-col sm:flex-row gap-3 mb-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar lançamento..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <Select value={filterCategory} onValueChange={setFilterCategory}>
+            <SelectTrigger className="w-full sm:w-[160px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Todas">Todas</SelectItem>
+              {categories.map(c => (
+                <SelectItem key={c} value={c}>{c}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {(() => {
+          const filtered = runningBalance.filter(t => {
+            const matchSearch = !search || t.description.toLowerCase().includes(search.toLowerCase());
+            const matchCategory = filterCategory === 'Todas' || t.category === filterCategory;
+            return matchSearch && matchCategory;
+          });
+
+          return filtered.length === 0 ? (
+          <Card className="p-10 border-none shadow-md text-center">
+            <Wallet className="w-12 h-12 mx-auto mb-3 text-primary/30" />
+            <p className="text-lg font-semibold font-heading">
+              {runningBalance.length === 0 ? 'Seu dia começa agora!' : 'Nenhum resultado encontrado'}
+            </p>
+            <p className="text-sm text-muted-foreground mt-1">
+              {runningBalance.length === 0
+                ? 'Registre sua primeira venda e tome controle do seu dinheiro 💪'
+                : 'Tente buscar por outro termo ou categoria'}
+            </p>
           </Card>
         ) : (
           <div className="space-y-2">
-            {runningBalance.map(t => (
+            {filtered.map(t => (
               <Card
                 key={t.id}
                 className={`p-4 border-none shadow-sm flex items-center justify-between ${
@@ -205,7 +247,8 @@ const Caixa = () => {
               </Card>
             ))}
           </div>
-        )}
+        );
+        })()}
       </div>
     </div>
   );
