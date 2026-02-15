@@ -1,5 +1,5 @@
-import { useState } from 'react';
 import { useStore, Product } from '@/contexts/StoreContext';
+import { useNotifications } from '@/hooks/useNotifications'; 
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,10 +8,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Plus, Trash2, ExternalLink, Copy, Check, Image as ImageIcon, AlertCircle, Download, Rocket } from 'lucide-react';
 import { toast } from 'sonner';
 import { QRCodeCanvas } from 'qrcode.react';
-import { useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 
 const Vitrine = () => {
   const { config, updateConfig, addProduct, removeProduct } = useStore();
+  const { checkStockAlert } = useNotifications();
   const [showForm, setShowForm] = useState(false);
   const [copied, setCopied] = useState(false);
   const qrRef = useRef<HTMLDivElement>(null);
@@ -37,6 +38,17 @@ const Vitrine = () => {
   const [description, setDescription] = useState('');
   const [stock, setStock] = useState('');
 
+useEffect(() => {
+  config.products.forEach(product => {
+    const hasShown = sessionStorage.getItem(`stock-alert-${product.id}`);
+    if (!hasShown) {
+      checkStockAlert(product.name, product.stock);
+      if (product.stock <= 3) {
+        sessionStorage.setItem(`stock-alert-${product.id}`, 'true');
+      }
+    }
+  });
+}, [config.products, checkStockAlert]);
 
   const handleAddProduct = () => {
     if (!name.trim() || !discountPrice) return;
@@ -50,7 +62,10 @@ const Vitrine = () => {
       stock: parseInt(stock) || 0,
     };
     addProduct(product);
-    setName('');
+
+checkStockAlert(product.name, product.stock);
+
+setName('');
     setPhoto('');
     setOriginalPrice('');
     setDiscountPrice('');

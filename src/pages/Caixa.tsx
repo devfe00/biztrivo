@@ -1,16 +1,19 @@
 import { useState, useMemo } from 'react';
 import { useStore, Transaction } from '@/contexts/StoreContext';
+import { useNotifications } from '@/hooks/useNotifications';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { TrendingUp, TrendingDown, Trash2, Search, Wallet } from 'lucide-react';
+import { toast } from 'sonner';
 
 const categories = ['Venda', 'Reposição', 'Embalagem', 'Frete', 'Pessoal', 'Outros'];
 
 const Caixa = () => {
   const { config, addTransaction, removeTransaction } = useStore();
+  const { notifySale, notifyPersonalExpense } = useNotifications();
   const [value, setValue] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('Venda');
@@ -56,7 +59,16 @@ const Caixa = () => {
       date: new Date().toISOString(),
     };
     addTransaction(transaction);
-    setValue('');
+
+if (type === 'entrada') {
+  notifySale(numValue);
+}
+
+if (type === 'saida' && isPersonal) {
+  notifyPersonalExpense();
+}
+
+setValue('');
     setDescription('');
     setIsPersonal(false);
   };

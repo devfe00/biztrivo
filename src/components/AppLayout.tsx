@@ -4,6 +4,7 @@ import { LayoutDashboard, Wallet, Store, GraduationCap, BarChart3, Calculator, M
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useStore } from '@/contexts/StoreContext';
+import { Toaster } from "sonner";
 
 const MERCADO_PAGO_LINK = 'https://www.mercadopago.com.br/subscriptions';
 
@@ -19,67 +20,79 @@ const navItems = [
 const AppLayout = ({ children }: { children: ReactNode }) => {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { config } = useStore();
+  
+  // Se der erro no useStore (caso não tenha configurado contexto ainda), 
+  // pode comentar a linha abaixo e usar const config = { userPlan: 'gratuito' };
+  const { config } = useStore(); 
 
   return (
     <div className="flex min-h-screen bg-background">
-      {/* Desktop Sidebar */}
       <aside className="hidden md:flex w-64 flex-col border-r border-border bg-card">
         <div className="p-6">
-          <h1 className="text-2xl font-bold font-heading gradient-text">Biztrivo</h1>
-          <p className="text-xs text-muted-foreground mt-1">Sua vitrine inteligente</p>
-        </div>
+  <img src="/logo.png" alt="Biztrivo" className="h-11 w-auto object-contain" />
+</div>
         <nav className="flex-1 px-3 space-y-1">
           {navItems.map(item => {
             const active = location.pathname === item.path;
+            const isProItem = item.label === 'Calculadora';
+
             return (
               <Link
                 key={item.path}
                 to={item.path}
                 className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200",
+                  "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 relative group",
                   active
                     ? "gradient-primary text-primary-foreground shadow-glow"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
               >
                 <item.icon className="w-5 h-5" />
-                {item.label}
+                <span>{item.label}</span>
+                
+                {/* --- AQUI ESTÁ A ETIQUETA PRO --- */}
+                {isProItem && (
+                  <span className="ml-auto text-[10px] font-bold bg-gradient-to-r from-purple-500 to-pink-500 text-white px-2 py-0.5 rounded-full shadow-sm">
+                    PRO
+                  </span>
+                )}
               </Link>
             );
           })}
         </nav>
-        {config.userPlan === 'gratuito' && (
-          <div className="p-4 m-3 rounded-xl bg-muted">
+        
+        {/* Banner de Upgrade no Rodapé da Sidebar */}
+        {config?.userPlan === 'gratuito' && (
+          <div className="p-4 m-3 rounded-xl bg-muted/50 border border-border">
             <p className="text-xs font-semibold text-foreground">Plano Gratuito</p>
-            <p className="text-xs text-muted-foreground mt-1">Upgrade por R$ 19,90/mês</p>
+            <p className="text-xs text-muted-foreground mt-1">Desbloqueie tudo por R$ 19,90</p>
             <a
               href={MERCADO_PAGO_LINK}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-3 w-full py-2 rounded-lg text-xs font-semibold gradient-primary text-primary-foreground shadow-glow block text-center"
+              className="mt-3 w-full py-2 rounded-lg text-xs font-semibold gradient-primary text-primary-foreground shadow-glow block text-center transition-transform hover:scale-105"
             >
-              Fazer Upgrade
+              Seja PRO
             </a>
           </div>
         )}
       </aside>
 
-      {/* Mobile Header */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 bg-card border-b border-border">
-        <h1 className="text-xl font-bold font-heading gradient-text">Biztrivo</h1>
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 bg-card border-b border-border shadow-sm">
+        <img src="/logo.png" alt="Biztrivo" className="h-10 w-auto object-contain" />
         <button onClick={() => setMobileOpen(!mobileOpen)} className="p-2 rounded-lg hover:bg-muted">
           {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
       </div>
 
-      {/* Mobile Nav Overlay */}
       {mobileOpen && (
         <div className="md:hidden fixed inset-0 z-40 bg-background/80 backdrop-blur-sm" onClick={() => setMobileOpen(false)}>
           <div className="w-64 h-full bg-card border-r border-border pt-16 animate-slide-in" onClick={e => e.stopPropagation()}>
             <nav className="px-3 space-y-1">
               {navItems.map(item => {
                 const active = location.pathname === item.path;
+                const isProItem = item.label === 'Calculadora';
+
                 return (
                   <Link
                     key={item.path}
@@ -93,7 +106,12 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
                     )}
                   >
                     <item.icon className="w-5 h-5" />
-                    {item.label}
+                    <span>{item.label}</span>
+                    {isProItem && (
+                      <span className="ml-auto text-[10px] font-bold bg-gradient-to-r from-purple-500 to-pink-500 text-white px-2 py-0.5 rounded-full">
+                        PRO
+                      </span>
+                    )}
                   </Link>
                 );
               })}
@@ -102,12 +120,12 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
         </div>
       )}
 
-      {/* Main Content */}
       <main className="flex-1 md:p-8 p-4 pt-16 md:pt-8 overflow-auto">
-        <div className="max-w-5xl mx-auto animate-fade-in">
+        <div className="max-w-5xl mx-auto animate-fade-in pb-10">
           {children}
         </div>
       </main>
+      <Toaster position="top-right" richColors />
     </div>
   );
 };
