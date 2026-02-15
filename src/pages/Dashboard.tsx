@@ -1,13 +1,24 @@
 import { useStore } from '@/contexts/StoreContext';
 import { Card } from '@/components/ui/card';
-import { TrendingUp, TrendingDown, Store, ExternalLink, Wallet, ShoppingBag, AlertTriangle } from 'lucide-react';
+import { TrendingUp, TrendingDown, Store, ExternalLink, Wallet, ShoppingBag, AlertTriangle, Target } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
+import confetti from 'canvas-confetti';
+import { Input } from '@/components/ui/input';
 
 const MERCADO_PAGO_LINK = 'https://www.mercadopago.com.br/subscriptions';
 
 const Dashboard = () => {
+
   const { config } = useStore();
+
+const [dailyGoal, setDailyGoal] = useState(() => {
+  const saved = localStorage.getItem('dailyGoal');
+  return saved ? parseFloat(saved) : 0;
+});
+const [isEditingGoal, setIsEditingGoal] = useState(false);
+const [goalInput, setGoalInput] = useState('');
+const [goalReached, setGoalReached] = useState(false);
 
   const todayStr = new Date().toISOString().split('T')[0];
 
@@ -21,6 +32,47 @@ const Dashboard = () => {
   const todaySaldo = todayEntradas - todaySaidas;
   const personalExpenses = todayTransactions.filter(t => t.isPersonal).reduce((s, t) => s + t.value, 0);
   const personalPercent = todayEntradas > 0 ? (personalExpenses / todayEntradas) * 100 : 0;
+
+
+const goalProgress = dailyGoal > 0 ? (todayEntradas / dailyGoal) * 100 : 0;
+
+useEffect(() => {
+  if (dailyGoal > 0 && todayEntradas >= dailyGoal && !goalReached) {
+    setGoalReached(true);
+    confetti({
+      particleCount: 150,
+      spread: 70,
+      origin: { y: 0.6 }
+    });
+    setTimeout(() => {
+      confetti({
+        particleCount: 100,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0 }
+      });
+      confetti({
+        particleCount: 100,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1 }
+      });
+    }, 250);
+  }
+  if (todayEntradas < dailyGoal) {
+    setGoalReached(false);
+  }
+}, [todayEntradas, dailyGoal, goalReached]);
+
+const handleSaveGoal = () => {
+  const value = parseFloat(goalInput.replace(',', '.'));
+  if (value > 0) {
+    setDailyGoal(value);
+    localStorage.setItem('dailyGoal', value.toString());
+    setIsEditingGoal(false);
+    setGoalInput('');
+  }
+};
 
   const formatCurrency = (v: number) =>
     v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -64,19 +116,99 @@ const Dashboard = () => {
           </div>
         </Card>
 
-        <Link to="/caixa?filter=entrada" className="block">
-          <Card className="p-5 border-none shadow-md hover:ring-2 hover:ring-secondary/30 transition-all cursor-pointer">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Entradas Hoje</p>
-                <p className="text-2xl font-bold font-heading mt-1 text-secondary">{formatCurrency(todayEntradas)}</p>
-              </div>
-              <div className="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-secondary" />
-              </div>
-            </div>
-          </Card>
-        </Link>
+<Card className="p-5 border-none shadow-md relative overflow-hidden">
+  <div className="flex flex-col items-center justify-center h-full">
+    {dailyGoal === 0 ? (
+      <div className="text-center">
+        <Target className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+        <p className="text-xs text-muted-foreground">Defina uma meta para hoje!</p>
+        <button
+          onClick={() => setIsEditingGoal(true)}
+          className="mt-2 text-xs px-3 py-1 rounded-lg bg-primary text-primary-foreground hover:opacity-90"
+        >
+          🎯 Definir Meta
+        </button>
+      </div>
+    ) : (
+      <>
+        <div className="relative w-24 h-24">
+          <svg className="w-24 h-24 transform -rotate-90">
+            <circle
+              cx="48"
+              cy="48"
+              r="40"
+              stroke="currentColor"
+              strokeWidth="8"
+              fill="none"
+              className="text-muted"
+            />
+            <circle
+              cx="48"
+              cy="48"
+              r="40"
+              stroke="currentColor"
+              strokeWidth="8"
+              fill="none"
+              strokeDasharray={`${2 * Math.PI * 40}`}
+              strokeDashoffset={`${2 * Math.PI * 40 * (1 - Math.min(goalProgress, 100) / 100)}`}
+              className={goalProgress >= 100 ? 'text-secondary' : 'text-primary'}
+              style={{ transition: 'stroke-dashoffset 0.5s ease' }}
+            />
+          </svg>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="text-xl font-bold">{Math.min(goalProgress, 100).toFixed(0)}%</span>
+          </div>
+        </div>
+        <p className="text-xs text-muted-foreground mt-2">Meta: {formatCurrency(dailyGoal)}</p>
+        <p className="text-sm font-semibold text-secondary">{formatCurrency(todayEntradas)}</p>
+        {goalProgress >= 100 ? (
+          <p className="text-xs text-secondary mt-1 font-medium">🏆 Meta batida! Dobrar? 🚀</p>
+        ) : (
+          <p className="text-xs text-muted-foreground mt-1">Faltam {formatCurrency(dailyGoal - todayEntradas)}</p>
+        )}
+        <button
+          onClick={() => setIsEditingGoal(true)}
+          className="mt-2 text-xs text-muted-foreground hover:text-foreground"
+        >
+          Ajustar meta
+        </button>
+      </>
+    )}
+  </div>
+  
+  {isEditingGoal && (
+    <div className="absolute inset-0 bg-background/95 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="space-y-3 w-full">
+        <p className="text-sm font-medium text-center">Defina sua meta diária</p>
+        <Input
+          type="text"
+          placeholder="Ex: 500,00"
+          value={goalInput}
+          onChange={e => setGoalInput(e.target.value)}
+          className="text-center"
+          autoFocus
+        />
+        <div className="flex gap-2">
+          <button
+            onClick={handleSaveGoal}
+            className="flex-1 py-2 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium"
+          >
+            Salvar
+          </button>
+          <button
+            onClick={() => {
+              setIsEditingGoal(false);
+              setGoalInput('');
+            }}
+            className="flex-1 py-2 rounded-lg bg-muted text-sm font-medium"
+          >
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  )}
+</Card>
 
         <Link to="/caixa?filter=saida" className="block">
           <Card className="p-5 border-none shadow-md hover:ring-2 hover:ring-destructive/30 transition-all cursor-pointer">

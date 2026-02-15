@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Wallet, Store, GraduationCap, BarChart3, Calculator, Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { LayoutDashboard, Wallet, Store, GraduationCap, BarChart3, Calculator, Menu, X, User, Settings, LogOut, ChevronDown } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { useStore } from '@/contexts/StoreContext';
 import { Toaster } from "sonner";
@@ -19,11 +19,34 @@ const navItems = [
 
 const AppLayout = ({ children }: { children: ReactNode }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   
-  // Se der erro no useStore (caso não tenha configurado contexto ainda), 
-  // pode comentar a linha abaixo e usar const config = { userPlan: 'gratuito' };
   const { config } = useStore(); 
+
+  const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+  const storeName = userData.storeName || 'Minha Loja';
+  const profileImage = userData.profileImage || '';
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setProfileOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleLogout = () => {
+    if (window.confirm('Tem certeza que deseja sair?')) {
+      localStorage.removeItem('isAuthenticated');
+      navigate('/login');
+    }
+  }; 
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -50,7 +73,6 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
                 <item.icon className="w-5 h-5" />
                 <span>{item.label}</span>
                 
-                {/* --- AQUI ESTÁ A ETIQUETA PRO --- */}
                 {isProItem && (
                   <span className="ml-auto text-[10px] font-bold bg-gradient-to-r from-purple-500 to-pink-500 text-white px-2 py-0.5 rounded-full shadow-sm">
                     PRO
@@ -61,7 +83,6 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
           })}
         </nav>
         
-        {/* Banner de Upgrade no Rodapé da Sidebar */}
         {config?.userPlan === 'gratuito' && (
           <div className="p-4 m-3 rounded-xl bg-muted/50 border border-border">
             <p className="text-xs font-semibold text-foreground">Plano Gratuito</p>
@@ -120,9 +141,54 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
         </div>
       )}
 
-      <main className="flex-1 md:p-8 p-4 pt-16 md:pt-8 overflow-auto">
-        <div className="max-w-5xl mx-auto animate-fade-in pb-10">
-          {children}
+      <main className="flex-1 flex flex-col overflow-auto">
+        <header className="hidden md:flex items-center justify-end px-8 py-4 border-b border-border bg-card">
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setProfileOpen(!profileOpen)}
+              className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-muted transition-colors"
+            >
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center overflow-hidden">
+                {profileImage ? (
+                  <img src={profileImage} alt="Perfil" className="w-full h-full object-cover" />
+                ) : (
+                  <User className="text-white" size={20} />
+                )}
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-semibold text-foreground">{storeName}</p>
+                <p className="text-xs text-muted-foreground">Ver perfil</p>
+              </div>
+              <ChevronDown size={16} className={cn("text-muted-foreground transition-transform", profileOpen && "rotate-180")} />
+            </button>
+
+            {profileOpen && (
+              <div className="absolute right-0 mt-2 w-56 bg-card border border-border rounded-lg shadow-lg py-2 z-50 animate-fade-in">
+                <Link
+                  to="/configuracoes"
+                  onClick={() => setProfileOpen(false)}
+                  className="flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-muted transition-colors"
+                >
+                  <Settings size={18} />
+                  <span>Configurações</span>
+                </Link>
+                <hr className="my-2 border-border" />
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                >
+                  <LogOut size={18} />
+                  <span>Sair</span>
+                </button>
+              </div>
+            )}
+          </div>
+        </header>
+
+        <div className="flex-1 md:p-8 p-4 pt-16 md:pt-8">
+          <div className="max-w-5xl mx-auto animate-fade-in pb-10">
+            {children}
+          </div>
         </div>
       </main>
       <Toaster position="top-right" richColors />

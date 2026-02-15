@@ -2,8 +2,29 @@ import { useMemo, useState } from 'react';
 import { useStore } from '@/contexts/StoreContext';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { AlertTriangle, TrendingUp, Wallet } from 'lucide-react';
+import { 
+  PieChart, 
+  Pie, 
+  Cell, 
+  ResponsiveContainer, 
+  Tooltip,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Legend
+} from 'recharts';
+import { 
+  AlertTriangle, 
+  TrendingUp, 
+  Wallet, 
+  Download, 
+  Lock,
+  TrendingDown,
+  ArrowUpRight,
+  ArrowDownRight
+} from 'lucide-react';
 
 const CATEGORY_COLORS: Record<string, string> = {
   'Reposição': 'hsl(217, 91%, 60%)',
@@ -20,10 +41,20 @@ const periods = [
 ] as const;
 
 const Relatorios = () => {
-  const { config } = useStore();
+  const { config, updateConfig } = useStore();
   const [period, setPeriod] = useState<'today' | '7d' | '30d'>('30d');
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const now = new Date();
+  const isPro = config.userPlan === 'pro';
+
+  const handlePeriodChange = (newPeriod: 'today' | '7d' | '30d') => {
+    if (!isPro && newPeriod !== 'today') {
+      setShowUpgradeModal(true);
+      return;
+    }
+    setPeriod(newPeriod);
+  };
 
   const filteredTransactions = useMemo(() => {
     return config.transactions.filter(t => {
@@ -38,7 +69,75 @@ const Relatorios = () => {
       const diff = (now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24);
       return diff <= 30;
     });
-  }, [config.transactions, period]);
+  }, [config.transactions, period, now]);
+
+  // Cálculo do resumo de performance (comparação mês atual vs mês anterior)
+  const performanceSummary = useMemo(() => {
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    
+    const currentMonthTransactions = config.transactions.filter(t => {
+      const d = new Date(t.date);
+      return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+    });
+
+    const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+    const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+    
+    const lastMonthTransactions = config.transactions.filter(t => {
+      const d = new Date(t.date);
+      return d.getMonth() === lastMonth && d.getFullYear() === lastMonthYear;
+    });
+
+    const currentRevenue = currentMonthTransactions
+      .filter(t => t.type === 'entrada')
+      .reduce((s, t) => s + t.value, 0);
+    
+    const lastRevenue = lastMonthTransactions
+      .filter(t => t.type === 'entrada')
+      .reduce((s, t) => s + t.value, 0);
+
+    const percentChange = lastRevenue > 0 
+      ? ((currentRevenue - lastRevenue) / lastRevenue) * 100 
+      : 0;
+
+    return {
+      currentRevenue,
+      lastRevenue,
+      percentChange,
+      isPositive: percentChange >= 0
+    };
+  }, [config.transactions, now]);
+
+  // Dados para o gráfico de barras (últimos 3 meses)
+  const last3MonthsData = useMemo(() => {
+    const months = [];
+    for (let i = 2; i >= 0; i--) {
+      const targetMonth = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthName = targetMonth.toLocaleDateString('pt-BR', { month: 'short' });
+      
+      const monthTransactions = config.transactions.filter(t => {
+        const d = new Date(t.date);
+        return d.getMonth() === targetMonth.getMonth() && 
+               d.getFullYear() === targetMonth.getFullYear();
+      });
+
+      const entradas = monthTransactions
+        .filter(t => t.type === 'entrada')
+        .reduce((s, t) => s + t.value, 0);
+      
+      const saidas = monthTransactions
+        .filter(t => t.type === 'saida')
+        .reduce((s, t) => s + t.value, 0);
+
+      months.push({
+        name: monthName.charAt(0).toUpperCase() + monthName.slice(1),
+        Entradas: entradas,
+        'Saídas': saidas,
+      });
+    }
+    return months;
+  }, [config.transactions, now]);
 
   const entradas = filteredTransactions.filter(t => t.type === 'entrada').reduce((s, t) => s + t.value, 0);
   const saidasBusiness = filteredTransactions
@@ -69,29 +168,113 @@ const Relatorios = () => {
   const formatCurrency = (v: number) =>
     v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
+  // Função para exportar CSV
+  const exportToCSV = () => {
+    if (filteredTransactions.length === 0) {
+      alert('Não há transações para exportar neste período.');
+      return;
+    }
+
+    const headers = ['Data', 'Tipo', 'Categoria', 'Descrição', 'Valor', 'Pessoal'];
+    const rows = filteredTransactions.map(t => [
+      new Date(t.date).toLocaleDateString('pt-BR'),
+      t.type === 'entrada' ? 'Entrada' : 'Saída',
+      t.category,
+      t.description,
+      t.value.toFixed(2).replace('.', ','),
+      t.isPersonal ? 'Sim' : 'Não'
+    ]);
+
+    const csvContent = [
+      headers.join(';'),
+      ...rows.map(row => row.join(';'))
+    ].join('\n');
+
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', `relatorio_${period}_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="space-y-8">
+      {/* Header com botão de exportação */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-3xl font-bold font-heading">Relatórios</h1>
           <p className="text-muted-foreground mt-1">Análise financeira do seu negócio</p>
         </div>
-        <div className="flex gap-1 bg-muted rounded-lg p-1">
-          {periods.map(p => (
-            <button
-              key={p.value}
-              onClick={() => setPeriod(p.value)}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                period === p.value
-                  ? 'gradient-primary text-primary-foreground shadow-glow'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {p.label}
-            </button>
-          ))}
+        <div className="flex items-center gap-3 flex-wrap">
+          <button
+            onClick={exportToCSV}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-all font-medium shadow-sm"
+          >
+            <Download className="w-4 h-4" />
+            Exportar CSV
+          </button>
+          <div className="flex gap-1 bg-muted rounded-lg p-1">
+            {periods.map(p => (
+              <button
+                key={p.value}
+                onClick={() => handlePeriodChange(p.value)}
+                disabled={!isPro && p.value !== 'today'}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-all relative ${
+                  period === p.value
+                    ? 'gradient-primary text-primary-foreground shadow-glow'
+                    : 'text-muted-foreground hover:text-foreground'
+                } ${!isPro && p.value !== 'today' ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                {p.label}
+                {!isPro && p.value !== 'today' && (
+                  <Lock className="w-3 h-3 absolute -top-1 -right-1 text-warning" />
+                )}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
+
+      {/* Resumo de Performance */}
+      {performanceSummary.lastRevenue > 0 && (
+        <Card className="p-4 border-none shadow-md bg-gradient-to-r from-primary/5 to-secondary/5">
+          <div className="flex items-center gap-3">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+              performanceSummary.isPositive ? 'bg-secondary/20' : 'bg-destructive/20'
+            }`}>
+              {performanceSummary.isPositive ? (
+                <ArrowUpRight className="w-5 h-5 text-secondary" />
+              ) : (
+                <ArrowDownRight className="w-5 h-5 text-destructive" />
+              )}
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-muted-foreground">Performance do Mês</p>
+              <p className="text-lg font-semibold font-heading">
+                {performanceSummary.isPositive ? (
+                  <span className="text-secondary">
+                    Faturamento {Math.abs(performanceSummary.percentChange).toFixed(1)}% maior que o mês passado
+                  </span>
+                ) : (
+                  <span className="text-destructive">
+                    Faturamento {Math.abs(performanceSummary.percentChange).toFixed(1)}% menor que o mês passado
+                  </span>
+                )}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-muted-foreground">Este mês</p>
+              <p className="text-lg font-bold">{formatCurrency(performanceSummary.currentRevenue)}</p>
+            </div>
+          </div>
+        </Card>
+      )}
 
       {/* Margin Card */}
       <Card className="p-6 border-none shadow-md">
@@ -192,6 +375,105 @@ const Relatorios = () => {
           )}
         </Card>
       </div>
+
+      {/* Gráfico de Barras Comparativo - Últimos 3 Meses */}
+      <Card className="p-6 border-none shadow-md">
+        <h2 className="text-lg font-semibold font-heading mb-4">Entradas vs Saídas - Últimos 3 Meses</h2>
+        <div className="h-80">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={last3MonthsData}>
+              <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+              <XAxis 
+                dataKey="name" 
+                tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                tickLine={false}
+              />
+              <YAxis 
+                tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                tickLine={false}
+                tickFormatter={(value) => `R$ ${(value / 1000).toFixed(0)}k`}
+              />
+              <Tooltip
+                formatter={(value: number) => formatCurrency(value)}
+                contentStyle={{
+                  borderRadius: '0.75rem',
+                  border: 'none',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                  backgroundColor: 'hsl(var(--background))',
+                }}
+                labelStyle={{ color: 'hsl(var(--foreground))' }}
+              />
+              <Legend 
+                wrapperStyle={{ paddingTop: '20px' }}
+                iconType="circle"
+              />
+              <Bar 
+                dataKey="Entradas" 
+                fill="hsl(142, 76%, 36%)" 
+                radius={[8, 8, 0, 0]}
+                maxBarSize={60}
+              />
+              <Bar 
+                dataKey="Saídas" 
+                fill="hsl(0, 84%, 60%)" 
+                radius={[8, 8, 0, 0]}
+                maxBarSize={60}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </Card>
+
+      {/* Modal de Upgrade */}
+      {showUpgradeModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="max-w-md w-full p-6 border-none shadow-2xl">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center shadow-glow">
+                <Lock className="w-6 h-6 text-primary-foreground" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold font-heading">Recurso Pro</h3>
+                <p className="text-sm text-muted-foreground">Desbloqueie análises avançadas</p>
+              </div>
+            </div>
+            
+            <div className="space-y-3 mb-6">
+              <p className="text-muted-foreground">
+                Para visualizar relatórios de 7 e 30 dias, você precisa do plano Pro.
+              </p>
+              <div className="p-4 rounded-xl bg-primary/5 border border-primary/20">
+                <p className="text-sm font-semibold mb-2">Com o plano Pro você tem:</p>
+                <ul className="text-sm space-y-1 text-muted-foreground">
+                  <li>✓ Relatórios de até 30 dias</li>
+                  <li>✓ Exportação ilimitada</li>
+                  <li>✓ Gráficos comparativos avançados</li>
+                  <li>✓ Análise de tendências</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowUpgradeModal(false)}
+                className="flex-1 px-4 py-2 rounded-lg border border-border hover:bg-muted transition-all font-medium"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => {
+                  updateConfig({ userPlan: 'pro' });
+                  setShowUpgradeModal(false);
+                  setPeriod('30d');
+                }}
+                className="flex-1 px-4 py-2 rounded-lg gradient-primary text-primary-foreground hover:opacity-90 transition-all font-medium shadow-glow"
+              >
+                Fazer Upgrade
+              </button>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };

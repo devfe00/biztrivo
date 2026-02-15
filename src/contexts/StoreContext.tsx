@@ -40,6 +40,7 @@ interface StoreContextType {
   updateProduct: (product: Product) => void;
   addTransaction: (transaction: Transaction) => void;
   removeTransaction: (id: string) => void;
+  isLoading: boolean; 
 }
 
 const todayStr = new Date().toISOString().split('T')[0];
@@ -72,11 +73,12 @@ const defaultConfig: StoreConfig = {
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
 export const StoreProvider = ({ children }: { children: ReactNode }) => {
+  const [isLoading, setIsLoading] = useState(true);
+  
   const [config, setConfig] = useState<StoreConfig>(() => {
     const saved = localStorage.getItem('biztrivo-store');
     if (saved) {
       const parsed = { ...defaultConfig, ...JSON.parse(saved) };
-      // Seed test transactions if none exist
       if (!parsed.transactions || parsed.transactions.length === 0) {
         parsed.transactions = seedTransactions;
       }
@@ -84,6 +86,14 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
     }
     return defaultConfig;
   });
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 600); 
+
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('biztrivo-store', JSON.stringify(config));
@@ -117,7 +127,16 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <StoreContext.Provider value={{ config, updateConfig, addProduct, removeProduct, updateProduct, addTransaction, removeTransaction }}>
+    <StoreContext.Provider value={{ 
+      config, 
+      updateConfig, 
+      addProduct, 
+      removeProduct, 
+      updateProduct, 
+      addTransaction, 
+      removeTransaction,
+      isLoading 
+    }}>
       {children}
     </StoreContext.Provider>
   );
