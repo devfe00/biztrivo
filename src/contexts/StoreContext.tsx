@@ -7,6 +7,7 @@ export interface Product {
   originalPrice: number;
   discountPrice: number;
   description: string;
+  stock: number;
 }
 
 export interface Transaction {
@@ -28,6 +29,7 @@ export interface StoreConfig {
   transactions: Transaction[];
   vitrineActive: boolean;
   vitrineClicks: number;
+  userPlan: 'gratuito' | 'pro';
 }
 
 interface StoreContextType {
@@ -40,15 +42,31 @@ interface StoreContextType {
   removeTransaction: (id: string) => void;
 }
 
+const todayStr = new Date().toISOString().split('T')[0];
+
+const seedTransactions: Transaction[] = [
+  { id: 'seed-1', type: 'entrada', value: 150, description: 'Venda de camiseta estampada', category: 'Venda', isPersonal: false, date: `${todayStr}T09:00:00` },
+  { id: 'seed-2', type: 'entrada', value: 80, description: 'Venda de boné personalizado', category: 'Venda', isPersonal: false, date: `${todayStr}T09:30:00` },
+  { id: 'seed-3', type: 'entrada', value: 220, description: 'Venda de kit 3 camisetas', category: 'Venda', isPersonal: false, date: `${todayStr}T10:15:00` },
+  { id: 'seed-4', type: 'entrada', value: 95, description: 'Venda de caneca personalizada', category: 'Venda', isPersonal: false, date: `${todayStr}T11:00:00` },
+  { id: 'seed-5', type: 'entrada', value: 175, description: 'Venda de moletom básico', category: 'Venda', isPersonal: false, date: `${todayStr}T14:00:00` },
+  { id: 'seed-6', type: 'saida', value: 200, description: 'Compra de camisetas no fornecedor', category: 'Reposição', isPersonal: false, date: `${todayStr}T08:00:00` },
+  { id: 'seed-7', type: 'saida', value: 120, description: 'Reposição de bonés', category: 'Reposição', isPersonal: false, date: `${todayStr}T08:30:00` },
+  { id: 'seed-8', type: 'saida', value: 45, description: 'Sacolas e caixas de papelão', category: 'Embalagem', isPersonal: false, date: `${todayStr}T09:45:00` },
+  { id: 'seed-9', type: 'saida', value: 35, description: 'Envio para cliente SP', category: 'Frete', isPersonal: false, date: `${todayStr}T12:00:00` },
+  { id: 'seed-10', type: 'saida', value: 60, description: 'Almoço e gasolina', category: 'Pessoal', isPersonal: true, date: `${todayStr}T13:00:00` },
+];
+
 const defaultConfig: StoreConfig = {
   storeName: 'Minha Loja',
   logo: '',
   primaryColor: '#3b82f6',
   whatsapp: '',
   products: [],
-  transactions: [],
+  transactions: seedTransactions,
   vitrineActive: false,
   vitrineClicks: 0,
+  userPlan: 'gratuito',
 };
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -56,7 +74,15 @@ const StoreContext = createContext<StoreContextType | undefined>(undefined);
 export const StoreProvider = ({ children }: { children: ReactNode }) => {
   const [config, setConfig] = useState<StoreConfig>(() => {
     const saved = localStorage.getItem('biztrivo-store');
-    return saved ? { ...defaultConfig, ...JSON.parse(saved) } : defaultConfig;
+    if (saved) {
+      const parsed = { ...defaultConfig, ...JSON.parse(saved) };
+      // Seed test transactions if none exist
+      if (!parsed.transactions || parsed.transactions.length === 0) {
+        parsed.transactions = seedTransactions;
+      }
+      return parsed;
+    }
+    return defaultConfig;
   });
 
   useEffect(() => {

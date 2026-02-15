@@ -1,5 +1,10 @@
+import { useState } from 'react';
+import { useStore } from '@/contexts/StoreContext';
 import { Card } from '@/components/ui/card';
-import { BookOpen, Download, Lock } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { BookOpen, Download, Lock, CheckCircle, Sparkles } from 'lucide-react';
+
+const MERCADO_PAGO_LINK = 'https://www.mercadopago.com.br/subscriptions';
 
 const resources = [
   { title: 'Como Precificar seus Produtos', desc: 'Checklist completo para não errar no preço', free: true },
@@ -9,7 +14,23 @@ const resources = [
   { title: 'Como Criar Promoções Inteligentes', desc: 'Estratégias para aumentar suas vendas', free: false },
 ];
 
+const proAdvantages = [
+  'Acesso a todos os materiais e templates',
+  'Planilhas profissionais prontas para usar',
+  'Scripts de venda que convertem',
+  'Relatórios financeiros avançados',
+  'Suporte prioritário',
+];
+
 const Academy = () => {
+  const { config } = useStore();
+  const [showProModal, setShowProModal] = useState(false);
+
+  const handleProClick = () => {
+    if (config.userPlan === 'pro') return;
+    setShowProModal(true);
+  };
+
   return (
     <div className="space-y-8">
       <div>
@@ -35,10 +56,13 @@ const Academy = () => {
                 Baixar
               </button>
             ) : (
-              <span className="px-4 py-2 rounded-lg bg-muted text-muted-foreground text-xs font-medium flex items-center gap-2">
+              <button
+                onClick={handleProClick}
+                className="px-4 py-2 rounded-lg bg-muted text-muted-foreground text-xs font-medium flex items-center gap-2 hover:bg-accent transition-colors cursor-pointer"
+              >
                 <Lock className="w-3 h-3" />
                 Pro
-              </span>
+              </button>
             )}
           </Card>
         ))}
@@ -49,10 +73,51 @@ const Academy = () => {
         <p className="text-sm mt-2 opacity-90">
           Por apenas R$ 19,90/mês, tenha acesso a todos os materiais, checklists e planilhas para profissionalizar seu negócio.
         </p>
-        <button className="mt-4 px-6 py-3 rounded-lg bg-card text-foreground font-semibold text-sm hover:opacity-90 transition-opacity">
+        <a
+          href={MERCADO_PAGO_LINK}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-block mt-4 px-6 py-3 rounded-lg bg-card text-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
+        >
           Fazer Upgrade — R$ 19,90/mês
-        </button>
+        </a>
       </Card>
+
+      {/* Pro Modal */}
+      <Dialog open={showProModal} onOpenChange={setShowProModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 font-heading">
+              <Sparkles className="w-5 h-5 text-warning" />
+              Conteúdo Exclusivo Pro
+            </DialogTitle>
+            <DialogDescription>
+              Desbloqueie todo o potencial do Biztrivo Academy
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-4">
+            {proAdvantages.map((adv, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <CheckCircle className="w-5 h-5 text-secondary shrink-0" />
+                <p className="text-sm">{adv}</p>
+              </div>
+            ))}
+          </div>
+          <div className="pt-2">
+            <a
+              href={MERCADO_PAGO_LINK}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center w-full py-3 rounded-lg gradient-primary text-primary-foreground font-semibold text-sm shadow-glow hover:opacity-90 transition-opacity"
+            >
+              Assinar por R$ 19,90/mês
+            </a>
+            <p className="text-xs text-center text-muted-foreground mt-3">
+              Pagamento seguro via Mercado Pago
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

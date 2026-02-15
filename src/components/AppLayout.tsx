@@ -1,19 +1,24 @@
 import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Wallet, Store, GraduationCap, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Wallet, Store, GraduationCap, BarChart3, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { useStore } from '@/contexts/StoreContext';
+
+const MERCADO_PAGO_LINK = 'https://www.mercadopago.com.br/subscriptions';
 
 const navItems = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/caixa', label: 'Financeiro', icon: Wallet },
   { path: '/vitrine', label: 'Minha Vitrine', icon: Store },
+  { path: '/relatorios', label: 'Relatórios', icon: BarChart3 },
   { path: '/academy', label: 'Academy', icon: GraduationCap },
 ];
 
 const AppLayout = ({ children }: { children: ReactNode }) => {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { config } = useStore();
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -43,13 +48,20 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
             );
           })}
         </nav>
-        <div className="p-4 m-3 rounded-xl bg-muted">
-          <p className="text-xs font-semibold text-foreground">Plano Gratuito</p>
-          <p className="text-xs text-muted-foreground mt-1">Upgrade por R$ 19,90/mês</p>
-          <button className="mt-3 w-full py-2 rounded-lg text-xs font-semibold gradient-primary text-primary-foreground shadow-glow">
-            Fazer Upgrade
-          </button>
-        </div>
+        {config.userPlan === 'gratuito' && (
+          <div className="p-4 m-3 rounded-xl bg-muted">
+            <p className="text-xs font-semibold text-foreground">Plano Gratuito</p>
+            <p className="text-xs text-muted-foreground mt-1">Upgrade por R$ 19,90/mês</p>
+            <a
+              href={MERCADO_PAGO_LINK}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 w-full py-2 rounded-lg text-xs font-semibold gradient-primary text-primary-foreground shadow-glow block text-center"
+            >
+              Fazer Upgrade
+            </a>
+          </div>
+        )}
       </aside>
 
       {/* Mobile Header */}
