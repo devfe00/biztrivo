@@ -203,6 +203,78 @@ const Relatorios = () => {
     document.body.removeChild(link);
   };
 
+  // Função para exportar PDF
+  const exportToPDF = () => {
+    if (filteredTransactions.length === 0) {
+      alert('Não há transações para exportar neste período.');
+      return;
+    }
+
+    const periodLabel = period === 'today' ? 'Hoje' : period === '7d' ? 'Últimos 7 dias' : 'Últimos 30 dias';
+    const dateStr = new Date().toLocaleDateString('pt-BR');
+
+    const totalEntradas = filteredTransactions.filter(t => t.type === 'entrada').reduce((s, t) => s + t.value, 0);
+    const totalSaidasAll = filteredTransactions.filter(t => t.type === 'saida').reduce((s, t) => s + t.value, 0);
+    const saldo = totalEntradas - totalSaidasAll;
+
+    let tableRows = '';
+    filteredTransactions.forEach(t => {
+      const tipo = t.type === 'entrada' ? 'Entrada' : 'Saída';
+      const color = t.type === 'entrada' ? '#22c55e' : t.isPersonal ? '#f59e0b' : '#ef4444';
+      tableRows += `<tr>
+        <td style="padding:8px;border-bottom:1px solid #e5e7eb;">${new Date(t.date).toLocaleDateString('pt-BR')}</td>
+        <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:${color};font-weight:600;">${tipo}</td>
+        <td style="padding:8px;border-bottom:1px solid #e5e7eb;">${t.category}${t.isPersonal ? ' (Pessoal)' : ''}</td>
+        <td style="padding:8px;border-bottom:1px solid #e5e7eb;">${t.description}</td>
+        <td style="padding:8px;border-bottom:1px solid #e5e7eb;text-align:right;font-weight:600;color:${color};">${formatCurrency(t.value)}</td>
+      </tr>`;
+    });
+
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
+      <title>Relatório Biztrivo</title>
+      <style>
+        body{font-family:Inter,system-ui,sans-serif;margin:0;padding:40px;color:#1a1a2e;}
+        h1{font-family:'Space Grotesk',sans-serif;margin:0;}
+        .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;border-bottom:3px solid #3b82f6;padding-bottom:20px;}
+        .summary{display:flex;gap:20px;margin-bottom:30px;}
+        .card{flex:1;padding:20px;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;}
+        .card h3{margin:0 0 8px;font-size:14px;color:#64748b;}
+        .card p{margin:0;font-size:24px;font-weight:700;}
+        table{width:100%;border-collapse:collapse;margin-top:20px;}
+        th{text-align:left;padding:10px 8px;border-bottom:2px solid #3b82f6;color:#64748b;font-size:13px;}
+        td{font-size:13px;}
+        .footer{margin-top:40px;text-align:center;color:#94a3b8;font-size:12px;}
+        @media print{body{padding:20px;}}
+      </style>
+    </head><body>
+      <div class="header">
+        <div><h1>📊 Relatório Financeiro</h1><p style="color:#64748b;margin:4px 0 0;">Biztrivo — ${periodLabel} — Gerado em ${dateStr}</p></div>
+      </div>
+      <div class="summary">
+        <div class="card"><h3>Entradas</h3><p style="color:#22c55e;">${formatCurrency(totalEntradas)}</p></div>
+        <div class="card"><h3>Saídas</h3><p style="color:#ef4444;">${formatCurrency(totalSaidasAll)}</p></div>
+        <div class="card"><h3>Saldo</h3><p style="color:${saldo >= 0 ? '#22c55e' : '#ef4444'};">${formatCurrency(saldo)}</p></div>
+        <div class="card"><h3>Margem de Lucro</h3><p style="color:#3b82f6;">${margem.toFixed(1)}%</p></div>
+      </div>
+      ${personalTotal > 0 ? `<div style="padding:16px;background:#fef3c7;border:1px solid #f59e0b;border-radius:12px;margin-bottom:20px;">
+        <strong>⚠️ Monitor de Sangria:</strong> Você retirou ${formatCurrency(personalTotal)} para uso pessoal neste período (${personalPercent.toFixed(0)}% das entradas).
+      </div>` : ''}
+      <table><thead><tr>
+        <th>Data</th><th>Tipo</th><th>Categoria</th><th>Descrição</th><th style="text-align:right;">Valor</th>
+      </tr></thead><tbody>${tableRows}</tbody></table>
+      <div class="footer"><p>Relatório gerado automaticamente pelo Biztrivo</p></div>
+    </body></html>`;
+
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(html);
+      printWindow.document.close();
+      printWindow.onload = () => {
+        printWindow.print();
+      };
+    }
+  };
+
   return (
     <div className="space-y-8">
       {/* Header com botão de exportação */}
@@ -212,6 +284,13 @@ const Relatorios = () => {
           <p className="text-muted-foreground mt-1">Análise financeira do seu negócio</p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
+          <button
+            onClick={exportToPDF}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg gradient-primary text-primary-foreground hover:opacity-90 transition-all font-medium shadow-glow"
+          >
+            <Download className="w-4 h-4" />
+            Exportar PDF
+          </button>
           <button
             onClick={exportToCSV}
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-all font-medium shadow-sm"
