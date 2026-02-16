@@ -108,8 +108,8 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
 
       {mobileOpen && (
         <div className="md:hidden fixed inset-0 z-40 bg-background/80 backdrop-blur-sm" onClick={() => setMobileOpen(false)}>
-          <div className="w-64 h-full bg-card border-r border-border pt-16 animate-slide-in" onClick={e => e.stopPropagation()}>
-            <nav className="px-3 space-y-1">
+          <div className="w-64 h-full bg-card border-r border-border pt-16 animate-slide-in flex flex-col" onClick={e => e.stopPropagation()}>
+            <nav className="px-3 space-y-1 flex-1">
               {navItems.map(item => {
                 const active = location.pathname === item.path;
                 const isProItem = item.label === 'Calculadora';
@@ -137,6 +137,51 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
                 );
               })}
             </nav>
+
+            {/* Profile section mobile */}
+            <div className="border-t border-border p-3 space-y-2">
+              <Link
+                to="/configuracoes"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
+              >
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center overflow-hidden">
+                  {profileImage ? (
+                    <img src={profileImage} alt="Perfil" className="w-full h-full object-cover" />
+                  ) : (
+                    <User className="text-white" size={16} />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-foreground truncate">{storeName}</p>
+                  <p className="text-xs text-muted-foreground">Ver perfil</p>
+                </div>
+                <Settings size={16} className="text-muted-foreground" />
+              </Link>
+              <button
+                onClick={() => { setMobileOpen(false); handleLogout(); }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-all"
+              >
+                <LogOut size={18} />
+                <span>Sair</span>
+              </button>
+            </div>
+
+            {/* Upgrade banner mobile */}
+            {config?.userPlan === 'gratuito' && (
+              <div className="p-4 m-3 rounded-xl bg-muted/50 border border-border">
+                <p className="text-xs font-semibold text-foreground">Plano Gratuito</p>
+                <p className="text-xs text-muted-foreground mt-1">Desbloqueie tudo por R$ 19,90</p>
+                <a
+                  href={MERCADO_PAGO_LINK}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 w-full py-2 rounded-lg text-xs font-semibold gradient-primary text-primary-foreground shadow-glow block text-center transition-transform hover:scale-105"
+                >
+                  Seja PRO
+                </a>
+              </div>
+            )}
           </div>
         </div>
       )}
