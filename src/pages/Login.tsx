@@ -38,7 +38,7 @@ const Login: React.FC = () => {
     if (error) {
       setError(error);
     } else {
-      navigate('/');
+      navigate(homePath);
     }
     setLoading(false);
   };
