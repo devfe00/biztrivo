@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 export interface Product {
   id: string;
@@ -29,34 +31,20 @@ export interface StoreConfig {
   transactions: Transaction[];
   vitrineActive: boolean;
   vitrineClicks: number;
-  userPlan: 'gratuito' | 'pro';
+  profileImage: string;
 }
 
 interface StoreContextType {
   config: StoreConfig;
   updateConfig: (partial: Partial<StoreConfig>) => void;
-  addProduct: (product: Product) => void;
-  removeProduct: (id: string) => void;
-  updateProduct: (product: Product) => void;
-  addTransaction: (transaction: Transaction) => void;
-  removeTransaction: (id: string) => void;
-  isLoading: boolean; 
+  addProduct: (product: Omit<Product, 'id'>) => Promise<void>;
+  removeProduct: (id: string) => Promise<void>;
+  updateProduct: (product: Product) => Promise<void>;
+  addTransaction: (transaction: Omit<Transaction, 'id'>) => Promise<void>;
+  removeTransaction: (id: string) => Promise<void>;
+  isLoading: boolean;
+  refreshData: () => Promise<void>;
 }
-
-const todayStr = new Date().toISOString().split('T')[0];
-
-const seedTransactions: Transaction[] = [
-  { id: 'seed-1', type: 'entrada', value: 150, description: 'Venda de camiseta estampada', category: 'Venda', isPersonal: false, date: `${todayStr}T09:00:00` },
-  { id: 'seed-2', type: 'entrada', value: 80, description: 'Venda de boné personalizado', category: 'Venda', isPersonal: false, date: `${todayStr}T09:30:00` },
-  { id: 'seed-3', type: 'entrada', value: 220, description: 'Venda de kit 3 camisetas', category: 'Venda', isPersonal: false, date: `${todayStr}T10:15:00` },
-  { id: 'seed-4', type: 'entrada', value: 95, description: 'Venda de caneca personalizada', category: 'Venda', isPersonal: false, date: `${todayStr}T11:00:00` },
-  { id: 'seed-5', type: 'entrada', value: 175, description: 'Venda de moletom básico', category: 'Venda', isPersonal: false, date: `${todayStr}T14:00:00` },
-  { id: 'seed-6', type: 'saida', value: 200, description: 'Compra de camisetas no fornecedor', category: 'Reposição', isPersonal: false, date: `${todayStr}T08:00:00` },
-  { id: 'seed-7', type: 'saida', value: 120, description: 'Reposição de bonés', category: 'Reposição', isPersonal: false, date: `${todayStr}T08:30:00` },
-  { id: 'seed-8', type: 'saida', value: 45, description: 'Sacolas e caixas de papelão', category: 'Embalagem', isPersonal: false, date: `${todayStr}T09:45:00` },
-  { id: 'seed-9', type: 'saida', value: 35, description: 'Envio para cliente SP', category: 'Frete', isPersonal: false, date: `${todayStr}T12:00:00` },
-  { id: 'seed-10', type: 'saida', value: 60, description: 'Almoço e gasolina', category: 'Pessoal', isPersonal: true, date: `${todayStr}T13:00:00` },
-];
 
 const defaultConfig: StoreConfig = {
   storeName: 'Minha Loja',
@@ -64,78 +52,219 @@ const defaultConfig: StoreConfig = {
   primaryColor: '#3b82f6',
   whatsapp: '',
   products: [],
-  transactions: seedTransactions,
+  transactions: [],
   vitrineActive: false,
   vitrineClicks: 0,
-  userPlan: 'gratuito',
+  profileImage: '',
 };
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
 export const StoreProvider = ({ children }: { children: ReactNode }) => {
+  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
-  
-  const [config, setConfig] = useState<StoreConfig>(() => {
-    const saved = localStorage.getItem('biztrivo-store');
-    if (saved) {
-      const parsed = { ...defaultConfig, ...JSON.parse(saved) };
-      if (!parsed.transactions || parsed.transactions.length === 0) {
-        parsed.transactions = seedTransactions;
-      }
-      return parsed;
-    }
-    return defaultConfig;
-  });
+  const [config, setConfig] = useState<StoreConfig>(defaultConfig);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
+  const fetchData = useCallback(async () => {
+    if (!user) {
+      setConfig(defaultConfig);
       setIsLoading(false);
-    }, 600); 
+      return;
+    }
 
-    return () => clearTimeout(timer);
-  }, []);
+    setIsLoading(true);
+    try {
+      // Fetch profile
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      // Fetch products
+      const { data: products } = await supabase
+        .from('products')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      // Fetch transactions
+      const { data: transactions } = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('date', { ascending: false });
+
+      setConfig({
+        storeName: profile?.store_name || 'Minha Loja',
+        logo: profile?.logo || '',
+        primaryColor: profile?.primary_color || '#3b82f6',
+        whatsapp: profile?.whatsapp || '',
+        vitrineActive: profile?.vitrine_active || false,
+        vitrineClicks: profile?.vitrine_clicks || 0,
+        profileImage: profile?.profile_image || '',
+        products: (products || []).map(p => ({
+          id: p.id,
+          name: p.name,
+          photo: p.photo || '',
+          originalPrice: Number(p.original_price) || 0,
+          discountPrice: Number(p.discount_price) || 0,
+          description: p.description || '',
+          stock: p.stock || 0,
+        })),
+        transactions: (transactions || []).map(t => ({
+          id: t.id,
+          type: t.type as 'entrada' | 'saida',
+          value: Number(t.value),
+          description: t.description,
+          category: t.category,
+          isPersonal: t.is_personal || false,
+          date: t.date,
+        })),
+      });
+    } catch (err) {
+      console.error('Error fetching store data:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user]);
 
   useEffect(() => {
-    localStorage.setItem('biztrivo-store', JSON.stringify(config));
-  }, [config]);
+    fetchData();
+  }, [fetchData]);
 
-  const updateConfig = (partial: Partial<StoreConfig>) => {
+  const updateConfig = async (partial: Partial<StoreConfig>) => {
+    if (!user) return;
+    
     setConfig(prev => ({ ...prev, ...partial }));
+
+    // Map frontend keys to DB columns
+    const profileUpdate: Record<string, unknown> = {};
+    if (partial.storeName !== undefined) profileUpdate.store_name = partial.storeName;
+    if (partial.logo !== undefined) profileUpdate.logo = partial.logo;
+    if (partial.primaryColor !== undefined) profileUpdate.primary_color = partial.primaryColor;
+    if (partial.whatsapp !== undefined) profileUpdate.whatsapp = partial.whatsapp;
+    if (partial.vitrineActive !== undefined) profileUpdate.vitrine_active = partial.vitrineActive;
+    if (partial.profileImage !== undefined) profileUpdate.profile_image = partial.profileImage;
+
+    if (Object.keys(profileUpdate).length > 0) {
+      await supabase
+        .from('profiles')
+        .update(profileUpdate)
+        .eq('user_id', user.id);
+    }
   };
 
-  const addProduct = (product: Product) => {
-    setConfig(prev => ({ ...prev, products: [...prev.products, product] }));
+  const addProduct = async (product: Omit<Product, 'id'>) => {
+    if (!user) return;
+    
+    const { data, error } = await supabase
+      .from('products')
+      .insert({
+        user_id: user.id,
+        name: product.name,
+        photo: product.photo,
+        original_price: product.originalPrice,
+        discount_price: product.discountPrice,
+        description: product.description,
+        stock: product.stock,
+      })
+      .select()
+      .single();
+
+    if (data && !error) {
+      setConfig(prev => ({
+        ...prev,
+        products: [{
+          id: data.id,
+          name: data.name,
+          photo: data.photo || '',
+          originalPrice: Number(data.original_price) || 0,
+          discountPrice: Number(data.discount_price) || 0,
+          description: data.description || '',
+          stock: data.stock || 0,
+        }, ...prev.products],
+      }));
+    }
   };
 
-  const removeProduct = (id: string) => {
+  const removeProduct = async (id: string) => {
+    if (!user) return;
+    await supabase.from('products').delete().eq('id', id).eq('user_id', user.id);
     setConfig(prev => ({ ...prev, products: prev.products.filter(p => p.id !== id) }));
   };
 
-  const updateProduct = (product: Product) => {
+  const updateProduct = async (product: Product) => {
+    if (!user) return;
+    await supabase
+      .from('products')
+      .update({
+        name: product.name,
+        photo: product.photo,
+        original_price: product.originalPrice,
+        discount_price: product.discountPrice,
+        description: product.description,
+        stock: product.stock,
+      })
+      .eq('id', product.id)
+      .eq('user_id', user.id);
+
     setConfig(prev => ({
       ...prev,
       products: prev.products.map(p => p.id === product.id ? product : p),
     }));
   };
 
-  const addTransaction = (transaction: Transaction) => {
-    setConfig(prev => ({ ...prev, transactions: [...prev.transactions, transaction] }));
+  const addTransaction = async (transaction: Omit<Transaction, 'id'>) => {
+    if (!user) return;
+    
+    const { data, error } = await supabase
+      .from('transactions')
+      .insert({
+        user_id: user.id,
+        type: transaction.type,
+        value: transaction.value,
+        description: transaction.description,
+        category: transaction.category,
+        is_personal: transaction.isPersonal,
+        date: transaction.date,
+      })
+      .select()
+      .single();
+
+    if (data && !error) {
+      setConfig(prev => ({
+        ...prev,
+        transactions: [{
+          id: data.id,
+          type: data.type as 'entrada' | 'saida',
+          value: Number(data.value),
+          description: data.description,
+          category: data.category,
+          isPersonal: data.is_personal || false,
+          date: data.date,
+        }, ...prev.transactions],
+      }));
+    }
   };
 
-  const removeTransaction = (id: string) => {
+  const removeTransaction = async (id: string) => {
+    if (!user) return;
+    await supabase.from('transactions').delete().eq('id', id).eq('user_id', user.id);
     setConfig(prev => ({ ...prev, transactions: prev.transactions.filter(t => t.id !== id) }));
   };
 
   return (
-    <StoreContext.Provider value={{ 
-      config, 
-      updateConfig, 
-      addProduct, 
-      removeProduct, 
-      updateProduct, 
-      addTransaction, 
+    <StoreContext.Provider value={{
+      config,
+      updateConfig,
+      addProduct,
+      removeProduct,
+      updateProduct,
+      addTransaction,
       removeTransaction,
-      isLoading 
+      isLoading,
+      refreshData: fetchData,
     }}>
       {children}
     </StoreContext.Provider>
