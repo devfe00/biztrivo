@@ -226,9 +226,9 @@ const Register: React.FC = () => {
                 />
                 <label htmlFor="terms" className="text-sm text-gray-600">
                   Eu concordo com os{' '}
-                  <Link to="/termos-de-uso" className="text-blue-600 hover:text-blue-700 font-medium">Termos de Uso</Link>
+                  <Link to={`/termos-de-uso${tokenSearch}`} className="text-blue-600 hover:text-blue-700 font-medium">Termos de Uso</Link>
                   {' '}e{' '}
-                  <Link to="/politica-privacidade" className="text-blue-600 hover:text-blue-700 font-medium">Política de Privacidade</Link>
+                  <Link to={`/politica-privacidade${tokenSearch}`} className="text-blue-600 hover:text-blue-700 font-medium">Política de Privacidade</Link>
                 </label>
               </div>
 
