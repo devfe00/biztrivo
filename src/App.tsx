@@ -18,6 +18,7 @@ import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import ResetPassword from "@/pages/ResetPassword";
 import Configuracoes from "@/pages/Configuracoes";
+import Planos from "@/pages/Planos";
 import TermosDeUso from "@/pages/TermosDeUso";
 import PoliticaPrivacidade from "@/pages/PoliticaPrivacidade";
 import NotFound from "./pages/NotFound";
@@ -42,6 +43,7 @@ const App = () => (
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/planos" element={<Planos />} />
               <Route path="/termos-de-uso" element={<TermosDeUso />} />
               <Route path="/politica-privacidade" element={<PoliticaPrivacidade />} />
               <Route path="/loja/:slug" element={<PublicStore />} />
