@@ -6,6 +6,7 @@ import { lovable } from '@/integrations/lovable/index';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { signIn, resetPassword, user } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -15,11 +16,13 @@ const Login: React.FC = () => {
   const [showRecoveryModal, setShowRecoveryModal] = useState(false);
   const [recoveryEmail, setRecoveryEmail] = useState('');
   const [recoverySuccess, setRecoverySuccess] = useState(false);
+  const tokenSearch = location.search || '';
+  const homePath = `/${tokenSearch}`;
 
   // Redirect if already logged in
   React.useEffect(() => {
-    if (user) navigate('/', { replace: true });
-  }, [user, navigate]);
+    if (user) navigate(homePath, { replace: true });
+  }, [user, homePath, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

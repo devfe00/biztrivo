@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Check, Crown, Zap, BarChart3, Store, GraduationCap, Calculator, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
 

@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { signUp, user } = useAuth();
   const [formData, setFormData] = useState({ storeName: '', email: '', password: '', confirmPassword: '' });
   const [showPassword, setShowPassword] = useState(false);
@@ -15,10 +16,12 @@ const Register: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const paymentRef = useRef<HTMLDivElement | null>(null);
+  const tokenSearch = location.search || '';
+  const homePath = `/${tokenSearch}`;
 
   useEffect(() => {
-    if (user) navigate('/', { replace: true });
-  }, [user, navigate]);
+    if (user) navigate(homePath, { replace: true });
+  }, [user, homePath, navigate]);
 
   useEffect(() => {
     if (success) {
