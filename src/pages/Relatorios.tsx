@@ -1,30 +1,10 @@
 import { useMemo, useState } from 'react';
 import { useStore } from '@/contexts/StoreContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { 
-  PieChart, 
-  Pie, 
-  Cell, 
-  ResponsiveContainer, 
-  Tooltip,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Legend
-} from 'recharts';
-import { 
-  AlertTriangle, 
-  TrendingUp, 
-  Wallet, 
-  Download, 
-  Lock,
-  TrendingDown,
-  ArrowUpRight,
-  ArrowDownRight
-} from 'lucide-react';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
+import { AlertTriangle, TrendingUp, Wallet, Download, Lock, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 
 const CATEGORY_COLORS: Record<string, string> = {
   'Reposição': 'hsl(217, 91%, 60%)',
@@ -41,12 +21,12 @@ const periods = [
 ] as const;
 
 const Relatorios = () => {
-  const { config, updateConfig } = useStore();
+  const { config } = useStore();
+  const { isPro } = useAuth();
   const [period, setPeriod] = useState<'today' | '7d' | '30d'>('30d');
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const now = new Date();
-  const isPro = config.userPlan === 'pro';
 
   const handlePeriodChange = (newPeriod: 'today' | '7d' | '30d') => {
     if (!isPro && newPeriod !== 'today') {
@@ -59,292 +39,120 @@ const Relatorios = () => {
   const filteredTransactions = useMemo(() => {
     return config.transactions.filter(t => {
       const d = new Date(t.date);
-      if (period === 'today') {
-        return d.toISOString().split('T')[0] === now.toISOString().split('T')[0];
-      }
-      if (period === '7d') {
-        const diff = (now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24);
-        return diff <= 7;
-      }
-      const diff = (now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24);
-      return diff <= 30;
+      if (period === 'today') return d.toISOString().split('T')[0] === now.toISOString().split('T')[0];
+      if (period === '7d') return (now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24) <= 7;
+      return (now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24) <= 30;
     });
   }, [config.transactions, period, now]);
 
-  // Cálculo do resumo de performance (comparação mês atual vs mês anterior)
   const performanceSummary = useMemo(() => {
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
-    
-    const currentMonthTransactions = config.transactions.filter(t => {
-      const d = new Date(t.date);
-      return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-    });
-
+    const currentMonthTx = config.transactions.filter(t => { const d = new Date(t.date); return d.getMonth() === currentMonth && d.getFullYear() === currentYear; });
     const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
     const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
-    
-    const lastMonthTransactions = config.transactions.filter(t => {
-      const d = new Date(t.date);
-      return d.getMonth() === lastMonth && d.getFullYear() === lastMonthYear;
-    });
-
-    const currentRevenue = currentMonthTransactions
-      .filter(t => t.type === 'entrada')
-      .reduce((s, t) => s + t.value, 0);
-    
-    const lastRevenue = lastMonthTransactions
-      .filter(t => t.type === 'entrada')
-      .reduce((s, t) => s + t.value, 0);
-
-    const percentChange = lastRevenue > 0 
-      ? ((currentRevenue - lastRevenue) / lastRevenue) * 100 
-      : 0;
-
-    return {
-      currentRevenue,
-      lastRevenue,
-      percentChange,
-      isPositive: percentChange >= 0
-    };
+    const lastMonthTx = config.transactions.filter(t => { const d = new Date(t.date); return d.getMonth() === lastMonth && d.getFullYear() === lastMonthYear; });
+    const currentRevenue = currentMonthTx.filter(t => t.type === 'entrada').reduce((s, t) => s + t.value, 0);
+    const lastRevenue = lastMonthTx.filter(t => t.type === 'entrada').reduce((s, t) => s + t.value, 0);
+    const percentChange = lastRevenue > 0 ? ((currentRevenue - lastRevenue) / lastRevenue) * 100 : 0;
+    return { currentRevenue, lastRevenue, percentChange, isPositive: percentChange >= 0 };
   }, [config.transactions, now]);
 
-  // Dados para o gráfico de barras (últimos 3 meses)
   const last3MonthsData = useMemo(() => {
     const months = [];
     for (let i = 2; i >= 0; i--) {
-      const targetMonth = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const monthName = targetMonth.toLocaleDateString('pt-BR', { month: 'short' });
-      
-      const monthTransactions = config.transactions.filter(t => {
-        const d = new Date(t.date);
-        return d.getMonth() === targetMonth.getMonth() && 
-               d.getFullYear() === targetMonth.getFullYear();
-      });
-
-      const entradas = monthTransactions
-        .filter(t => t.type === 'entrada')
-        .reduce((s, t) => s + t.value, 0);
-      
-      const saidas = monthTransactions
-        .filter(t => t.type === 'saida')
-        .reduce((s, t) => s + t.value, 0);
-
+      const target = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const name = target.toLocaleDateString('pt-BR', { month: 'short' });
+      const txs = config.transactions.filter(t => { const d = new Date(t.date); return d.getMonth() === target.getMonth() && d.getFullYear() === target.getFullYear(); });
       months.push({
-        name: monthName.charAt(0).toUpperCase() + monthName.slice(1),
-        Entradas: entradas,
-        'Saídas': saidas,
+        name: name.charAt(0).toUpperCase() + name.slice(1),
+        Entradas: txs.filter(t => t.type === 'entrada').reduce((s, t) => s + t.value, 0),
+        'Saídas': txs.filter(t => t.type === 'saida').reduce((s, t) => s + t.value, 0),
       });
     }
     return months;
   }, [config.transactions, now]);
 
   const entradas = filteredTransactions.filter(t => t.type === 'entrada').reduce((s, t) => s + t.value, 0);
-  const saidasBusiness = filteredTransactions
-    .filter(t => t.type === 'saida' && ['Reposição', 'Embalagem', 'Frete'].includes(t.category))
-    .reduce((s, t) => s + t.value, 0);
+  const saidasBusiness = filteredTransactions.filter(t => t.type === 'saida' && ['Reposição', 'Embalagem', 'Frete'].includes(t.category)).reduce((s, t) => s + t.value, 0);
   const personalTotal = filteredTransactions.filter(t => t.isPersonal).reduce((s, t) => s + t.value, 0);
-
   const margem = entradas > 0 ? ((entradas - saidasBusiness) / entradas) * 100 : 0;
   const personalPercent = entradas > 0 ? (personalTotal / entradas) * 100 : 0;
 
-  // Pie chart data - only expenses by category
   const categoryData = useMemo(() => {
     const map: Record<string, number> = {};
-    filteredTransactions
-      .filter(t => t.type === 'saida')
-      .forEach(t => {
-        map[t.category] = (map[t.category] || 0) + t.value;
-      });
-    return Object.entries(map).map(([name, value]) => ({
-      name,
-      value,
-      color: CATEGORY_COLORS[name] || CATEGORY_COLORS['Outros'],
-    }));
+    filteredTransactions.filter(t => t.type === 'saida').forEach(t => { map[t.category] = (map[t.category] || 0) + t.value; });
+    return Object.entries(map).map(([name, value]) => ({ name, value, color: CATEGORY_COLORS[name] || CATEGORY_COLORS['Outros'] }));
   }, [filteredTransactions]);
 
   const totalSaidas = categoryData.reduce((s, d) => s + d.value, 0);
+  const formatCurrency = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-  const formatCurrency = (v: number) =>
-    v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-
-  // Função para exportar CSV
   const exportToCSV = () => {
-    if (filteredTransactions.length === 0) {
-      alert('Não há transações para exportar neste período.');
-      return;
-    }
-
-    const headers = ['Data', 'Tipo', 'Categoria', 'Descrição', 'Valor', 'Pessoal'];
-    const rows = filteredTransactions.map(t => [
-      new Date(t.date).toLocaleDateString('pt-BR'),
-      t.type === 'entrada' ? 'Entrada' : 'Saída',
-      t.category,
-      t.description,
-      t.value.toFixed(2).replace('.', ','),
-      t.isPersonal ? 'Sim' : 'Não'
-    ]);
-
-    const csvContent = [
-      headers.join(';'),
-      ...rows.map(row => row.join(';'))
-    ].join('\n');
-
-    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    if (filteredTransactions.length === 0) { alert('Sem transações.'); return; }
+    const rows = filteredTransactions.map(t => [new Date(t.date).toLocaleDateString('pt-BR'), t.type === 'entrada' ? 'Entrada' : 'Saída', t.category, t.description, t.value.toFixed(2).replace('.', ','), t.isPersonal ? 'Sim' : 'Não']);
+    const csv = ['Data;Tipo;Categoria;Descrição;Valor;Pessoal', ...rows.map(r => r.join(';'))].join('\n');
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    
-    link.setAttribute('href', url);
-    link.setAttribute('download', `relatorio_${period}_${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = 'hidden';
-    
-    document.body.appendChild(link);
+    link.href = URL.createObjectURL(blob);
+    link.download = `relatorio_${period}_${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
-    document.body.removeChild(link);
   };
 
-  // Função para exportar PDF
   const exportToPDF = () => {
-    if (filteredTransactions.length === 0) {
-      alert('Não há transações para exportar neste período.');
-      return;
-    }
-
-    const periodLabel = period === 'today' ? 'Hoje' : period === '7d' ? 'Últimos 7 dias' : 'Últimos 30 dias';
-    const dateStr = new Date().toLocaleDateString('pt-BR');
-
-    const totalEntradas = filteredTransactions.filter(t => t.type === 'entrada').reduce((s, t) => s + t.value, 0);
-    const totalSaidasAll = filteredTransactions.filter(t => t.type === 'saida').reduce((s, t) => s + t.value, 0);
-    const saldo = totalEntradas - totalSaidasAll;
-
-    let tableRows = '';
+    if (filteredTransactions.length === 0) { alert('Sem transações.'); return; }
+    const periodLabel = period === 'today' ? 'Hoje' : period === '7d' ? '7 dias' : '30 dias';
+    const totalE = filteredTransactions.filter(t => t.type === 'entrada').reduce((s, t) => s + t.value, 0);
+    const totalS = filteredTransactions.filter(t => t.type === 'saida').reduce((s, t) => s + t.value, 0);
+    let rows = '';
     filteredTransactions.forEach(t => {
-      const tipo = t.type === 'entrada' ? 'Entrada' : 'Saída';
       const color = t.type === 'entrada' ? '#22c55e' : t.isPersonal ? '#f59e0b' : '#ef4444';
-      tableRows += `<tr>
-        <td style="padding:8px;border-bottom:1px solid #e5e7eb;">${new Date(t.date).toLocaleDateString('pt-BR')}</td>
-        <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:${color};font-weight:600;">${tipo}</td>
-        <td style="padding:8px;border-bottom:1px solid #e5e7eb;">${t.category}${t.isPersonal ? ' (Pessoal)' : ''}</td>
-        <td style="padding:8px;border-bottom:1px solid #e5e7eb;">${t.description}</td>
-        <td style="padding:8px;border-bottom:1px solid #e5e7eb;text-align:right;font-weight:600;color:${color};">${formatCurrency(t.value)}</td>
-      </tr>`;
+      rows += `<tr><td style="padding:8px;border-bottom:1px solid #e5e7eb;">${new Date(t.date).toLocaleDateString('pt-BR')}</td><td style="padding:8px;border-bottom:1px solid #e5e7eb;color:${color};font-weight:600;">${t.type === 'entrada' ? 'Entrada' : 'Saída'}</td><td style="padding:8px;border-bottom:1px solid #e5e7eb;">${t.category}</td><td style="padding:8px;border-bottom:1px solid #e5e7eb;">${t.description}</td><td style="padding:8px;border-bottom:1px solid #e5e7eb;text-align:right;color:${color};">${formatCurrency(t.value)}</td></tr>`;
     });
-
-    const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
-      <title>Relatório Biztrivo</title>
-      <style>
-        body{font-family:Inter,system-ui,sans-serif;margin:0;padding:40px;color:#1a1a2e;}
-        h1{font-family:'Space Grotesk',sans-serif;margin:0;}
-        .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;border-bottom:3px solid #3b82f6;padding-bottom:20px;}
-        .summary{display:flex;gap:20px;margin-bottom:30px;}
-        .card{flex:1;padding:20px;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;}
-        .card h3{margin:0 0 8px;font-size:14px;color:#64748b;}
-        .card p{margin:0;font-size:24px;font-weight:700;}
-        table{width:100%;border-collapse:collapse;margin-top:20px;}
-        th{text-align:left;padding:10px 8px;border-bottom:2px solid #3b82f6;color:#64748b;font-size:13px;}
-        td{font-size:13px;}
-        .footer{margin-top:40px;text-align:center;color:#94a3b8;font-size:12px;}
-        @media print{body{padding:20px;}}
-      </style>
-    </head><body>
-      <div class="header">
-        <div><h1>📊 Relatório Financeiro</h1><p style="color:#64748b;margin:4px 0 0;">Biztrivo — ${periodLabel} — Gerado em ${dateStr}</p></div>
-      </div>
-      <div class="summary">
-        <div class="card"><h3>Entradas</h3><p style="color:#22c55e;">${formatCurrency(totalEntradas)}</p></div>
-        <div class="card"><h3>Saídas</h3><p style="color:#ef4444;">${formatCurrency(totalSaidasAll)}</p></div>
-        <div class="card"><h3>Saldo</h3><p style="color:${saldo >= 0 ? '#22c55e' : '#ef4444'};">${formatCurrency(saldo)}</p></div>
-        <div class="card"><h3>Margem de Lucro</h3><p style="color:#3b82f6;">${margem.toFixed(1)}%</p></div>
-      </div>
-      ${personalTotal > 0 ? `<div style="padding:16px;background:#fef3c7;border:1px solid #f59e0b;border-radius:12px;margin-bottom:20px;">
-        <strong>⚠️ Monitor de Sangria:</strong> Você retirou ${formatCurrency(personalTotal)} para uso pessoal neste período (${personalPercent.toFixed(0)}% das entradas).
-      </div>` : ''}
-      <table><thead><tr>
-        <th>Data</th><th>Tipo</th><th>Categoria</th><th>Descrição</th><th style="text-align:right;">Valor</th>
-      </tr></thead><tbody>${tableRows}</tbody></table>
-      <div class="footer"><p>Relatório gerado automaticamente pelo Biztrivo</p></div>
-    </body></html>`;
-
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      printWindow.document.write(html);
-      printWindow.document.close();
-      printWindow.onload = () => {
-        printWindow.print();
-      };
-    }
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Relatório</title><style>body{font-family:system-ui;padding:40px;color:#1a1a2e;}table{width:100%;border-collapse:collapse;}th{text-align:left;padding:10px 8px;border-bottom:2px solid #3b82f6;color:#64748b;font-size:13px;}.footer{margin-top:40px;text-align:center;color:#94a3b8;font-size:12px;}</style></head><body><h1>📊 Relatório — ${periodLabel}</h1><p>Entradas: ${formatCurrency(totalE)} | Saídas: ${formatCurrency(totalS)} | Saldo: ${formatCurrency(totalE - totalS)} | Margem: ${margem.toFixed(1)}%</p><table><thead><tr><th>Data</th><th>Tipo</th><th>Categoria</th><th>Descrição</th><th style="text-align:right;">Valor</th></tr></thead><tbody>${rows}</tbody></table><div class="footer">Biztrivo</div></body></html>`;
+    const w = window.open('', '_blank');
+    if (w) { w.document.write(html); w.document.close(); w.onload = () => w.print(); }
   };
 
   return (
     <div className="space-y-8">
-      {/* Header com botão de exportação */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-3xl font-bold font-heading">Relatórios</h1>
           <p className="text-muted-foreground mt-1">Análise financeira do seu negócio</p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
-          <button
-            onClick={exportToPDF}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg gradient-primary text-primary-foreground hover:opacity-90 transition-all font-medium shadow-glow"
-          >
-            <Download className="w-4 h-4" />
-            Exportar PDF
+          <button onClick={exportToPDF} className="flex items-center gap-2 px-4 py-2 rounded-lg gradient-primary text-primary-foreground hover:opacity-90 transition-all font-medium shadow-glow">
+            <Download className="w-4 h-4" /> PDF
           </button>
-          <button
-            onClick={exportToCSV}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-all font-medium shadow-sm"
-          >
-            <Download className="w-4 h-4" />
-            Exportar CSV
+          <button onClick={exportToCSV} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-all font-medium shadow-sm">
+            <Download className="w-4 h-4" /> CSV
           </button>
           <div className="flex gap-1 bg-muted rounded-lg p-1">
             {periods.map(p => (
-              <button
-                key={p.value}
-                onClick={() => handlePeriodChange(p.value)}
+              <button key={p.value} onClick={() => handlePeriodChange(p.value)}
                 disabled={!isPro && p.value !== 'today'}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-all relative ${
-                  period === p.value
-                    ? 'gradient-primary text-primary-foreground shadow-glow'
-                    : 'text-muted-foreground hover:text-foreground'
-                } ${!isPro && p.value !== 'today' ? 'opacity-50 cursor-not-allowed' : ''}`}
-              >
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-all relative ${period === p.value ? 'gradient-primary text-primary-foreground shadow-glow' : 'text-muted-foreground hover:text-foreground'} ${!isPro && p.value !== 'today' ? 'opacity-50 cursor-not-allowed' : ''}`}>
                 {p.label}
-                {!isPro && p.value !== 'today' && (
-                  <Lock className="w-3 h-3 absolute -top-1 -right-1 text-warning" />
-                )}
+                {!isPro && p.value !== 'today' && <Lock className="w-3 h-3 absolute -top-1 -right-1 text-warning" />}
               </button>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Resumo de Performance */}
       {performanceSummary.lastRevenue > 0 && (
         <Card className="p-4 border-none shadow-md bg-gradient-to-r from-primary/5 to-secondary/5">
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-              performanceSummary.isPositive ? 'bg-secondary/20' : 'bg-destructive/20'
-            }`}>
-              {performanceSummary.isPositive ? (
-                <ArrowUpRight className="w-5 h-5 text-secondary" />
-              ) : (
-                <ArrowDownRight className="w-5 h-5 text-destructive" />
-              )}
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${performanceSummary.isPositive ? 'bg-secondary/20' : 'bg-destructive/20'}`}>
+              {performanceSummary.isPositive ? <ArrowUpRight className="w-5 h-5 text-secondary" /> : <ArrowDownRight className="w-5 h-5 text-destructive" />}
             </div>
             <div className="flex-1">
               <p className="text-sm font-medium text-muted-foreground">Performance do Mês</p>
               <p className="text-lg font-semibold font-heading">
-                {performanceSummary.isPositive ? (
-                  <span className="text-secondary">
-                    Faturamento {Math.abs(performanceSummary.percentChange).toFixed(1)}% maior que o mês passado
-                  </span>
-                ) : (
-                  <span className="text-destructive">
-                    Faturamento {Math.abs(performanceSummary.percentChange).toFixed(1)}% menor que o mês passado
-                  </span>
-                )}
+                <span className={performanceSummary.isPositive ? 'text-secondary' : 'text-destructive'}>
+                  Faturamento {Math.abs(performanceSummary.percentChange).toFixed(1)}% {performanceSummary.isPositive ? 'maior' : 'menor'} que o mês passado
+                </span>
               </p>
             </div>
             <div className="text-right">
@@ -355,7 +163,6 @@ const Relatorios = () => {
         </Card>
       )}
 
-      {/* Margin Card */}
       <Card className="p-6 border-none shadow-md">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shadow-glow">
@@ -367,18 +174,13 @@ const Relatorios = () => {
           </div>
         </div>
         <div className="flex items-end gap-4 mb-4">
-          <p className={`text-4xl font-bold font-heading ${margem >= 50 ? 'text-secondary' : margem >= 20 ? 'text-warning' : 'text-destructive'}`}>
-            {margem.toFixed(1)}%
-          </p>
-          <p className="text-sm text-muted-foreground pb-1">
-            {formatCurrency(entradas)} entradas — {formatCurrency(saidasBusiness)} custos operacionais
-          </p>
+          <p className={`text-4xl font-bold font-heading ${margem >= 50 ? 'text-secondary' : margem >= 20 ? 'text-warning' : 'text-destructive'}`}>{margem.toFixed(1)}%</p>
+          <p className="text-sm text-muted-foreground pb-1">{formatCurrency(entradas)} entradas — {formatCurrency(saidasBusiness)} custos</p>
         </div>
         <Progress value={Math.min(margem, 100)} className="h-3" />
       </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Pie Chart */}
         <Card className="p-6 border-none shadow-md">
           <h2 className="text-lg font-semibold font-heading mb-4">Distribuição de Gastos</h2>
           {categoryData.length === 0 ? (
@@ -388,27 +190,10 @@ const Relatorios = () => {
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie
-                      data={categoryData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={100}
-                      paddingAngle={3}
-                      dataKey="value"
-                    >
-                      {categoryData.map((entry, i) => (
-                        <Cell key={i} fill={entry.color} />
-                      ))}
+                    <Pie data={categoryData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={3} dataKey="value">
+                      {categoryData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                     </Pie>
-                    <Tooltip
-                      formatter={(value: number) => formatCurrency(value)}
-                      contentStyle={{
-                        borderRadius: '0.75rem',
-                        border: 'none',
-                        boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                      }}
-                    />
+                    <Tooltip formatter={(value: number) => formatCurrency(value)} contentStyle={{ borderRadius: '0.75rem', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -425,7 +210,6 @@ const Relatorios = () => {
           )}
         </Card>
 
-        {/* Personal Withdrawal Monitor */}
         <Card className={`p-6 border-none shadow-md ${personalPercent > 30 ? 'border-l-4 border-l-warning' : ''}`}>
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-xl bg-warning/10 flex items-center justify-center">
@@ -433,77 +217,37 @@ const Relatorios = () => {
             </div>
             <h2 className="text-lg font-semibold font-heading">Monitor de Sangria</h2>
           </div>
-          <p className="text-4xl font-bold font-heading text-warning mb-2">
-            {formatCurrency(personalTotal)}
-          </p>
-          <p className="text-sm text-muted-foreground mb-4">
-            retirado para uso pessoal neste período
-          </p>
+          <p className="text-4xl font-bold font-heading text-warning mb-2">{formatCurrency(personalTotal)}</p>
+          <p className="text-sm text-muted-foreground mb-4">retirado para uso pessoal</p>
           {personalPercent > 30 && (
             <div className="flex items-start gap-3 p-4 rounded-xl bg-warning/10 border border-warning/20">
               <AlertTriangle className="w-5 h-5 text-warning shrink-0 mt-0.5" />
-              <p className="text-sm font-medium text-warning">
-                Cuidado, você já tirou {formatCurrency(personalTotal)} do lucro da loja este mês. Suas retiradas pessoais representam {personalPercent.toFixed(0)}% das entradas.
-              </p>
+              <p className="text-sm font-medium text-warning">Cuidado, suas retiradas representam {personalPercent.toFixed(0)}% das entradas.</p>
             </div>
           )}
           {personalPercent <= 30 && personalTotal > 0 && (
-            <p className="text-sm text-muted-foreground">
-              ✅ Suas retiradas representam {personalPercent.toFixed(0)}% das entradas — dentro do saudável.
-            </p>
+            <p className="text-sm text-muted-foreground">✅ Retiradas em {personalPercent.toFixed(0)}% — saudável.</p>
           )}
         </Card>
       </div>
 
-      {/* Gráfico de Barras Comparativo - Últimos 3 Meses */}
       <Card className="p-6 border-none shadow-md">
-        <h2 className="text-lg font-semibold font-heading mb-4">Entradas vs Saídas - Últimos 3 Meses</h2>
+        <h2 className="text-lg font-semibold font-heading mb-4">Entradas vs Saídas - 3 Meses</h2>
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={last3MonthsData}>
               <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-              <XAxis 
-                dataKey="name" 
-                tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                tickLine={false}
-              />
-              <YAxis 
-                tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                tickLine={false}
-                tickFormatter={(value) => `R$ ${(value / 1000).toFixed(0)}k`}
-              />
-              <Tooltip
-                formatter={(value: number) => formatCurrency(value)}
-                contentStyle={{
-                  borderRadius: '0.75rem',
-                  border: 'none',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                  backgroundColor: 'hsl(var(--background))',
-                }}
-                labelStyle={{ color: 'hsl(var(--foreground))' }}
-              />
-              <Legend 
-                wrapperStyle={{ paddingTop: '20px' }}
-                iconType="circle"
-              />
-              <Bar 
-                dataKey="Entradas" 
-                fill="hsl(142, 76%, 36%)" 
-                radius={[8, 8, 0, 0]}
-                maxBarSize={60}
-              />
-              <Bar 
-                dataKey="Saídas" 
-                fill="hsl(0, 84%, 60%)" 
-                radius={[8, 8, 0, 0]}
-                maxBarSize={60}
-              />
+              <XAxis dataKey="name" tick={{ fill: 'hsl(var(--muted-foreground))' }} tickLine={false} />
+              <YAxis tick={{ fill: 'hsl(var(--muted-foreground))' }} tickLine={false} tickFormatter={(v) => `R$ ${(v / 1000).toFixed(0)}k`} />
+              <Tooltip formatter={(value: number) => formatCurrency(value)} contentStyle={{ borderRadius: '0.75rem', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', backgroundColor: 'hsl(var(--background))' }} />
+              <Legend wrapperStyle={{ paddingTop: '20px' }} iconType="circle" />
+              <Bar dataKey="Entradas" fill="hsl(142, 76%, 36%)" radius={[8, 8, 0, 0]} maxBarSize={60} />
+              <Bar dataKey="Saídas" fill="hsl(0, 84%, 60%)" radius={[8, 8, 0, 0]} maxBarSize={60} />
             </BarChart>
           </ResponsiveContainer>
         </div>
       </Card>
 
-      {/* Modal de Upgrade */}
       {showUpgradeModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <Card className="max-w-md w-full p-6 border-none shadow-2xl">
@@ -516,39 +260,10 @@ const Relatorios = () => {
                 <p className="text-sm text-muted-foreground">Desbloqueie análises avançadas</p>
               </div>
             </div>
-            
-            <div className="space-y-3 mb-6">
-              <p className="text-muted-foreground">
-                Para visualizar relatórios de 7 e 30 dias, você precisa do plano Pro.
-              </p>
-              <div className="p-4 rounded-xl bg-primary/5 border border-primary/20">
-                <p className="text-sm font-semibold mb-2">Com o plano Pro você tem:</p>
-                <ul className="text-sm space-y-1 text-muted-foreground">
-                  <li>✓ Relatórios de até 30 dias</li>
-                  <li>✓ Exportação ilimitada</li>
-                  <li>✓ Gráficos comparativos avançados</li>
-                  <li>✓ Análise de tendências</li>
-                </ul>
-              </div>
-            </div>
-
+            <p className="text-muted-foreground mb-6">Relatórios de 7 e 30 dias são exclusivos do plano Pro.</p>
             <div className="flex gap-3">
-              <button
-                onClick={() => setShowUpgradeModal(false)}
-                className="flex-1 px-4 py-2 rounded-lg border border-border hover:bg-muted transition-all font-medium"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={() => {
-                  updateConfig({ userPlan: 'pro' });
-                  setShowUpgradeModal(false);
-                  setPeriod('30d');
-                }}
-                className="flex-1 px-4 py-2 rounded-lg gradient-primary text-primary-foreground hover:opacity-90 transition-all font-medium shadow-glow"
-              >
-                Fazer Upgrade
-              </button>
+              <button onClick={() => setShowUpgradeModal(false)} className="flex-1 px-4 py-2 rounded-lg border border-border hover:bg-muted transition-all font-medium">Cancelar</button>
+              <button onClick={() => { setShowUpgradeModal(false); window.location.href = '/configuracoes'; }} className="flex-1 px-4 py-2 rounded-lg gradient-primary text-primary-foreground hover:opacity-90 transition-all font-medium shadow-glow">Fazer Upgrade</button>
             </div>
           </Card>
         </div>

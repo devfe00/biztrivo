@@ -1,10 +1,9 @@
 import { useState } from 'react';
-import { useStore } from '@/contexts/StoreContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { BookOpen, Download, Lock, CheckCircle, Sparkles } from 'lucide-react';
-
-const MERCADO_PAGO_LINK = 'https://www.mercadopago.com.br/subscriptions';
+import { useNavigate } from 'react-router-dom';
 
 const resources = [
   { title: 'Como Precificar seus Produtos', desc: 'Checklist completo para não errar no preço', free: true },
@@ -23,11 +22,12 @@ const proAdvantages = [
 ];
 
 const Academy = () => {
-  const { config } = useStore();
+  const { isPro } = useAuth();
+  const navigate = useNavigate();
   const [showProModal, setShowProModal] = useState(false);
 
   const handleProClick = () => {
-    if (config.userPlan === 'pro') return;
+    if (isPro) return;
     setShowProModal(true);
   };
 
@@ -52,16 +52,12 @@ const Academy = () => {
             </div>
             {r.free ? (
               <button className="px-4 py-2 rounded-lg bg-secondary/10 text-secondary text-sm font-medium flex items-center gap-2 hover:bg-secondary/20 transition-colors">
-                <Download className="w-4 h-4" />
-                Baixar
+                <Download className="w-4 h-4" /> Baixar
               </button>
             ) : (
-              <button
-                onClick={handleProClick}
-                className="px-4 py-2 rounded-lg bg-muted text-muted-foreground text-xs font-medium flex items-center gap-2 hover:bg-accent transition-colors cursor-pointer"
-              >
-                <Lock className="w-3 h-3" />
-                Pro
+              <button onClick={handleProClick}
+                className="px-4 py-2 rounded-lg bg-muted text-muted-foreground text-xs font-medium flex items-center gap-2 hover:bg-accent transition-colors cursor-pointer">
+                <Lock className="w-3 h-3" /> Pro
               </button>
             )}
           </Card>
@@ -70,30 +66,20 @@ const Academy = () => {
 
       <Card className="p-6 border-none shadow-md gradient-primary text-primary-foreground">
         <h2 className="text-xl font-bold font-heading">Desbloqueie todo o conteúdo</h2>
-        <p className="text-sm mt-2 opacity-90">
-          Por apenas R$ 19,90/mês, tenha acesso a todos os materiais, checklists e planilhas para profissionalizar seu negócio.
-        </p>
-        <a
-          href={MERCADO_PAGO_LINK}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-block mt-4 px-6 py-3 rounded-lg bg-card text-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
-        >
+        <p className="text-sm mt-2 opacity-90">Por apenas R$ 19,90/mês, tenha acesso a todos os materiais para profissionalizar seu negócio.</p>
+        <button onClick={() => navigate('/configuracoes')}
+          className="inline-block mt-4 px-6 py-3 rounded-lg bg-card text-foreground font-semibold text-sm hover:opacity-90 transition-opacity">
           Fazer Upgrade — R$ 19,90/mês
-        </a>
+        </button>
       </Card>
 
-      {/* Pro Modal */}
       <Dialog open={showProModal} onOpenChange={setShowProModal}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 font-heading">
-              <Sparkles className="w-5 h-5 text-warning" />
-              Conteúdo Exclusivo Pro
+              <Sparkles className="w-5 h-5 text-warning" /> Conteúdo Exclusivo Pro
             </DialogTitle>
-            <DialogDescription>
-              Desbloqueie todo o potencial do Biztrivo Academy
-            </DialogDescription>
+            <DialogDescription>Desbloqueie todo o potencial do Biztrivo Academy</DialogDescription>
           </DialogHeader>
           <div className="space-y-3 py-4">
             {proAdvantages.map((adv, i) => (
@@ -104,17 +90,11 @@ const Academy = () => {
             ))}
           </div>
           <div className="pt-2">
-            <a
-              href={MERCADO_PAGO_LINK}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center w-full py-3 rounded-lg gradient-primary text-primary-foreground font-semibold text-sm shadow-glow hover:opacity-90 transition-opacity"
-            >
+            <button onClick={() => { setShowProModal(false); navigate('/configuracoes'); }}
+              className="flex items-center justify-center w-full py-3 rounded-lg gradient-primary text-primary-foreground font-semibold text-sm shadow-glow hover:opacity-90 transition-opacity">
               Assinar por R$ 19,90/mês
-            </a>
-            <p className="text-xs text-center text-muted-foreground mt-3">
-              Pagamento seguro via Mercado Pago
-            </p>
+            </button>
+            <p className="text-xs text-center text-muted-foreground mt-3">Pagamento seguro via Stripe</p>
           </div>
         </DialogContent>
       </Dialog>

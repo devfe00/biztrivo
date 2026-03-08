@@ -1,5 +1,5 @@
 import { useStore, Product } from '@/contexts/StoreContext';
-import { useNotifications } from '@/hooks/useNotifications'; 
+import { useNotifications } from '@/hooks/useNotifications';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -38,39 +38,28 @@ const Vitrine = () => {
   const [description, setDescription] = useState('');
   const [stock, setStock] = useState('');
 
-useEffect(() => {
-  config.products.forEach(product => {
-    const hasShown = sessionStorage.getItem(`stock-alert-${product.id}`);
-    if (!hasShown) {
-      checkStockAlert(product.name, product.stock);
-      if (product.stock <= 3) {
-        sessionStorage.setItem(`stock-alert-${product.id}`, 'true');
+  useEffect(() => {
+    config.products.forEach(product => {
+      const hasShown = sessionStorage.getItem(`stock-alert-${product.id}`);
+      if (!hasShown) {
+        checkStockAlert(product.name, product.stock);
+        if (product.stock <= 3) sessionStorage.setItem(`stock-alert-${product.id}`, 'true');
       }
-    }
-  });
-}, [config.products, checkStockAlert]);
+    });
+  }, [config.products, checkStockAlert]);
 
-  const handleAddProduct = () => {
+  const handleAddProduct = async () => {
     if (!name.trim() || !discountPrice) return;
-    const product: Product = {
-      id: crypto.randomUUID(),
+    await addProduct({
       name: name.trim(),
       photo,
       originalPrice: parseFloat(originalPrice.replace(',', '.')) || 0,
       discountPrice: parseFloat(discountPrice.replace(',', '.')) || 0,
       description: description.trim(),
       stock: parseInt(stock) || 0,
-    };
-    addProduct(product);
+    });
 
-checkStockAlert(product.name, product.stock);
-
-setName('');
-    setPhoto('');
-    setOriginalPrice('');
-    setDiscountPrice('');
-    setDescription('');
-    setStock('');
+    setName(''); setPhoto(''); setOriginalPrice(''); setDiscountPrice(''); setDescription(''); setStock('');
     setShowForm(false);
     toast.success('Produto adicionado!');
   };
@@ -105,7 +94,6 @@ setName('');
         <p className="text-muted-foreground mt-1">Configure seu catálogo profissional</p>
       </div>
 
-      {/* Store Config */}
       <Card className="p-6 border-none shadow-md space-y-5">
         <h2 className="font-semibold font-heading text-lg">Configurações da Loja</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -137,7 +125,6 @@ setName('');
         </div>
       </Card>
 
-      {/* Public URL + QR Code */}
       <Card className="p-5 border-none shadow-md space-y-4">
         <Label className="text-sm text-muted-foreground">Link da sua vitrine</Label>
         <div className="flex items-center gap-2">
@@ -158,20 +145,17 @@ setName('');
             <p className="text-sm font-medium">QR Code da sua loja</p>
             <p className="text-xs text-muted-foreground">Imprima e cole no seu ponto de venda ou cartão de visita.</p>
             <button onClick={handleDownloadQR} className="px-4 py-2 rounded-lg bg-muted text-sm font-medium flex items-center gap-2 hover:bg-accent transition-colors">
-              <Download className="w-4 h-4" />
-              Baixar PNG
+              <Download className="w-4 h-4" /> Baixar PNG
             </button>
           </div>
         </div>
       </Card>
 
-      {/* Products */}
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold font-heading">Produtos ({config.products.length})</h2>
           <button onClick={() => setShowForm(!showForm)} className="px-4 py-2 rounded-lg gradient-primary text-primary-foreground text-sm font-medium flex items-center gap-2 shadow-glow hover:opacity-90 transition-opacity">
-            <Plus className="w-4 h-4" />
-            Adicionar
+            <Plus className="w-4 h-4" /> Adicionar
           </button>
         </div>
 
@@ -209,12 +193,8 @@ setName('');
               <Textarea value={description} onChange={e => setDescription(e.target.value)} className="mt-1" placeholder="Uma breve descrição do produto..." rows={2} />
             </div>
             <div className="flex gap-3">
-              <button onClick={handleAddProduct} className="px-6 py-2.5 rounded-lg gradient-primary text-primary-foreground font-medium text-sm shadow-glow hover:opacity-90 transition-opacity">
-                Salvar Produto
-              </button>
-              <button onClick={() => setShowForm(false)} className="px-6 py-2.5 rounded-lg bg-muted text-muted-foreground font-medium text-sm hover:bg-accent transition-colors">
-                Cancelar
-              </button>
+              <button onClick={handleAddProduct} className="px-6 py-2.5 rounded-lg gradient-primary text-primary-foreground font-medium text-sm shadow-glow hover:opacity-90 transition-opacity">Salvar Produto</button>
+              <button onClick={() => setShowForm(false)} className="px-6 py-2.5 rounded-lg bg-muted text-muted-foreground font-medium text-sm hover:bg-accent transition-colors">Cancelar</button>
             </div>
           </Card>
         )}
@@ -234,26 +214,19 @@ setName('');
               <Card key={p.id} className="border-none shadow-md overflow-hidden relative">
                 {p.stock === 0 && (
                   <div className="absolute top-2 right-2 z-10 px-2 py-1 rounded-md bg-destructive text-destructive-foreground text-xs font-semibold flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" />
-                    Esgotado
+                    <AlertCircle className="w-3 h-3" /> Esgotado
                   </div>
                 )}
                 {p.photo ? (
-                  <div className="aspect-square bg-muted">
-                    <img src={p.photo} alt={p.name} className="w-full h-full object-cover" />
-                  </div>
+                  <div className="aspect-square bg-muted"><img src={p.photo} alt={p.name} className="w-full h-full object-cover" /></div>
                 ) : (
-                  <div className="aspect-square bg-muted flex items-center justify-center">
-                    <ImageIcon className="w-12 h-12 text-muted-foreground/50" />
-                  </div>
+                  <div className="aspect-square bg-muted flex items-center justify-center"><ImageIcon className="w-12 h-12 text-muted-foreground/50" /></div>
                 )}
                 <div className="p-4">
                   <h3 className="font-semibold text-sm">{p.name}</h3>
                   {p.description && <p className="text-xs text-muted-foreground mt-1">{p.description}</p>}
                   <div className="flex items-center gap-2 mt-2">
-                    {p.originalPrice > p.discountPrice && (
-                      <span className="text-xs text-muted-foreground line-through">R$ {p.originalPrice.toFixed(2).replace('.', ',')}</span>
-                    )}
+                    {p.originalPrice > p.discountPrice && <span className="text-xs text-muted-foreground line-through">R$ {p.originalPrice.toFixed(2).replace('.', ',')}</span>}
                     <span className="text-sm font-bold text-secondary">R$ {p.discountPrice.toFixed(2).replace('.', ',')}</span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">Estoque: {p.stock ?? 0}</p>

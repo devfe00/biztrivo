@@ -4,9 +4,8 @@ import { LayoutDashboard, Wallet, Store, GraduationCap, BarChart3, Calculator, M
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { useStore } from '@/contexts/StoreContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Toaster } from "sonner";
-
-const MERCADO_PAGO_LINK = 'https://www.mercadopago.com.br/subscriptions';
 
 const navItems = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -24,11 +23,11 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
   const [profileOpen, setProfileOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   
-  const { config } = useStore(); 
+  const { config } = useStore();
+  const { signOut, isPro } = useAuth();
 
-  const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-  const storeName = userData.storeName || 'Minha Loja';
-  const profileImage = userData.profileImage || '';
+  const storeName = config.storeName || 'Minha Loja';
+  const profileImage = config.profileImage || '';
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -36,65 +35,49 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
         setProfileOpen(false);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (window.confirm('Tem certeza que deseja sair?')) {
-      localStorage.removeItem('isAuthenticated');
+      await signOut();
       navigate('/login');
     }
-  }; 
+  };
 
   return (
     <div className="flex min-h-screen bg-background">
       <aside className="hidden md:flex w-64 flex-col border-r border-border bg-card">
         <div className="p-6">
-  <img src="/logo.png" alt="Biztrivo" className="h-11 w-auto object-contain" />
-</div>
+          <img src="/logo.png" alt="Biztrivo" className="h-11 w-auto object-contain" />
+        </div>
         <nav className="flex-1 px-3 space-y-1">
           {navItems.map(item => {
             const active = location.pathname === item.path;
-            const isProItem = item.label === 'Calculadora';
-
             return (
-              <Link
-                key={item.path}
-                to={item.path}
+              <Link key={item.path} to={item.path}
                 className={cn(
                   "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 relative group",
-                  active
-                    ? "gradient-primary text-primary-foreground shadow-glow"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                )}
-              >
+                  active ? "gradient-primary text-primary-foreground shadow-glow" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                )}>
                 <item.icon className="w-5 h-5" />
                 <span>{item.label}</span>
-                
-                {isProItem && (
-                  <span className="ml-auto text-[10px] font-bold bg-gradient-to-r from-purple-500 to-pink-500 text-white px-2 py-0.5 rounded-full shadow-sm">
-                    PRO
-                  </span>
-                )}
               </Link>
             );
           })}
         </nav>
         
-        {config?.userPlan === 'gratuito' && (
+        {!isPro && (
           <div className="p-4 m-3 rounded-xl bg-muted/50 border border-border">
             <p className="text-xs font-semibold text-foreground">Plano Gratuito</p>
             <p className="text-xs text-muted-foreground mt-1">Desbloqueie tudo por R$ 19,90</p>
-            <a
-              href={MERCADO_PAGO_LINK}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              onClick={() => navigate('/configuracoes')}
               className="mt-3 w-full py-2 rounded-lg text-xs font-semibold gradient-primary text-primary-foreground shadow-glow block text-center transition-transform hover:scale-105"
             >
               Seja PRO
-            </a>
+            </button>
           </div>
         )}
       </aside>
@@ -112,27 +95,14 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
             <nav className="px-3 space-y-1 flex-1">
               {navItems.map(item => {
                 const active = location.pathname === item.path;
-                const isProItem = item.label === 'Calculadora';
-
                 return (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    onClick={() => setMobileOpen(false)}
+                  <Link key={item.path} to={item.path} onClick={() => setMobileOpen(false)}
                     className={cn(
                       "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all",
-                      active
-                        ? "gradient-primary text-primary-foreground shadow-glow"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                    )}
-                  >
+                      active ? "gradient-primary text-primary-foreground shadow-glow" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    )}>
                     <item.icon className="w-5 h-5" />
                     <span>{item.label}</span>
-                    {isProItem && (
-                      <span className="ml-auto text-[10px] font-bold bg-gradient-to-r from-purple-500 to-pink-500 text-white px-2 py-0.5 rounded-full">
-                        PRO
-                      </span>
-                    )}
                   </Link>
                 );
               })}
@@ -140,17 +110,10 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
 
             {/* Profile section mobile */}
             <div className="border-t border-border p-3 space-y-2">
-              <Link
-                to="/configuracoes"
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
-              >
+              <Link to="/configuracoes" onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all">
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center overflow-hidden">
-                  {profileImage ? (
-                    <img src={profileImage} alt="Perfil" className="w-full h-full object-cover" />
-                  ) : (
-                    <User className="text-white" size={16} />
-                  )}
+                  {profileImage ? <img src={profileImage} alt="Perfil" className="w-full h-full object-cover" /> : <User className="text-white" size={16} />}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-foreground truncate">{storeName}</p>
@@ -158,28 +121,23 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
                 </div>
                 <Settings size={16} className="text-muted-foreground" />
               </Link>
-              <button
-                onClick={() => { setMobileOpen(false); handleLogout(); }}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-all"
-              >
-                <LogOut size={18} />
-                <span>Sair</span>
+              <button onClick={() => { setMobileOpen(false); handleLogout(); }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-all">
+                <LogOut size={18} /><span>Sair</span>
               </button>
             </div>
 
             {/* Upgrade banner mobile */}
-            {config?.userPlan === 'gratuito' && (
+            {!isPro && (
               <div className="p-4 m-3 rounded-xl bg-muted/50 border border-border">
                 <p className="text-xs font-semibold text-foreground">Plano Gratuito</p>
                 <p className="text-xs text-muted-foreground mt-1">Desbloqueie tudo por R$ 19,90</p>
-                <a
-                  href={MERCADO_PAGO_LINK}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  onClick={() => { setMobileOpen(false); navigate('/configuracoes'); }}
                   className="mt-3 w-full py-2 rounded-lg text-xs font-semibold gradient-primary text-primary-foreground shadow-glow block text-center transition-transform hover:scale-105"
                 >
                   Seja PRO
-                </a>
+                </button>
               </div>
             )}
           </div>
@@ -189,16 +147,10 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
       <main className="flex-1 flex flex-col overflow-auto">
         <header className="hidden md:flex items-center justify-end px-8 py-4 border-b border-border bg-card">
           <div className="relative" ref={dropdownRef}>
-            <button
-              onClick={() => setProfileOpen(!profileOpen)}
-              className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-muted transition-colors"
-            >
+            <button onClick={() => setProfileOpen(!profileOpen)}
+              className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-muted transition-colors">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center overflow-hidden">
-                {profileImage ? (
-                  <img src={profileImage} alt="Perfil" className="w-full h-full object-cover" />
-                ) : (
-                  <User className="text-white" size={20} />
-                )}
+                {profileImage ? <img src={profileImage} alt="Perfil" className="w-full h-full object-cover" /> : <User className="text-white" size={20} />}
               </div>
               <div className="text-left">
                 <p className="text-sm font-semibold text-foreground">{storeName}</p>
@@ -209,21 +161,14 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
 
             {profileOpen && (
               <div className="absolute right-0 mt-2 w-56 bg-card border border-border rounded-lg shadow-lg py-2 z-50 animate-fade-in">
-                <Link
-                  to="/configuracoes"
-                  onClick={() => setProfileOpen(false)}
-                  className="flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-muted transition-colors"
-                >
-                  <Settings size={18} />
-                  <span>Configurações</span>
+                <Link to="/configuracoes" onClick={() => setProfileOpen(false)}
+                  className="flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-muted transition-colors">
+                  <Settings size={18} /><span>Configurações</span>
                 </Link>
                 <hr className="my-2 border-border" />
-                <button
-                  onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                >
-                  <LogOut size={18} />
-                  <span>Sair</span>
+                <button onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                  <LogOut size={18} /><span>Sair</span>
                 </button>
               </div>
             )}
