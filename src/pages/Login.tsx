@@ -131,7 +131,7 @@ const Login: React.FC = () => {
               onClick={async () => {
                 setError('');
                 const result = await lovable.auth.signInWithOAuth("google", {
-                  redirect_uri: window.location.origin,
+                  redirect_uri: window.location.href,
                 });
                 if (result.error) {
                   setError('Erro ao entrar com Google. Tente novamente.');

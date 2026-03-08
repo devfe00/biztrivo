@@ -95,7 +95,7 @@ const Planos = () => {
             <button
               onClick={async () => {
                 await signOut();
-                navigate('/login');
+                navigate(loginPath);
               }}
               className="w-full text-gray-500 hover:text-gray-700 text-sm py-2 transition-colors"
             >
