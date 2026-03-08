@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Check, Crown, Zap, BarChart3, Store, GraduationCap, Calculator, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -16,6 +16,10 @@ const features = [
 const Planos = () => {
   const { signOut, isPro } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const tokenSearch = location.search || '';
+  const homePath = `/${tokenSearch}`;
+  const loginPath = `/login${tokenSearch}`;
 
   const handleSubscribe = () => {
     toast.info('Pagamento será habilitado em breve!', {
@@ -25,9 +29,9 @@ const Planos = () => {
 
   useEffect(() => {
     if (isPro) {
-      navigate('/', { replace: true });
+      navigate(homePath, { replace: true });
     }
-  }, [isPro, navigate]);
+  }, [isPro, homePath, navigate]);
 
   if (isPro) {
     return (
@@ -91,7 +95,7 @@ const Planos = () => {
             <button
               onClick={async () => {
                 await signOut();
-                navigate('/login');
+                navigate(loginPath);
               }}
               className="w-full text-gray-500 hover:text-gray-700 text-sm py-2 transition-colors"
             >

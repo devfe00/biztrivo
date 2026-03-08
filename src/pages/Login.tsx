@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, AlertCircle, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { lovable } from '@/integrations/lovable/index';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { signIn, resetPassword, user } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -15,11 +16,13 @@ const Login: React.FC = () => {
   const [showRecoveryModal, setShowRecoveryModal] = useState(false);
   const [recoveryEmail, setRecoveryEmail] = useState('');
   const [recoverySuccess, setRecoverySuccess] = useState(false);
+  const tokenSearch = location.search || '';
+  const homePath = `/${tokenSearch}`;
 
   // Redirect if already logged in
   React.useEffect(() => {
-    if (user) navigate('/', { replace: true });
-  }, [user, navigate]);
+    if (user) navigate(homePath, { replace: true });
+  }, [user, homePath, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,7 +38,7 @@ const Login: React.FC = () => {
     if (error) {
       setError(error);
     } else {
-      navigate('/');
+      navigate(homePath);
     }
     setLoading(false);
   };
@@ -128,7 +131,7 @@ const Login: React.FC = () => {
               onClick={async () => {
                 setError('');
                 const result = await lovable.auth.signInWithOAuth("google", {
-                  redirect_uri: window.location.origin,
+                  redirect_uri: window.location.href,
                 });
                 if (result.error) {
                   setError('Erro ao entrar com Google. Tente novamente.');
@@ -148,7 +151,7 @@ const Login: React.FC = () => {
             <div className="mt-6 text-center">
               <p className="text-gray-600 text-sm">
                 Não tem uma conta?{' '}
-                <Link to="/register" className="text-blue-600 hover:text-blue-700 font-semibold transition-colors">Cadastre-se grátis</Link>
+                <Link to={`/register${tokenSearch}`} className="text-blue-600 hover:text-blue-700 font-semibold transition-colors">Cadastre-se grátis</Link>
               </p>
             </div>
           </div>

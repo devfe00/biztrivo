@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Eye, EyeOff, Store, Mail, Lock, AlertCircle, CheckCircle, CreditCard } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { lovable } from '@/integrations/lovable/index';
@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { signUp, user } = useAuth();
   const [formData, setFormData] = useState({ storeName: '', email: '', password: '', confirmPassword: '' });
   const [showPassword, setShowPassword] = useState(false);
@@ -15,10 +16,12 @@ const Register: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const paymentRef = useRef<HTMLDivElement | null>(null);
+  const tokenSearch = location.search || '';
+  const homePath = `/${tokenSearch}`;
 
   useEffect(() => {
-    if (user) navigate('/', { replace: true });
-  }, [user, navigate]);
+    if (user) navigate(homePath, { replace: true });
+  }, [user, homePath, navigate]);
 
   useEffect(() => {
     if (success) {
@@ -223,9 +226,9 @@ const Register: React.FC = () => {
                 />
                 <label htmlFor="terms" className="text-sm text-gray-600">
                   Eu concordo com os{' '}
-                  <Link to="/termos-de-uso" className="text-blue-600 hover:text-blue-700 font-medium">Termos de Uso</Link>
+                  <Link to={`/termos-de-uso${tokenSearch}`} className="text-blue-600 hover:text-blue-700 font-medium">Termos de Uso</Link>
                   {' '}e{' '}
-                  <Link to="/politica-privacidade" className="text-blue-600 hover:text-blue-700 font-medium">Política de Privacidade</Link>
+                  <Link to={`/politica-privacidade${tokenSearch}`} className="text-blue-600 hover:text-blue-700 font-medium">Política de Privacidade</Link>
                 </label>
               </div>
 
@@ -280,7 +283,7 @@ const Register: React.FC = () => {
                   onClick={async () => {
                     setError('');
                     const result = await lovable.auth.signInWithOAuth('google', {
-                      redirect_uri: window.location.origin,
+                      redirect_uri: window.location.href,
                     });
                     if (result.error) {
                       setError('Erro ao entrar com Google. Tente novamente.');
@@ -300,7 +303,7 @@ const Register: React.FC = () => {
                 <div className="mt-6 text-center">
                   <p className="text-gray-600 text-sm">
                     Já tem uma conta?{' '}
-                    <Link to="/login" className="text-blue-600 hover:text-blue-700 font-semibold transition-colors">Fazer login</Link>
+                    <Link to={`/login${tokenSearch}`} className="text-blue-600 hover:text-blue-700 font-semibold transition-colors">Fazer login</Link>
                   </p>
                 </div>
               </>

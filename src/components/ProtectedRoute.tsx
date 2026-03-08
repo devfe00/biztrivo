@@ -9,17 +9,20 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   const shouldGoLogin = !loading && !user;
   const shouldGoPlanos = !loading && !!user && !isPro && location.pathname !== '/planos';
+  const tokenSearch = location.search || '';
+  const loginPath = `/login${tokenSearch}`;
+  const planosPath = `/planos${tokenSearch}`;
 
   useEffect(() => {
     if (shouldGoLogin) {
-      navigate('/login', { replace: true });
+      navigate(loginPath, { replace: true });
       return;
     }
 
     if (shouldGoPlanos) {
-      navigate('/planos', { replace: true });
+      navigate(planosPath, { replace: true });
     }
-  }, [shouldGoLogin, shouldGoPlanos, navigate]);
+  }, [shouldGoLogin, shouldGoPlanos, loginPath, planosPath, navigate]);
 
   if (loading || shouldGoLogin || shouldGoPlanos) {
     return (
