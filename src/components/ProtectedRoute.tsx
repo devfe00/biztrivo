@@ -2,7 +2,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = useAuth();
+  const { user, loading, isPro } = useAuth();
 
   if (loading) {
     return (
@@ -17,6 +17,11 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+
+  // If user is not a Pro subscriber, redirect to plans page
+  if (!isPro) {
+    return <Navigate to="/planos" replace />;
   }
 
   return <>{children}</>;
