@@ -14,13 +14,168 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      products: {
+        Row: {
+          created_at: string
+          description: string | null
+          discount_price: number
+          id: string
+          name: string
+          original_price: number | null
+          photo: string | null
+          stock: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          discount_price?: number
+          id?: string
+          name: string
+          original_price?: number | null
+          photo?: string | null
+          stock?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          discount_price?: number
+          id?: string
+          name?: string
+          original_price?: number | null
+          photo?: string | null
+          stock?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          logo: string | null
+          primary_color: string | null
+          profile_image: string | null
+          store_name: string
+          updated_at: string
+          user_id: string
+          vitrine_active: boolean | null
+          vitrine_clicks: number | null
+          whatsapp: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          logo?: string | null
+          primary_color?: string | null
+          profile_image?: string | null
+          store_name?: string
+          updated_at?: string
+          user_id: string
+          vitrine_active?: boolean | null
+          vitrine_clicks?: number | null
+          whatsapp?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          logo?: string | null
+          primary_color?: string | null
+          profile_image?: string | null
+          store_name?: string
+          updated_at?: string
+          user_id?: string
+          vitrine_active?: boolean | null
+          vitrine_clicks?: number | null
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          created_at: string
+          current_period_end: string | null
+          id: string
+          plan: string
+          status: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          plan?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          plan?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          category: string
+          created_at: string
+          date: string
+          description: string
+          id: string
+          is_personal: boolean | null
+          type: string
+          user_id: string
+          value: number
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          date?: string
+          description: string
+          id?: string
+          is_personal?: boolean | null
+          type: string
+          user_id: string
+          value: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          date?: string
+          description?: string
+          id?: string
+          is_personal?: boolean | null
+          type?: string
+          user_id?: string
+          value?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_pro_user: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
