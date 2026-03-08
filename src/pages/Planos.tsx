@@ -1,5 +1,5 @@
 import { useAuth } from '@/contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { Check, Crown, Zap, BarChart3, Store, GraduationCap, Calculator, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -17,15 +17,13 @@ const Planos = () => {
   const navigate = useNavigate();
 
   const handleSubscribe = () => {
-    // TODO: Replace with Stripe Checkout redirect when Stripe is enabled
     toast.info('Pagamento será habilitado em breve!', {
-      description: 'Estamos finalizando a integração com o Stripe.',
+      description: 'Estamos finalizando a integração com Stripe.',
     });
   };
 
   if (isPro) {
-    navigate('/', { replace: true });
-    return null;
+    return <Navigate to="/" replace />;
   }
 
   return (
