@@ -23,43 +23,80 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isPro, setIsPro] = useState(false);
 
   useEffect(() => {
-    // Set up auth state listener FIRST
+    let isMounted = true;
+
+    const syncProStatus = async (userId: string) => {
+      const { data, error } = await supabase
+        .from('subscriptions')
+        .select('status, plan, current_period_end')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (!isMounted) return;
+
+      if (error || !data) {
+        setIsPro(false);
+        return;
+      }
+
+      const isActive =
+        data.status === 'active' &&
+        data.plan === 'pro' &&
+        (!data.current_period_end || new Date(data.current_period_end) > new Date());
+
+      setIsPro(isActive);
+    };
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (session?.user) {
-          // Check subscription status
-          setTimeout(async () => {
-            const { data } = await supabase
-              .from('subscriptions')
-              .select('status, plan, current_period_end')
-              .eq('user_id', session.user.id)
-              .single();
-            
-            if (data) {
-              const isActive = data.status === 'active' && data.plan === 'pro' &&
-                (!data.current_period_end || new Date(data.current_period_end) > new Date());
-              setIsPro(isActive);
-            }
-          }, 0);
+      async (_event, nextSession) => {
+        if (!isMounted) return;
+
+        setSession(nextSession);
+        setUser(nextSession?.user ?? null);
+
+        if (nextSession?.user) {
+          await syncProStatus(nextSession.user.id);
         } else {
           setIsPro(false);
         }
-        
-        setLoading(false);
+
+        if (isMounted) setLoading(false);
       }
     );
 
-    // THEN check existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (!session) setLoading(false);
-    });
+    supabase.auth
+      .getSession()
+      .then(async ({ data: { session: existingSession } }) => {
+        if (!isMounted) return;
 
-    return () => subscription.unsubscribe();
+        setSession(existingSession);
+        setUser(existingSession?.user ?? null);
+
+        if (existingSession?.user) {
+          await syncProStatus(existingSession.user.id);
+        } else {
+          setIsPro(false);
+        }
+
+        if (isMounted) setLoading(false);
+      })
+      .catch(() => {
+        if (!isMounted) return;
+        setIsPro(false);
+        setLoading(false);
+      });
+
+    const fallbackTimeout = window.setTimeout(() => {
+      if (isMounted) setLoading(false);
+    }, 5000);
+
+    return () => {
+      isMounted = false;
+      window.clearTimeout(fallbackTimeout);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signUp = async (email: string, password: string, storeName: string) => {
