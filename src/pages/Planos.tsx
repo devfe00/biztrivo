@@ -1,5 +1,6 @@
+import { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Check, Crown, Zap, BarChart3, Store, GraduationCap, Calculator, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -22,8 +23,21 @@ const Planos = () => {
     });
   };
 
+  useEffect(() => {
+    if (isPro) {
+      navigate('/', { replace: true });
+    }
+  }, [isPro, navigate]);
+
   if (isPro) {
-    return <Navigate to="/" replace />;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-muted-foreground text-sm">Redirecionando...</p>
+        </div>
+      </div>
+    );
   }
 
   return (

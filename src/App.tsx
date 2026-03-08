@@ -25,11 +25,6 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const ProtectedPage = ({ children }: { children: React.ReactNode }) => (
-  <ProtectedRoute>
-    <AppLayout>{children}</AppLayout>
-  </ProtectedRoute>
-);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -48,13 +43,13 @@ const App = () => (
               <Route path="/politica-privacidade" element={<PoliticaPrivacidade />} />
               <Route path="/loja/:slug" element={<PublicStore />} />
               
-              <Route path="/" element={<ProtectedPage><Dashboard /></ProtectedPage>} />
-              <Route path="/caixa" element={<ProtectedPage><Caixa /></ProtectedPage>} />
-              <Route path="/vitrine" element={<ProtectedPage><Vitrine /></ProtectedPage>} />
-              <Route path="/calculadora" element={<ProtectedPage><Calculadora /></ProtectedPage>} />
-              <Route path="/relatorios" element={<ProtectedPage><Relatorios /></ProtectedPage>} />
-              <Route path="/academy" element={<ProtectedPage><Academy /></ProtectedPage>} />
-              <Route path="/configuracoes" element={<ProtectedPage><Configuracoes /></ProtectedPage>} />
+              <Route path="/" element={<ProtectedRoute><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
+              <Route path="/caixa" element={<ProtectedRoute><AppLayout><Caixa /></AppLayout></ProtectedRoute>} />
+              <Route path="/vitrine" element={<ProtectedRoute><AppLayout><Vitrine /></AppLayout></ProtectedRoute>} />
+              <Route path="/calculadora" element={<ProtectedRoute><AppLayout><Calculadora /></AppLayout></ProtectedRoute>} />
+              <Route path="/relatorios" element={<ProtectedRoute><AppLayout><Relatorios /></AppLayout></ProtectedRoute>} />
+              <Route path="/academy" element={<ProtectedRoute><AppLayout><Academy /></AppLayout></ProtectedRoute>} />
+              <Route path="/configuracoes" element={<ProtectedRoute><AppLayout><Configuracoes /></AppLayout></ProtectedRoute>} />
               
               <Route path="*" element={<NotFound />} />
             </Routes>
