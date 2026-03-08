@@ -16,6 +16,10 @@ const features = [
 const Planos = () => {
   const { signOut, isPro } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const tokenSearch = location.search || '';
+  const homePath = `/${tokenSearch}`;
+  const loginPath = `/login${tokenSearch}`;
 
   const handleSubscribe = () => {
     toast.info('Pagamento será habilitado em breve!', {
@@ -25,9 +29,9 @@ const Planos = () => {
 
   useEffect(() => {
     if (isPro) {
-      navigate('/', { replace: true });
+      navigate(homePath, { replace: true });
     }
-  }, [isPro, navigate]);
+  }, [isPro, homePath, navigate]);
 
   if (isPro) {
     return (
