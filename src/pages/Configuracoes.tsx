@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { User, Lock, LogOut, Camera, Save, Eye, EyeOff, AlertCircle, CheckCircle, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useStore } from '@/contexts/StoreContext';
-import { supabase } from '@/integrations/supabase/client';
+import { updatePasswordLocal } from '@/lib/local-auth';
 
 const Configuracoes: React.FC = () => {
   const navigate = useNavigate();
@@ -40,7 +40,7 @@ const Configuracoes: React.FC = () => {
     setLoading(true);
     setMessage(null);
     try {
-      await updateConfig({ storeName, profileImage });
+      updateConfig({ storeName, profileImage });
       setMessage({ type: 'success', text: 'Perfil atualizado com sucesso!' });
     } catch {
       setMessage({ type: 'error', text: 'Erro ao atualizar perfil.' });
@@ -56,9 +56,9 @@ const Configuracoes: React.FC = () => {
 
     setLoading(true);
     setMessage(null);
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    const { error } = await updatePasswordLocal(newPassword);
     if (error) {
-      setMessage({ type: 'error', text: error.message });
+      setMessage({ type: 'error', text: error });
     } else {
       setMessage({ type: 'success', text: 'Senha alterada com sucesso!' });
       setNewPassword('');

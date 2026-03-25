@@ -1,60 +1,54 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, Eye, EyeOff, CheckCircle, AlertCircle } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { updatePasswordLocal } from '@/lib/local-auth';
+import { useAuth } from '@/contexts/AuthContext';
 
 const ResetPassword: React.FC = () => {
   const navigate = useNavigate();
+  const { canResetPassword } = useAuth();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const [isRecovery, setIsRecovery] = useState(false);
-
-  useEffect(() => {
-    // Check for recovery token in URL hash
-    const hash = window.location.hash;
-    if (hash.includes('type=recovery')) {
-      setIsRecovery(true);
-    }
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        setIsRecovery(true);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    if (password.length < 6) { setError('A senha deve ter no mínimo 6 caracteres'); return; }
-    if (password !== confirmPassword) { setError('As senhas não conferem'); return; }
+    if (password.length < 6) {
+      setError('A senha deve ter no mínimo 6 caracteres');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError('As senhas não conferem');
+      return;
+    }
 
     setLoading(true);
-    const { error } = await supabase.auth.updateUser({ password });
-    if (error) {
-      setError(error.message);
+    const { error: updateError } = await updatePasswordLocal(password);
+
+    if (updateError) {
+      setError(updateError);
     } else {
       setSuccess(true);
       setTimeout(() => navigate('/login'), 3000);
     }
+
     setLoading(false);
   };
 
-  if (!isRecovery) {
+  if (!canResetPassword) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center p-4">
         <div className="absolute inset-0 bg-black/20" />
         <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 text-center">
           <AlertCircle className="mx-auto text-red-500 mb-4" size={48} />
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Link Inválido</h2>
-          <p className="text-gray-600 mb-6">Este link de recuperação de senha é inválido ou expirou.</p>
+          <p className="text-gray-600 mb-6">Primeiro solicite a redefinição de senha pela tela de login.</p>
           <button onClick={() => navigate('/login')} className="w-full bg-gradient-to-r from-green-400 to-blue-500 text-white py-3 rounded-lg font-semibold">
             Voltar ao Login
           </button>
