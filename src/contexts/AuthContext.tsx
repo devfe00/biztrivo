@@ -1,143 +1,106 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
-
+import {
+  canResetPasswordLocal,
+  getLocalSession,
+  requestPasswordResetLocal,
+  signInLocal,
+  signOutLocal,
+  signUpLocal,
+  type LocalSession,
+  type LocalUser,
+} from '@/lib/local-auth';
 
 interface AuthContextType {
-  user: User | null;
-  session: Session | null;
+  user: LocalUser | null;
+  session: LocalSession | null;
   loading: boolean;
   isPro: boolean;
   signUp: (email: string, password: string, storeName: string) => Promise<{ error: string | null }>;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: string | null }>;
+  canResetPassword: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<LocalUser | null>(null);
+  const [session, setSession] = useState<LocalSession | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isPro, setIsPro] = useState(false);
+  const [canResetPassword, setCanResetPassword] = useState(false);
 
   useEffect(() => {
-    let isMounted = true;
-
-    const syncProStatus = async (userId: string) => {
-      const { data, error } = await supabase
-        .from('subscriptions')
-        .select('status, plan, current_period_end')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (!isMounted) return;
-
-      if (error || !data) {
-        setIsPro(false);
-        return;
-      }
-
-      const isActive =
-        data.status === 'active' &&
-        data.plan === 'pro' &&
-        (!data.current_period_end || new Date(data.current_period_end) > new Date());
-
-      setIsPro(isActive);
+    const syncSession = () => {
+      const currentSession = getLocalSession();
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
+      setCanResetPassword(canResetPasswordLocal());
+      setLoading(false);
     };
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, nextSession) => {
-        if (!isMounted) return;
+    syncSession();
 
-        setSession(nextSession);
-        setUser(nextSession?.user ?? null);
-
-        if (nextSession?.user) {
-          await syncProStatus(nextSession.user.id);
-        } else {
-          setIsPro(false);
-        }
-
-        if (isMounted) setLoading(false);
+    const handleStorage = (event: StorageEvent) => {
+      if (!event.key || event.key.startsWith('biztrivo:auth')) {
+        syncSession();
       }
-    );
-
-    supabase.auth
-      .getSession()
-      .then(async ({ data: { session: existingSession } }) => {
-        if (!isMounted) return;
-
-        setSession(existingSession);
-        setUser(existingSession?.user ?? null);
-
-        if (existingSession?.user) {
-          await syncProStatus(existingSession.user.id);
-        } else {
-          setIsPro(false);
-        }
-
-        if (isMounted) setLoading(false);
-      })
-      .catch(() => {
-        if (!isMounted) return;
-        setIsPro(false);
-        setLoading(false);
-      });
-
-    const fallbackTimeout = window.setTimeout(() => {
-      if (isMounted) setLoading(false);
-    }, 5000);
-
-    return () => {
-      isMounted = false;
-      window.clearTimeout(fallbackTimeout);
-      subscription.unsubscribe();
     };
+
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
   }, []);
 
   const signUp = async (email: string, password: string, storeName: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { store_name: storeName },
-        emailRedirectTo: window.location.origin,
-      },
-    });
-    return { error: error?.message ?? null };
+    const { error } = await signUpLocal(email, password, storeName);
+    setCanResetPassword(canResetPasswordLocal());
+    return { error };
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error, user: nextUser } = await signInLocal(email, password);
+
     if (error) {
-      if (error.message.includes('Invalid login credentials')) {
+      if (error.includes('Invalid login credentials')) {
         return { error: 'Email ou senha incorretos' };
       }
-      return { error: error.message };
+      return { error };
     }
+
+    const nextSession = nextUser ? { user: nextUser } : null;
+    setSession(nextSession);
+    setUser(nextUser ?? null);
+    setCanResetPassword(canResetPasswordLocal());
     return { error: null };
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    await signOutLocal();
     setUser(null);
     setSession(null);
-    setIsPro(false);
+    setCanResetPassword(canResetPasswordLocal());
   };
 
   const resetPassword = async (email: string) => {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
-    return { error: error?.message ?? null };
+    const { error } = await requestPasswordResetLocal(email);
+    setCanResetPassword(canResetPasswordLocal());
+    return { error };
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, isPro, signUp, signIn, signOut, resetPassword }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        session,
+        loading,
+        isPro: user?.isPro ?? true,
+        signUp,
+        signIn,
+        signOut,
+        resetPassword,
+        canResetPassword,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
 import { MessageCircle, ShoppingBag, AlertCircle, Search, Phone, X } from 'lucide-react';
+import { listLocalStoreConfigs, slugifyStoreName } from '@/lib/local-store';
 
 interface StoreData {
   storeName: string;
@@ -28,48 +28,29 @@ const PublicStore = () => {
 
   useEffect(() => {
     const fetchStore = async () => {
-      if (!slug) return;
+      if (!slug) {
+        setLoading(false);
+        return;
+      }
 
-      // Find profile with matching slug (vitrine_active = true is enforced by RLS)
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('vitrine_active', true);
-
-      const profile = profiles?.find(p => {
-        const pSlug = p.store_name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-        return pSlug === slug;
+      const storeEntry = listLocalStoreConfigs().find(({ config }) => {
+        return config.vitrineActive && slugifyStoreName(config.storeName) === slug;
       });
 
-      if (!profile) { setLoading(false); return; }
+      if (!storeEntry) {
+        setLoading(false);
+        return;
+      }
 
-      // Fetch products for this store (public RLS policy allows this)
-      const { data: products } = await supabase
-        .from('products')
-        .select('*')
-        .eq('user_id', profile.user_id);
+      const { config } = storeEntry;
 
       setStore({
-        storeName: profile.store_name,
-        logo: profile.logo || '',
-        primaryColor: profile.primary_color || '#3b82f6',
-        whatsapp: profile.whatsapp || '',
-        products: (products || []).map(p => ({
-          id: p.id,
-          name: p.name,
-          photo: p.photo || '',
-          originalPrice: Number(p.original_price) || 0,
-          discountPrice: Number(p.discount_price) || 0,
-          description: p.description || '',
-          stock: p.stock || 0,
-        })),
+        storeName: config.storeName,
+        logo: config.logo || '',
+        primaryColor: config.primaryColor || '#3b82f6',
+        whatsapp: config.whatsapp || '',
+        products: config.products,
       });
-
-      // Increment vitrine clicks
-      await supabase
-        .from('profiles')
-        .update({ vitrine_clicks: (profile.vitrine_clicks || 0) + 1 })
-        .eq('id', profile.id);
 
       setLoading(false);
     };
@@ -92,9 +73,9 @@ const PublicStore = () => {
     window.open(`https://wa.me/55${phone}?text=${message}`, '_blank');
   };
 
-  const filteredProducts = store?.products.filter(p =>
-    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.description?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredProducts = store?.products.filter((product) =>
+    product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    product.description?.toLowerCase().includes(searchQuery.toLowerCase()),
   ) || [];
 
   if (loading) {
@@ -152,18 +133,18 @@ const PublicStore = () => {
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {filteredProducts.map(p => {
-              const outOfStock = p.stock === 0;
+            {filteredProducts.map((product) => {
+              const outOfStock = product.stock === 0;
               return (
-                <div key={p.id} className="bg-card rounded-xl shadow-md overflow-hidden group relative hover:shadow-xl transition-all duration-300">
+                <div key={product.id} className="bg-card rounded-xl shadow-md overflow-hidden group relative hover:shadow-xl transition-all duration-300">
                   {outOfStock && (
                     <div className="absolute top-2 right-2 z-10 px-2 py-1 rounded-md bg-destructive text-destructive-foreground text-xs font-semibold flex items-center gap-1 shadow-lg">
                       <AlertCircle className="w-3 h-3" /> Esgotado
                     </div>
                   )}
-                  {p.photo ? (
+                  {product.photo ? (
                     <div className="aspect-square bg-muted overflow-hidden">
-                      <img src={p.photo} alt={p.name} className={`w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ${outOfStock ? 'opacity-50 grayscale' : ''}`} />
+                      <img src={product.photo} alt={product.name} className={`w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ${outOfStock ? 'opacity-50 grayscale' : ''}`} />
                     </div>
                   ) : (
                     <div className="aspect-square bg-muted flex items-center justify-center">
@@ -171,13 +152,13 @@ const PublicStore = () => {
                     </div>
                   )}
                   <div className="p-3">
-                    <h3 className="font-semibold text-sm line-clamp-2 min-h-[2.5rem]">{p.name}</h3>
-                    {p.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{p.description}</p>}
+                    <h3 className="font-semibold text-sm line-clamp-2 min-h-[2.5rem]">{product.name}</h3>
+                    {product.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{product.description}</p>}
                     <div className="flex items-center gap-2 mt-2">
-                      {p.originalPrice > p.discountPrice && <span className="text-xs text-muted-foreground line-through">R$ {p.originalPrice.toFixed(2).replace('.', ',')}</span>}
-                      <span className="text-sm font-bold" style={{ color: store.primaryColor }}>R$ {p.discountPrice.toFixed(2).replace('.', ',')}</span>
+                      {product.originalPrice > product.discountPrice && <span className="text-xs text-muted-foreground line-through">R$ {product.originalPrice.toFixed(2).replace('.', ',')}</span>}
+                      <span className="text-sm font-bold" style={{ color: store.primaryColor }}>R$ {product.discountPrice.toFixed(2).replace('.', ',')}</span>
                     </div>
-                    <button onClick={() => handleBuy(p.name, p.discountPrice)} disabled={outOfStock}
+                    <button onClick={() => handleBuy(product.name, product.discountPrice)} disabled={outOfStock}
                       className="mt-3 w-full py-2.5 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                       style={{ backgroundColor: outOfStock ? '#7f8c8d' : store.primaryColor, color: '#fff' }}>
                       <MessageCircle className="w-4 h-4" /> {outOfStock ? 'Esgotado' : 'Comprar'}
