@@ -1,0 +1,1 @@
+UPDATE public.subscriptions SET status = 'active', plan = 'pro' WHERE user_id = 'b7f3ad1d-c443-407c-8b41-f39465249b8b';
