@@ -140,16 +140,33 @@ const Vitrine = () => {
             <ExternalLink className="w-4 h-4" />
           </a>
         </div>
-        <div className="flex items-center gap-4 pt-2">
+        <div className="flex flex-wrap items-center gap-4 pt-2">
           <div ref={qrRef} className="p-3 bg-white rounded-xl shadow-sm">
             <QRCodeCanvas value={publicUrl} size={120} />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 flex-1 min-w-[160px]">
             <p className="text-sm font-medium">QR Code da sua loja</p>
             <p className="text-xs text-muted-foreground">Imprima e cole no seu ponto de venda ou cartão de visita.</p>
-            <button onClick={handleDownloadQR} className="px-4 py-2 rounded-lg bg-muted text-sm font-medium flex items-center gap-2 hover:bg-accent transition-colors">
-              <Download className="w-4 h-4" /> Baixar PNG
-            </button>
+            <div className="flex flex-wrap gap-2">
+              <button onClick={handleDownloadQR} className="px-4 py-2 rounded-lg bg-muted text-sm font-medium flex items-center gap-2 hover:bg-accent transition-colors">
+                <Download className="w-4 h-4" /> Baixar PNG
+              </button>
+              <button
+                onClick={async () => {
+                  if (navigator.share) {
+                    try {
+                      await navigator.share({ title: config.storeName, text: `Confira a vitrine ${config.storeName}!`, url: publicUrl });
+                    } catch { /* user cancelled */ }
+                  } else {
+                    navigator.clipboard.writeText(publicUrl);
+                    toast.success('Link copiado!');
+                  }
+                }}
+                className="px-4 py-2 rounded-lg bg-muted text-sm font-medium flex items-center gap-2 hover:bg-accent transition-colors"
+              >
+                <Share2 className="w-4 h-4" /> Compartilhar
+              </button>
+            </div>
           </div>
         </div>
       </Card>
