@@ -7,6 +7,7 @@ import {
   type LocalStoreConfig,
 } from '@/lib/local-store';
 import { updateCurrentLocalUser } from '@/lib/local-auth';
+import { sanitizeText } from '@/lib/sanitize';
 
 export interface Product {
   id: string;
