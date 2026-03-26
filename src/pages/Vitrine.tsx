@@ -51,13 +51,15 @@ const Vitrine = () => {
 
   const handleAddProduct = async () => {
     if (!name.trim() || !discountPrice) return;
+    const dp = parseFloat(discountPrice.replace(',', '.')) || 0;
+    if (dp <= 0) { toast.error('O preço deve ser maior que zero.'); return; }
     await addProduct({
-      name: name.trim(),
+      name: sanitizeText(name),
       photo,
-      originalPrice: parseFloat(originalPrice.replace(',', '.')) || 0,
-      discountPrice: parseFloat(discountPrice.replace(',', '.')) || 0,
-      description: description.trim(),
-      stock: parseInt(stock) || 0,
+      originalPrice: Math.max(0, parseFloat(originalPrice.replace(',', '.')) || 0),
+      discountPrice: dp,
+      description: sanitizeText(description),
+      stock: Math.max(0, parseInt(stock) || 0),
     });
 
     setName(''); setPhoto(''); setOriginalPrice(''); setDiscountPrice(''); setDescription(''); setStock('');
