@@ -96,8 +96,12 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
   const updateConfig = (partial: Partial<StoreConfig>) => {
     if (!user) return;
 
+    // Sanitize text fields
+    const sanitized = { ...partial };
+    if (sanitized.storeName) sanitized.storeName = sanitizeText(sanitized.storeName);
+
     setConfig((prev) => {
-      const next = { ...prev, ...partial };
+      const next = { ...prev, ...sanitized };
       persistConfig(user.id, next);
       return next;
     });
