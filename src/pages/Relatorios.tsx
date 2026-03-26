@@ -101,6 +101,7 @@ const Relatorios = () => {
   };
 
   const exportToPDF = () => {
+    if (!isPro) { setShowUpgradeModal(true); return; }
     if (filteredTransactions.length === 0) { alert('Sem transações.'); return; }
     const periodLabel = period === 'today' ? 'Hoje' : period === '7d' ? '7 dias' : '30 dias';
     const totalE = filteredTransactions.filter(t => t.type === 'entrada').reduce((s, t) => s + t.value, 0);
