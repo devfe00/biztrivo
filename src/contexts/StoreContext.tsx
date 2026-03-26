@@ -149,10 +149,22 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
   const addTransaction = async (transaction: Omit<Transaction, 'id'>) => {
     if (!user) return;
 
+    // Validate: block zero or negative values
+    if (!transaction.value || transaction.value <= 0) {
+      throw new Error('Valor da transação deve ser maior que zero.');
+    }
+
+    const sanitizedTx = {
+      ...transaction,
+      description: sanitizeText(transaction.description),
+      category: sanitizeText(transaction.category),
+      id: crypto.randomUUID(),
+    };
+
     setConfig((prev) => {
       const next = {
         ...prev,
-        transactions: [{ ...transaction, id: crypto.randomUUID() }, ...prev.transactions],
+        transactions: [sanitizedTx, ...prev.transactions],
       };
       persistConfig(user.id, next);
       return next;
