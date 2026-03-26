@@ -102,7 +102,7 @@ const Vitrine = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <Label>Nome da Loja</Label>
-            <Input value={config.storeName} onChange={e => updateConfig({ storeName: e.target.value })} className="mt-1" placeholder="Ex: Moda da Mari" />
+            <Input value={config.storeName} onChange={e => updateConfig({ storeName: e.target.value })} className="mt-1" placeholder="Ex: Moda da Mari" maxLength={60} />
           </div>
           <div>
             <Label>WhatsApp (com DDD)</Label>
