@@ -89,6 +89,7 @@ const Relatorios = () => {
   const formatCurrency = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
   const exportToCSV = () => {
+    if (!isPro) { setShowUpgradeModal(true); return; }
     if (filteredTransactions.length === 0) { alert('Sem transações.'); return; }
     const rows = filteredTransactions.map(t => [new Date(t.date).toLocaleDateString('pt-BR'), t.type === 'entrada' ? 'Entrada' : 'Saída', t.category, t.description, t.value.toFixed(2).replace('.', ','), t.isPersonal ? 'Sim' : 'Não']);
     const csv = ['Data;Tipo;Categoria;Descrição;Valor;Pessoal', ...rows.map(r => r.join(';'))].join('\n');
@@ -100,6 +101,7 @@ const Relatorios = () => {
   };
 
   const exportToPDF = () => {
+    if (!isPro) { setShowUpgradeModal(true); return; }
     if (filteredTransactions.length === 0) { alert('Sem transações.'); return; }
     const periodLabel = period === 'today' ? 'Hoje' : period === '7d' ? '7 dias' : '30 dias';
     const totalE = filteredTransactions.filter(t => t.type === 'entrada').reduce((s, t) => s + t.value, 0);

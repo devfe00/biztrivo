@@ -7,6 +7,7 @@ import {
   type LocalStoreConfig,
 } from '@/lib/local-store';
 import { updateCurrentLocalUser } from '@/lib/local-auth';
+import { sanitizeText } from '@/lib/sanitize';
 
 export interface Product {
   id: string;
@@ -95,8 +96,12 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
   const updateConfig = (partial: Partial<StoreConfig>) => {
     if (!user) return;
 
+    // Sanitize text fields
+    const sanitized = { ...partial };
+    if (sanitized.storeName) sanitized.storeName = sanitizeText(sanitized.storeName);
+
     setConfig((prev) => {
-      const next = { ...prev, ...partial };
+      const next = { ...prev, ...sanitized };
       persistConfig(user.id, next);
       return next;
     });
@@ -144,10 +149,22 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
   const addTransaction = async (transaction: Omit<Transaction, 'id'>) => {
     if (!user) return;
 
+    // Validate: block zero or negative values
+    if (!transaction.value || transaction.value <= 0) {
+      throw new Error('Valor da transação deve ser maior que zero.');
+    }
+
+    const sanitizedTx = {
+      ...transaction,
+      description: sanitizeText(transaction.description),
+      category: sanitizeText(transaction.category),
+      id: crypto.randomUUID(),
+    };
+
     setConfig((prev) => {
       const next = {
         ...prev,
-        transactions: [{ ...transaction, id: crypto.randomUUID() }, ...prev.transactions],
+        transactions: [sanitizedTx, ...prev.transactions],
       };
       persistConfig(user.id, next);
       return next;

@@ -5,10 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, Trash2, ExternalLink, Copy, Check, Image as ImageIcon, AlertCircle, Download, Rocket } from 'lucide-react';
+import { Plus, Trash2, ExternalLink, Copy, Check, Image as ImageIcon, AlertCircle, Download, Rocket, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { QRCodeCanvas } from 'qrcode.react';
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { sanitizeText } from '@/lib/sanitize';
 
 const Vitrine = () => {
   const { config, updateConfig, addProduct, removeProduct } = useStore();
@@ -50,13 +51,15 @@ const Vitrine = () => {
 
   const handleAddProduct = async () => {
     if (!name.trim() || !discountPrice) return;
+    const dp = parseFloat(discountPrice.replace(',', '.')) || 0;
+    if (dp <= 0) { toast.error('O preço deve ser maior que zero.'); return; }
     await addProduct({
-      name: name.trim(),
+      name: sanitizeText(name),
       photo,
-      originalPrice: parseFloat(originalPrice.replace(',', '.')) || 0,
-      discountPrice: parseFloat(discountPrice.replace(',', '.')) || 0,
-      description: description.trim(),
-      stock: parseInt(stock) || 0,
+      originalPrice: Math.max(0, parseFloat(originalPrice.replace(',', '.')) || 0),
+      discountPrice: dp,
+      description: sanitizeText(description),
+      stock: Math.max(0, parseInt(stock) || 0),
     });
 
     setName(''); setPhoto(''); setOriginalPrice(''); setDiscountPrice(''); setDescription(''); setStock('');
@@ -99,7 +102,7 @@ const Vitrine = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <Label>Nome da Loja</Label>
-            <Input value={config.storeName} onChange={e => updateConfig({ storeName: e.target.value })} className="mt-1" placeholder="Ex: Moda da Mari" />
+            <Input value={config.storeName} onChange={e => updateConfig({ storeName: e.target.value })} className="mt-1" placeholder="Ex: Moda da Mari" maxLength={60} />
           </div>
           <div>
             <Label>WhatsApp (com DDD)</Label>
@@ -137,16 +140,33 @@ const Vitrine = () => {
             <ExternalLink className="w-4 h-4" />
           </a>
         </div>
-        <div className="flex items-center gap-4 pt-2">
+        <div className="flex flex-wrap items-center gap-4 pt-2">
           <div ref={qrRef} className="p-3 bg-white rounded-xl shadow-sm">
             <QRCodeCanvas value={publicUrl} size={120} />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 flex-1 min-w-[160px]">
             <p className="text-sm font-medium">QR Code da sua loja</p>
             <p className="text-xs text-muted-foreground">Imprima e cole no seu ponto de venda ou cartão de visita.</p>
-            <button onClick={handleDownloadQR} className="px-4 py-2 rounded-lg bg-muted text-sm font-medium flex items-center gap-2 hover:bg-accent transition-colors">
-              <Download className="w-4 h-4" /> Baixar PNG
-            </button>
+            <div className="flex flex-wrap gap-2">
+              <button onClick={handleDownloadQR} className="px-4 py-2 rounded-lg bg-muted text-sm font-medium flex items-center gap-2 hover:bg-accent transition-colors">
+                <Download className="w-4 h-4" /> Baixar PNG
+              </button>
+              <button
+                onClick={async () => {
+                  if (navigator.share) {
+                    try {
+                      await navigator.share({ title: config.storeName, text: `Confira a vitrine ${config.storeName}!`, url: publicUrl });
+                    } catch { /* user cancelled */ }
+                  } else {
+                    navigator.clipboard.writeText(publicUrl);
+                    toast.success('Link copiado!');
+                  }
+                }}
+                className="px-4 py-2 rounded-lg bg-muted text-sm font-medium flex items-center gap-2 hover:bg-accent transition-colors"
+              >
+                <Share2 className="w-4 h-4" /> Compartilhar
+              </button>
+            </div>
           </div>
         </div>
       </Card>
