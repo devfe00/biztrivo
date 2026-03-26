@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
-import { MessageCircle, ShoppingBag, AlertCircle, Search, Phone, X } from 'lucide-react';
+import { MessageCircle, ShoppingBag, AlertCircle, Search, Phone, X, Loader2, Check } from 'lucide-react';
 import { listLocalStoreConfigs, slugifyStoreName } from '@/lib/local-store';
 
 interface StoreData {
@@ -19,23 +19,39 @@ interface StoreData {
   }>;
 }
 
+const generateOrderCode = () => {
+  const chars = '0123456789ABCDEF';
+  let code = '';
+  for (let i = 0; i < 4; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return `#BZ-${code}`;
+};
+
+const setMetaTag = (property: string, content: string, isOg = false) => {
+  const attr = isOg ? 'property' : 'name';
+  let el = document.querySelector(`meta[${attr}="${property}"]`) as HTMLMetaElement | null;
+  if (!el) {
+    el = document.createElement('meta');
+    el.setAttribute(attr, property);
+    document.head.appendChild(el);
+  }
+  el.content = content;
+};
+
 const PublicStore = () => {
   const { slug } = useParams();
   const [store, setStore] = useState<StoreData | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [showWhatsAppButton, setShowWhatsAppButton] = useState(true);
+  const [buyingProductId, setBuyingProductId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!slug) { setLoading(false); return; }
-
     const storeEntry = listLocalStoreConfigs().find(({ config }) =>
       config.vitrineActive && slugifyStoreName(config.storeName) === slug,
     );
-
     if (!storeEntry) { setLoading(false); return; }
     const { config } = storeEntry;
-
     setStore({
       storeName: config.storeName,
       logo: config.logo || '',
@@ -46,27 +62,46 @@ const PublicStore = () => {
     setLoading(false);
   }, [slug]);
 
-  // Dynamic theme color meta tag
+  // Dynamic SEO meta tags + Open Graph
   useEffect(() => {
     if (!store) return;
-    let meta = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement | null;
-    if (!meta) {
-      meta = document.createElement('meta');
-      meta.name = 'theme-color';
-      document.head.appendChild(meta);
-    }
-    meta.content = store.primaryColor;
-    document.title = `${store.storeName} | Biztrivo`;
+    const title = `Confira a vitrine de ${store.storeName} no Biztrivo`;
+    const description = `Veja os produtos de ${store.storeName}. Compre direto pelo WhatsApp!`;
+    const url = window.location.href;
+
+    document.title = title;
+    setMetaTag('description', description);
+    setMetaTag('theme-color', store.primaryColor);
+    // Open Graph
+    setMetaTag('og:title', title, true);
+    setMetaTag('og:description', description, true);
+    setMetaTag('og:type', 'website', true);
+    setMetaTag('og:url', url, true);
+    if (store.logo) setMetaTag('og:image', store.logo, true);
+    // Twitter Card
+    setMetaTag('twitter:card', 'summary');
+    setMetaTag('twitter:title', title);
+    setMetaTag('twitter:description', description);
+
     return () => { document.title = 'Biztrivo'; };
   }, [store]);
 
-  const handleBuy = (productName: string, price: number) => {
-    if (!store?.whatsapp) return;
-    const phone = store.whatsapp.replace(/\D/g, '');
-    const priceStr = price.toFixed(2).replace('.', ',');
-    const message = encodeURIComponent(`Olá! Vi o ${productName} por R$ ${priceStr} na vitrine e quero garantir o meu!`);
-    window.open(`https://wa.me/55${phone}?text=${message}`, '_blank');
-  };
+  const handleBuy = useCallback((productId: string, productName: string, price: number, stock: number) => {
+    if (!store?.whatsapp || stock === 0) return;
+    setBuyingProductId(productId);
+
+    setTimeout(() => {
+      const phone = store.whatsapp.replace(/\D/g, '');
+      const priceStr = price.toFixed(2).replace('.', ',');
+      const orderCode = generateOrderCode();
+      const message = encodeURIComponent(
+        `Olá! Vi o *${productName}* por *R$ ${priceStr}* na vitrine e quero garantir o meu!\n\nCódigo do pedido: ${orderCode}`
+      );
+      window.open(`https://wa.me/55${phone}?text=${message}`, '_blank');
+
+      setTimeout(() => setBuyingProductId(null), 1500);
+    }, 800);
+  }, [store]);
 
   const handleWhatsAppContact = () => {
     if (!store?.whatsapp) return;
@@ -104,7 +139,6 @@ const PublicStore = () => {
 
   return (
     <div className="min-h-screen pb-20" style={{ backgroundColor: '#fafafa' }}>
-      {/* Header — minimal, uses store branding */}
       <header className="sticky top-0 z-40 border-b" style={{ backgroundColor: '#fff', borderColor: '#f1f5f9' }}>
         <div className="max-w-4xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between mb-3">
@@ -139,7 +173,6 @@ const PublicStore = () => {
         </div>
       </header>
 
-      {/* Products grid */}
       <main className="max-w-4xl mx-auto px-4 py-5">
         {filteredProducts.length === 0 ? (
           <div className="text-center py-16">
@@ -150,6 +183,9 @@ const PublicStore = () => {
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
             {filteredProducts.map((product) => {
               const outOfStock = product.stock === 0;
+              const isBuying = buyingProductId === product.id;
+              const justBought = isBuying; // shows loader then check
+
               return (
                 <div key={product.id} className="rounded-xl overflow-hidden group relative" style={{ backgroundColor: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
                   {outOfStock && (
@@ -176,12 +212,22 @@ const PublicStore = () => {
                       <span className="text-sm font-bold" style={{ color: pc }}>R$ {product.discountPrice.toFixed(2).replace('.', ',')}</span>
                     </div>
                     <button
-                      onClick={() => handleBuy(product.name, product.discountPrice)}
-                      disabled={outOfStock}
-                      className="mt-3 w-full py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
-                      style={{ backgroundColor: outOfStock ? '#94a3b8' : pc, color: '#fff' }}
+                      onClick={() => handleBuy(product.id, product.name, product.discountPrice, product.stock)}
+                      disabled={outOfStock || isBuying}
+                      className="mt-3 w-full py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-all active:scale-95 disabled:cursor-not-allowed"
+                      style={{
+                        backgroundColor: outOfStock ? '#94a3b8' : pc,
+                        color: '#fff',
+                        opacity: outOfStock ? 0.4 : 1,
+                      }}
                     >
-                      <MessageCircle className="w-4 h-4" /> {outOfStock ? 'Esgotado' : 'Comprar'}
+                      {isBuying ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : outOfStock ? (
+                        <><AlertCircle className="w-4 h-4" /> Produto Indisponível</>
+                      ) : (
+                        <><MessageCircle className="w-4 h-4" /> Comprar</>
+                      )}
                     </button>
                   </div>
                 </div>
@@ -191,7 +237,6 @@ const PublicStore = () => {
         )}
       </main>
 
-      {/* Floating WhatsApp */}
       {showWhatsAppButton && store.whatsapp && (
         <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-2">
           <button
@@ -208,7 +253,6 @@ const PublicStore = () => {
         </div>
       )}
 
-      {/* Footer */}
       <footer className="py-5 text-center border-t" style={{ borderColor: '#f1f5f9' }}>
         <p className="text-xs" style={{ color: '#94a3b8' }}>Vitrine criada com <span className="font-semibold" style={{ color: pc }}>Biztrivo</span></p>
       </footer>
