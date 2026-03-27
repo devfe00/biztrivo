@@ -5,14 +5,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, Trash2, ExternalLink, Copy, Check, Image as ImageIcon, AlertCircle, Download, Rocket, Share2 } from 'lucide-react';
+import { Plus, Trash2, ExternalLink, Copy, Check, Image as ImageIcon, AlertCircle, Download, Rocket, Share2, Pencil } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { QRCodeCanvas } from 'qrcode.react';
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { sanitizeText } from '@/lib/sanitize';
 
 const Vitrine = () => {
-  const { config, updateConfig, addProduct, removeProduct } = useStore();
+  const { config, updateConfig, addProduct, removeProduct, updateProduct } = useStore();
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const { checkStockAlert } = useNotifications();
   const [showForm, setShowForm] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -87,6 +89,28 @@ const Vitrine = () => {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = () => updateConfig({ logo: reader.result as string });
+    reader.readAsDataURL(file);
+  };
+
+  const handleEditSave = async () => {
+    if (!editingProduct) return;
+    if (editingProduct.discountPrice <= 0) { toast.error('O preço deve ser maior que zero.'); return; }
+    await updateProduct({
+      ...editingProduct,
+      name: sanitizeText(editingProduct.name),
+      description: sanitizeText(editingProduct.description),
+      stock: Math.max(0, editingProduct.stock),
+      originalPrice: Math.max(0, editingProduct.originalPrice),
+    });
+    setEditingProduct(null);
+    toast.success('Produto atualizado!');
+  };
+
+  const handleEditPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setEditingProduct(prev => prev ? { ...prev, photo: reader.result as string } : null);
     reader.readAsDataURL(file);
   };
 
@@ -250,15 +274,68 @@ const Vitrine = () => {
                     <span className="text-sm font-bold text-secondary">R$ {p.discountPrice.toFixed(2).replace('.', ',')}</span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">Estoque: {p.stock ?? 0}</p>
-                  <button onClick={() => removeProduct(p.id)} className="mt-3 text-xs text-muted-foreground hover:text-destructive flex items-center gap-1 transition-colors">
-                    <Trash2 className="w-3 h-3" /> Remover
-                  </button>
+                  <div className="mt-3 flex items-center gap-3">
+                    <button onClick={() => setEditingProduct({ ...p })} className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1 transition-colors">
+                      <Pencil className="w-3 h-3" /> Editar
+                    </button>
+                    <button onClick={() => removeProduct(p.id)} className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-1 transition-colors">
+                      <Trash2 className="w-3 h-3" /> Remover
+                    </button>
+                  </div>
                 </div>
               </Card>
             ))}
           </div>
         )}
       </div>
+
+      <Dialog open={!!editingProduct} onOpenChange={open => !open && setEditingProduct(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Editar Produto</DialogTitle>
+          </DialogHeader>
+          {editingProduct && (
+            <div className="space-y-4">
+              <div>
+                <Label>Nome do Produto</Label>
+                <Input value={editingProduct.name} onChange={e => setEditingProduct({ ...editingProduct, name: e.target.value })} className="mt-1" />
+              </div>
+              <div>
+                <Label>Foto</Label>
+                <label className="mt-1 flex items-center justify-center h-10 px-4 rounded-md border border-input bg-background text-sm cursor-pointer hover:bg-muted transition-colors">
+                  {editingProduct.photo ? '✅ Foto selecionada' : '📷 Selecionar foto'}
+                  <input type="file" accept="image/*" className="hidden" onChange={handleEditPhotoUpload} />
+                </label>
+                {editingProduct.photo && (
+                  <img src={editingProduct.photo} alt="Preview" className="mt-2 w-20 h-20 object-cover rounded-lg" />
+                )}
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <Label>Preço Original (R$)</Label>
+                  <Input type="number" step="0.01" min="0" value={editingProduct.originalPrice} onChange={e => setEditingProduct({ ...editingProduct, originalPrice: Math.max(0, parseFloat(e.target.value) || 0) })} className="mt-1" />
+                </div>
+                <div>
+                  <Label>Preço Desconto (R$)</Label>
+                  <Input type="number" step="0.01" min="0.01" value={editingProduct.discountPrice} onChange={e => setEditingProduct({ ...editingProduct, discountPrice: parseFloat(e.target.value) || 0 })} className="mt-1" />
+                </div>
+                <div>
+                  <Label>Estoque</Label>
+                  <Input type="number" min="0" value={editingProduct.stock} onChange={e => setEditingProduct({ ...editingProduct, stock: parseInt(e.target.value) || 0 })} className="mt-1" />
+                </div>
+              </div>
+              <div>
+                <Label>Descrição Curta</Label>
+                <Textarea value={editingProduct.description} onChange={e => setEditingProduct({ ...editingProduct, description: e.target.value })} className="mt-1" rows={2} />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button onClick={handleEditSave} className="px-6 py-2.5 rounded-lg gradient-primary text-primary-foreground font-medium text-sm shadow-glow hover:opacity-90 transition-opacity">Salvar</button>
+                <button onClick={() => setEditingProduct(null)} className="px-6 py-2.5 rounded-lg bg-muted text-muted-foreground font-medium text-sm hover:bg-accent transition-colors">Cancelar</button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
