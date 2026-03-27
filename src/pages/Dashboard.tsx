@@ -1,5 +1,4 @@
 import { useStore } from '@/contexts/StoreContext';
-import { useAuth } from '@/contexts/AuthContext';
 import { Card } from '@/components/ui/card';
 import { TrendingUp, TrendingDown, Store, ExternalLink, Wallet, ShoppingBag, AlertTriangle, Target } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -9,7 +8,6 @@ import { Input } from '@/components/ui/input';
 
 const Dashboard = () => {
   const { config } = useStore();
-  const { isPro } = useAuth();
 
   const [dailyGoal, setDailyGoal] = useState(() => {
     const saved = localStorage.getItem('dailyGoal');
@@ -198,20 +196,6 @@ const Dashboard = () => {
           </div>
         </Card>
       </div>
-
-      {!isPro && (
-        <Card className="p-5 border-none shadow-md gradient-primary text-primary-foreground">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div>
-              <p className="font-bold font-heading text-lg">Desbloqueie o potencial completo</p>
-              <p className="text-sm opacity-90 mt-1">Relatórios avançados, Academy completa e mais por R$ 19,90/mês</p>
-            </div>
-            <Link to="/configuracoes" className="px-6 py-3 rounded-lg bg-card text-foreground font-semibold text-sm hover:opacity-90 transition-opacity whitespace-nowrap">
-              Fazer Upgrade — R$ 19,90/mês
-            </Link>
-          </div>
-        </Card>
-      )}
     </div>
   );
 };
