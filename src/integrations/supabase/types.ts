@@ -175,6 +175,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      ensure_user_setup: {
+        Args: { _email: string; _store_name: string; _user_id: string }
+        Returns: undefined
+      }
       is_pro_user: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
