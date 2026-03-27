@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { User, Lock, LogOut, Camera, Save, Eye, EyeOff, AlertCircle, CheckCircle, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useStore } from '@/contexts/StoreContext';
-import { updatePasswordLocal } from '@/lib/local-auth';
+import { supabase } from '@/integrations/supabase/client';
 
 const Configuracoes: React.FC = () => {
   const navigate = useNavigate();
@@ -56,9 +56,9 @@ const Configuracoes: React.FC = () => {
 
     setLoading(true);
     setMessage(null);
-    const { error } = await updatePasswordLocal(newPassword);
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
     if (error) {
-      setMessage({ type: 'error', text: error });
+      setMessage({ type: 'error', text: error.message });
     } else {
       setMessage({ type: 'success', text: 'Senha alterada com sucesso!' });
       setNewPassword('');
@@ -117,7 +117,6 @@ const Configuracoes: React.FC = () => {
                       <input id="profile-image" type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
                     </label>
                   </div>
-                  <p className="text-sm text-gray-500 text-center">Clique no ícone para alterar a foto de perfil</p>
                 </div>
 
                 <div>

@@ -1,12 +1,6 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import {
-  defaultLocalStoreConfig,
-  getLocalStoreConfig,
-  saveLocalStoreConfig,
-  type LocalStoreConfig,
-} from '@/lib/local-store';
-import { updateCurrentLocalUser } from '@/lib/local-auth';
+import { supabase } from '@/integrations/supabase/client';
 import { sanitizeText } from '@/lib/sanitize';
 
 export interface Product {
@@ -53,19 +47,25 @@ interface StoreContextType {
   refreshData: () => Promise<void>;
 }
 
-const defaultConfig: StoreConfig = defaultLocalStoreConfig;
+const defaultConfig: StoreConfig = {
+  storeName: 'Minha Loja',
+  logo: '',
+  primaryColor: '#3b82f6',
+  whatsapp: '',
+  products: [],
+  transactions: [],
+  vitrineActive: false,
+  vitrineClicks: 0,
+  profileImage: '',
+};
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
-
-const persistConfig = (userId: string, nextConfig: LocalStoreConfig) => {
-  saveLocalStoreConfig(userId, nextConfig);
-  updateCurrentLocalUser({ storeName: nextConfig.storeName });
-};
 
 export const StoreProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [config, setConfig] = useState<StoreConfig>(defaultConfig);
+  const pendingOps = useRef(new Set<string>());
 
   const fetchData = useCallback(async () => {
     if (!user) {
@@ -76,14 +76,46 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
 
     setIsLoading(true);
     try {
-      const localConfig = getLocalStoreConfig(user.id);
-      const mergedConfig = {
-        ...localConfig,
-        storeName: localConfig.storeName || user.storeName || 'Minha Loja',
-      };
+      // Fetch profile, products, and transactions in parallel
+      const [profileRes, productsRes, transactionsRes] = await Promise.all([
+        supabase.from('profiles').select('*').eq('user_id', user.id).maybeSingle(),
+        supabase.from('products').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
+        supabase.from('transactions').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
+      ]);
 
-      setConfig(mergedConfig);
-      persistConfig(user.id, mergedConfig);
+      const profile = profileRes.data;
+      const products: Product[] = (productsRes.data ?? []).map(p => ({
+        id: p.id,
+        name: p.name,
+        photo: p.photo ?? '',
+        originalPrice: Number(p.original_price) || 0,
+        discountPrice: Number(p.discount_price) || 0,
+        description: p.description ?? '',
+        stock: p.stock ?? 0,
+      }));
+      const transactions: Transaction[] = (transactionsRes.data ?? []).map(t => ({
+        id: t.id,
+        type: t.type as 'entrada' | 'saida',
+        value: Number(t.value),
+        description: t.description,
+        category: t.category,
+        isPersonal: t.is_personal ?? false,
+        date: t.date,
+      }));
+
+      setConfig({
+        storeName: profile?.store_name ?? 'Minha Loja',
+        logo: profile?.logo ?? '',
+        primaryColor: profile?.primary_color ?? '#3b82f6',
+        whatsapp: profile?.whatsapp ?? '',
+        vitrineActive: profile?.vitrine_active ?? false,
+        vitrineClicks: profile?.vitrine_clicks ?? 0,
+        profileImage: profile?.profile_image ?? '',
+        products,
+        transactions,
+      });
+    } catch (err) {
+      console.error('Error fetching store data:', err);
     } finally {
       setIsLoading(false);
     }
@@ -93,110 +125,160 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
     fetchData();
   }, [fetchData]);
 
-  const updateConfig = (partial: Partial<StoreConfig>) => {
+  const updateConfig = async (partial: Partial<StoreConfig>) => {
     if (!user) return;
 
-    // Sanitize text fields
-    const sanitized = { ...partial };
-    if (sanitized.storeName) sanitized.storeName = sanitizeText(sanitized.storeName);
+    // Optimistic update
+    setConfig(prev => ({ ...prev, ...partial }));
 
-    setConfig((prev) => {
-      const next = { ...prev, ...sanitized };
-      persistConfig(user.id, next);
-      return next;
-    });
+    // Map to DB columns
+    const dbUpdate: Record<string, unknown> = {};
+    if (partial.storeName !== undefined) dbUpdate.store_name = sanitizeText(partial.storeName);
+    if (partial.logo !== undefined) dbUpdate.logo = partial.logo;
+    if (partial.primaryColor !== undefined) dbUpdate.primary_color = partial.primaryColor;
+    if (partial.whatsapp !== undefined) dbUpdate.whatsapp = partial.whatsapp;
+    if (partial.vitrineActive !== undefined) dbUpdate.vitrine_active = partial.vitrineActive;
+    if (partial.profileImage !== undefined) dbUpdate.profile_image = partial.profileImage;
+
+    if (Object.keys(dbUpdate).length > 0) {
+      await supabase.from('profiles').update(dbUpdate).eq('user_id', user.id);
+    }
   };
 
   const addProduct = async (product: Omit<Product, 'id'>) => {
     if (!user) return;
+    const opKey = `add-product-${Date.now()}`;
+    if (pendingOps.current.has(opKey)) return;
+    pendingOps.current.add(opKey);
 
-    setConfig((prev) => {
-      const next = {
-        ...prev,
-        products: [{ ...product, id: crypto.randomUUID() }, ...prev.products],
-      };
-      persistConfig(user.id, next);
-      return next;
-    });
+    try {
+      const { data, error } = await supabase.from('products').insert({
+        user_id: user.id,
+        name: sanitizeText(product.name),
+        photo: product.photo,
+        original_price: Math.max(0, product.originalPrice),
+        discount_price: Math.max(0.01, product.discountPrice),
+        description: sanitizeText(product.description),
+        stock: Math.max(0, product.stock),
+      }).select().single();
+
+      if (error) throw error;
+      if (data) {
+        setConfig(prev => ({
+          ...prev,
+          products: [{
+            id: data.id,
+            name: data.name,
+            photo: data.photo ?? '',
+            originalPrice: Number(data.original_price) || 0,
+            discountPrice: Number(data.discount_price) || 0,
+            description: data.description ?? '',
+            stock: data.stock ?? 0,
+          }, ...prev.products],
+        }));
+      }
+    } finally {
+      pendingOps.current.delete(opKey);
+    }
   };
 
   const removeProduct = async (id: string) => {
     if (!user) return;
+    const opKey = `rm-product-${id}`;
+    if (pendingOps.current.has(opKey)) return;
+    pendingOps.current.add(opKey);
 
-    setConfig((prev) => {
-      const next = {
-        ...prev,
-        products: prev.products.filter((product) => product.id !== id),
-      };
-      persistConfig(user.id, next);
-      return next;
-    });
+    try {
+      setConfig(prev => ({ ...prev, products: prev.products.filter(p => p.id !== id) }));
+      await supabase.from('products').delete().eq('id', id).eq('user_id', user.id);
+    } finally {
+      pendingOps.current.delete(opKey);
+    }
   };
 
   const updateProduct = async (product: Product) => {
     if (!user) return;
+    const opKey = `upd-product-${product.id}`;
+    if (pendingOps.current.has(opKey)) return;
+    pendingOps.current.add(opKey);
 
-    setConfig((prev) => {
-      const next = {
+    try {
+      setConfig(prev => ({
         ...prev,
-        products: prev.products.map((item) => (item.id === product.id ? product : item)),
-      };
-      persistConfig(user.id, next);
-      return next;
-    });
+        products: prev.products.map(p => p.id === product.id ? product : p),
+      }));
+
+      await supabase.from('products').update({
+        name: sanitizeText(product.name),
+        photo: product.photo,
+        original_price: Math.max(0, product.originalPrice),
+        discount_price: Math.max(0.01, product.discountPrice),
+        description: sanitizeText(product.description),
+        stock: Math.max(0, product.stock),
+      }).eq('id', product.id).eq('user_id', user.id);
+    } finally {
+      pendingOps.current.delete(opKey);
+    }
   };
 
   const addTransaction = async (transaction: Omit<Transaction, 'id'>) => {
     if (!user) return;
-
-    // Validate: block zero or negative values
     if (!transaction.value || transaction.value <= 0) {
       throw new Error('Valor da transação deve ser maior que zero.');
     }
 
-    const sanitizedTx = {
-      ...transaction,
-      description: sanitizeText(transaction.description),
-      category: sanitizeText(transaction.category),
-      id: crypto.randomUUID(),
-    };
+    const opKey = `add-tx-${Date.now()}`;
+    if (pendingOps.current.has(opKey)) return;
+    pendingOps.current.add(opKey);
 
-    setConfig((prev) => {
-      const next = {
-        ...prev,
-        transactions: [sanitizedTx, ...prev.transactions],
-      };
-      persistConfig(user.id, next);
-      return next;
-    });
+    try {
+      const { data, error } = await supabase.from('transactions').insert({
+        user_id: user.id,
+        type: transaction.type,
+        value: transaction.value,
+        description: sanitizeText(transaction.description),
+        category: sanitizeText(transaction.category),
+        is_personal: transaction.isPersonal,
+        date: transaction.date,
+      }).select().single();
+
+      if (error) throw error;
+      if (data) {
+        setConfig(prev => ({
+          ...prev,
+          transactions: [{
+            id: data.id,
+            type: data.type as 'entrada' | 'saida',
+            value: Number(data.value),
+            description: data.description,
+            category: data.category,
+            isPersonal: data.is_personal ?? false,
+            date: data.date,
+          }, ...prev.transactions],
+        }));
+      }
+    } finally {
+      pendingOps.current.delete(opKey);
+    }
   };
 
   const removeTransaction = async (id: string) => {
     if (!user) return;
+    const opKey = `rm-tx-${id}`;
+    if (pendingOps.current.has(opKey)) return;
+    pendingOps.current.add(opKey);
 
-    setConfig((prev) => {
-      const next = {
-        ...prev,
-        transactions: prev.transactions.filter((transaction) => transaction.id !== id),
-      };
-      persistConfig(user.id, next);
-      return next;
-    });
+    try {
+      setConfig(prev => ({ ...prev, transactions: prev.transactions.filter(t => t.id !== id) }));
+      await supabase.from('transactions').delete().eq('id', id).eq('user_id', user.id);
+    } finally {
+      pendingOps.current.delete(opKey);
+    }
   };
 
   return (
     <StoreContext.Provider
-      value={{
-        config,
-        updateConfig,
-        addProduct,
-        removeProduct,
-        updateProduct,
-        addTransaction,
-        removeTransaction,
-        isLoading,
-        refreshData: fetchData,
-      }}
+      value={{ config, updateConfig, addProduct, removeProduct, updateProduct, addTransaction, removeTransaction, isLoading, refreshData: fetchData }}
     >
       {children}
     </StoreContext.Provider>

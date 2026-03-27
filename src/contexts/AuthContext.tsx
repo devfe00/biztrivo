@@ -1,106 +1,116 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import {
-  canResetPasswordLocal,
-  getLocalSession,
-  requestPasswordResetLocal,
-  signInLocal,
-  signOutLocal,
-  signUpLocal,
-  type LocalSession,
-  type LocalUser,
-} from '@/lib/local-auth';
+import { supabase } from '@/integrations/supabase/client';
+import { lovable } from '@/integrations/lovable';
+import type { User, Session } from '@supabase/supabase-js';
 
 interface AuthContextType {
-  user: LocalUser | null;
-  session: LocalSession | null;
+  user: User | null;
+  session: Session | null;
   loading: boolean;
-  isPro: boolean;
   signUp: (email: string, password: string, storeName: string) => Promise<{ error: string | null }>;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
+  signInWithGoogle: () => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: string | null }>;
-  canResetPassword: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<LocalUser | null>(null);
-  const [session, setSession] = useState<LocalSession | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [canResetPassword, setCanResetPassword] = useState(false);
 
   useEffect(() => {
-    const syncSession = () => {
-      const currentSession = getLocalSession();
-      setSession(currentSession);
-      setUser(currentSession?.user ?? null);
-      setCanResetPassword(canResetPasswordLocal());
-      setLoading(false);
-    };
+    // Set up listener FIRST (per Supabase best practices)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, newSession) => {
+        setSession(newSession);
+        setUser(newSession?.user ?? null);
+        setLoading(false);
 
-    syncSession();
-
-    const handleStorage = (event: StorageEvent) => {
-      if (!event.key || event.key.startsWith('biztrivo:auth')) {
-        syncSession();
+        // On first sign-in (signup or OAuth), ensure profile exists
+        if (event === 'SIGNED_IN' && newSession?.user) {
+          const u = newSession.user;
+          // Use setTimeout to avoid blocking the auth state change
+          setTimeout(async () => {
+            try {
+              await supabase.rpc('ensure_user_setup' as any, {
+                _user_id: u.id,
+                _email: u.email ?? '',
+                _store_name: u.user_metadata?.store_name ?? u.user_metadata?.full_name ?? 'Minha Loja',
+              });
+            } catch {
+              // Profile may already exist, that's fine
+            }
+          }, 0);
+        }
       }
-    };
+    );
 
-    window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
+    // Then get existing session
+    supabase.auth.getSession().then(({ data: { session: existingSession } }) => {
+      setSession(existingSession);
+      setUser(existingSession?.user ?? null);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const signUp = async (email: string, password: string, storeName: string) => {
-    const { error } = await signUpLocal(email, password, storeName);
-    setCanResetPassword(canResetPasswordLocal());
-    return { error };
-  };
-
-  const signIn = async (email: string, password: string) => {
-    const { error, user: nextUser } = await signInLocal(email, password);
-
+    const { error } = await supabase.auth.signUp({
+      email: email.trim().toLowerCase(),
+      password,
+      options: { data: { store_name: storeName.trim() || 'Minha Loja' } },
+    });
     if (error) {
-      if (error.includes('Invalid login credentials')) {
-        return { error: 'Email ou senha incorretos' };
-      }
-      return { error };
+      if (error.message.includes('already registered')) return { error: 'Este email já está cadastrado' };
+      return { error: error.message };
     }
-
-    const nextSession = nextUser ? { user: nextUser } : null;
-    setSession(nextSession);
-    setUser(nextUser ?? null);
-    setCanResetPassword(canResetPasswordLocal());
     return { error: null };
   };
 
+  const signIn = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim().toLowerCase(),
+      password,
+    });
+    if (error) {
+      if (error.message.includes('Invalid login')) return { error: 'Email ou senha incorretos' };
+      return { error: error.message };
+    }
+    return { error: null };
+  };
+
+  const signInWithGoogle = async () => {
+    try {
+      const result = await lovable.auth.signInWithOAuth('google', {
+        redirect_uri: window.location.origin,
+      });
+      if (result.error) return { error: String(result.error) };
+      return { error: null };
+    } catch (e) {
+      return { error: e instanceof Error ? e.message : 'Erro ao entrar com Google' };
+    }
+  };
+
   const signOut = async () => {
-    await signOutLocal();
+    await supabase.auth.signOut();
     setUser(null);
     setSession(null);
-    setCanResetPassword(canResetPasswordLocal());
   };
 
   const resetPassword = async (email: string) => {
-    const { error } = await requestPasswordResetLocal(email);
-    setCanResetPassword(canResetPasswordLocal());
-    return { error };
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    if (error) return { error: error.message };
+    return { error: null };
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        session,
-        loading,
-        isPro: user?.isPro ?? true,
-        signUp,
-        signIn,
-        signOut,
-        resetPassword,
-        canResetPassword,
-      }}
-    >
+    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signInWithGoogle, signOut, resetPassword }}>
       {children}
     </AuthContext.Provider>
   );

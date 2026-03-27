@@ -24,7 +24,7 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   
   const { config } = useStore();
-  const { signOut, isPro } = useAuth();
+  const { signOut } = useAuth();
 
   const storeName = config.storeName || 'Minha Loja';
   const profileImage = config.profileImage || '';
@@ -67,19 +67,6 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
             );
           })}
         </nav>
-        
-        {!isPro && (
-          <div className="p-4 m-3 rounded-xl bg-muted/50 border border-border">
-            <p className="text-xs font-semibold text-foreground">Plano Gratuito</p>
-            <p className="text-xs text-muted-foreground mt-1">Desbloqueie tudo por R$ 19,90</p>
-            <button
-              onClick={() => navigate('/configuracoes')}
-              className="mt-3 w-full py-2 rounded-lg text-xs font-semibold gradient-primary text-primary-foreground shadow-glow block text-center transition-transform hover:scale-105"
-            >
-              Seja PRO
-            </button>
-          </div>
-        )}
       </aside>
 
       <div className="md:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 bg-card border-b border-border shadow-sm">
@@ -108,7 +95,6 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
               })}
             </nav>
 
-            {/* Profile section mobile */}
             <div className="border-t border-border p-3 space-y-2">
               <Link to="/configuracoes" onClick={() => setMobileOpen(false)}
                 className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all">
@@ -126,20 +112,6 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
                 <LogOut size={18} /><span>Sair</span>
               </button>
             </div>
-
-            {/* Upgrade banner mobile */}
-            {!isPro && (
-              <div className="p-4 m-3 rounded-xl bg-muted/50 border border-border">
-                <p className="text-xs font-semibold text-foreground">Plano Gratuito</p>
-                <p className="text-xs text-muted-foreground mt-1">Desbloqueie tudo por R$ 19,90</p>
-                <button
-                  onClick={() => { setMobileOpen(false); navigate('/configuracoes'); }}
-                  className="mt-3 w-full py-2 rounded-lg text-xs font-semibold gradient-primary text-primary-foreground shadow-glow block text-center transition-transform hover:scale-105"
-                >
-                  Seja PRO
-                </button>
-              </div>
-            )}
           </div>
         </div>
       )}

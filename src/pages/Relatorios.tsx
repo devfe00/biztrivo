@@ -1,10 +1,9 @@
 import { useMemo, useState } from 'react';
 import { useStore } from '@/contexts/StoreContext';
-import { useAuth } from '@/contexts/AuthContext';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
-import { AlertTriangle, TrendingUp, Wallet, Download, Lock, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { TrendingUp, Wallet, Download, ArrowUpRight, ArrowDownRight, AlertTriangle } from 'lucide-react';
 
 const CATEGORY_COLORS: Record<string, string> = {
   'Reposição': 'hsl(217, 91%, 60%)',
@@ -22,19 +21,9 @@ const periods = [
 
 const Relatorios = () => {
   const { config } = useStore();
-  const { isPro } = useAuth();
   const [period, setPeriod] = useState<'today' | '7d' | '30d'>('30d');
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const now = new Date();
-
-  const handlePeriodChange = (newPeriod: 'today' | '7d' | '30d') => {
-    if (!isPro && newPeriod !== 'today') {
-      setShowUpgradeModal(true);
-      return;
-    }
-    setPeriod(newPeriod);
-  };
 
   const filteredTransactions = useMemo(() => {
     return config.transactions.filter(t => {
@@ -89,7 +78,6 @@ const Relatorios = () => {
   const formatCurrency = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
   const exportToCSV = () => {
-    if (!isPro) { setShowUpgradeModal(true); return; }
     if (filteredTransactions.length === 0) { alert('Sem transações.'); return; }
     const rows = filteredTransactions.map(t => [new Date(t.date).toLocaleDateString('pt-BR'), t.type === 'entrada' ? 'Entrada' : 'Saída', t.category, t.description, t.value.toFixed(2).replace('.', ','), t.isPersonal ? 'Sim' : 'Não']);
     const csv = ['Data;Tipo;Categoria;Descrição;Valor;Pessoal', ...rows.map(r => r.join(';'))].join('\n');
@@ -101,7 +89,6 @@ const Relatorios = () => {
   };
 
   const exportToPDF = () => {
-    if (!isPro) { setShowUpgradeModal(true); return; }
     if (filteredTransactions.length === 0) { alert('Sem transações.'); return; }
     const periodLabel = period === 'today' ? 'Hoje' : period === '7d' ? '7 dias' : '30 dias';
     const totalE = filteredTransactions.filter(t => t.type === 'entrada').reduce((s, t) => s + t.value, 0);
@@ -132,11 +119,9 @@ const Relatorios = () => {
           </button>
           <div className="flex gap-1 bg-muted rounded-lg p-1">
             {periods.map(p => (
-              <button key={p.value} onClick={() => handlePeriodChange(p.value)}
-                disabled={!isPro && p.value !== 'today'}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-all relative ${period === p.value ? 'gradient-primary text-primary-foreground shadow-glow' : 'text-muted-foreground hover:text-foreground'} ${!isPro && p.value !== 'today' ? 'opacity-50 cursor-not-allowed' : ''}`}>
+              <button key={p.value} onClick={() => setPeriod(p.value)}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${period === p.value ? 'gradient-primary text-primary-foreground shadow-glow' : 'text-muted-foreground hover:text-foreground'}`}>
                 {p.label}
-                {!isPro && p.value !== 'today' && <Lock className="w-3 h-3 absolute -top-1 -right-1 text-warning" />}
               </button>
             ))}
           </div>
@@ -249,27 +234,6 @@ const Relatorios = () => {
           </ResponsiveContainer>
         </div>
       </Card>
-
-      {showUpgradeModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="max-w-md w-full p-6 border-none shadow-2xl">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center shadow-glow">
-                <Lock className="w-6 h-6 text-primary-foreground" />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold font-heading">Recurso Pro</h3>
-                <p className="text-sm text-muted-foreground">Desbloqueie análises avançadas</p>
-              </div>
-            </div>
-            <p className="text-muted-foreground mb-6">Relatórios de 7 e 30 dias são exclusivos do plano Pro.</p>
-            <div className="flex gap-3">
-              <button onClick={() => setShowUpgradeModal(false)} className="flex-1 px-4 py-2 rounded-lg border border-border hover:bg-muted transition-all font-medium">Cancelar</button>
-              <button onClick={() => { setShowUpgradeModal(false); window.location.href = '/configuracoes'; }} className="flex-1 px-4 py-2 rounded-lg gradient-primary text-primary-foreground hover:opacity-90 transition-all font-medium shadow-glow">Fazer Upgrade</button>
-            </div>
-          </Card>
-        </div>
-      )}
     </div>
   );
 };

@@ -1,22 +1,24 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
-import { MessageCircle, ShoppingBag, AlertCircle, Search, Phone, X, Loader2, Check } from 'lucide-react';
-import { listLocalStoreConfigs, slugifyStoreName } from '@/lib/local-store';
+import { MessageCircle, ShoppingBag, AlertCircle, Search, Phone, X, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+
+interface StoreProduct {
+  id: string;
+  name: string;
+  photo: string;
+  originalPrice: number;
+  discountPrice: number;
+  description: string;
+  stock: number;
+}
 
 interface StoreData {
   storeName: string;
   logo: string;
   primaryColor: string;
   whatsapp: string;
-  products: Array<{
-    id: string;
-    name: string;
-    photo: string;
-    originalPrice: number;
-    discountPrice: number;
-    description: string;
-    stock: number;
-  }>;
+  products: StoreProduct[];
 }
 
 const generateOrderCode = () => {
@@ -47,22 +49,49 @@ const PublicStore = () => {
 
   useEffect(() => {
     if (!slug) { setLoading(false); return; }
-    const storeEntry = listLocalStoreConfigs().find(({ config }) =>
-      config.vitrineActive && slugifyStoreName(config.storeName) === slug,
-    );
-    if (!storeEntry) { setLoading(false); return; }
-    const { config } = storeEntry;
-    setStore({
-      storeName: config.storeName,
-      logo: config.logo || '',
-      primaryColor: config.primaryColor || '#3b82f6',
-      whatsapp: config.whatsapp || '',
-      products: config.products,
-    });
-    setLoading(false);
+
+    const fetchStore = async () => {
+      // Find profile by matching slug (store_name slugified)
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('vitrine_active', true);
+
+      if (!profiles) { setLoading(false); return; }
+
+      const slugify = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      const profile = profiles.find(p => slugify(p.store_name) === slug);
+
+      if (!profile) { setLoading(false); return; }
+
+      // Fetch products for this user
+      const { data: products } = await supabase
+        .from('products')
+        .select('*')
+        .eq('user_id', profile.user_id);
+
+      setStore({
+        storeName: profile.store_name,
+        logo: profile.logo ?? '',
+        primaryColor: profile.primary_color ?? '#3b82f6',
+        whatsapp: profile.whatsapp ?? '',
+        products: (products ?? []).map(p => ({
+          id: p.id,
+          name: p.name,
+          photo: p.photo ?? '',
+          originalPrice: Number(p.original_price) || 0,
+          discountPrice: Number(p.discount_price) || 0,
+          description: p.description ?? '',
+          stock: p.stock ?? 0,
+        })),
+      });
+      setLoading(false);
+    };
+
+    fetchStore();
   }, [slug]);
 
-  // Dynamic SEO meta tags + Open Graph
+  // Dynamic SEO meta tags
   useEffect(() => {
     if (!store) return;
     const title = `Confira a vitrine de ${store.storeName} no Biztrivo`;
@@ -72,13 +101,11 @@ const PublicStore = () => {
     document.title = title;
     setMetaTag('description', description);
     setMetaTag('theme-color', store.primaryColor);
-    // Open Graph
     setMetaTag('og:title', title, true);
     setMetaTag('og:description', description, true);
     setMetaTag('og:type', 'website', true);
     setMetaTag('og:url', url, true);
     if (store.logo) setMetaTag('og:image', store.logo, true);
-    // Twitter Card
     setMetaTag('twitter:card', 'summary');
     setMetaTag('twitter:title', title);
     setMetaTag('twitter:description', description);
@@ -89,7 +116,6 @@ const PublicStore = () => {
   const handleBuy = useCallback((productId: string, productName: string, price: number, stock: number) => {
     if (!store?.whatsapp || stock === 0) return;
     setBuyingProductId(productId);
-
     setTimeout(() => {
       const phone = store.whatsapp.replace(/\D/g, '');
       const priceStr = price.toFixed(2).replace('.', ',');
@@ -98,7 +124,6 @@ const PublicStore = () => {
         `Olá! Vi o *${productName}* por *R$ ${priceStr}* na vitrine e quero garantir o meu!\n\nCódigo do pedido: ${orderCode}`
       );
       window.open(`https://wa.me/55${phone}?text=${message}`, '_blank');
-
       setTimeout(() => setBuyingProductId(null), 1500);
     }, 800);
   }, [store]);
@@ -154,16 +179,11 @@ const PublicStore = () => {
           </div>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: '#94a3b8' }} />
-            <input
-              type="text"
-              placeholder="Buscar produtos..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+            <input type="text" placeholder="Buscar produtos..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-10 py-2 rounded-lg text-sm outline-none transition-all"
               style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', color: '#1e293b' }}
               onFocus={(e) => (e.target.style.borderColor = pc)}
-              onBlur={(e) => (e.target.style.borderColor = '#e2e8f0')}
-            />
+              onBlur={(e) => (e.target.style.borderColor = '#e2e8f0')} />
             {searchQuery && (
               <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: '#94a3b8' }}>
                 <X className="w-4 h-4" />
@@ -184,8 +204,6 @@ const PublicStore = () => {
             {filteredProducts.map((product) => {
               const outOfStock = product.stock === 0;
               const isBuying = buyingProductId === product.id;
-              const justBought = isBuying; // shows loader then check
-
               return (
                 <div key={product.id} className="rounded-xl overflow-hidden group relative" style={{ backgroundColor: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
                   {outOfStock && (
@@ -215,19 +233,8 @@ const PublicStore = () => {
                       onClick={() => handleBuy(product.id, product.name, product.discountPrice, product.stock)}
                       disabled={outOfStock || isBuying}
                       className="mt-3 w-full py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-all active:scale-95 disabled:cursor-not-allowed"
-                      style={{
-                        backgroundColor: outOfStock ? '#94a3b8' : pc,
-                        color: '#fff',
-                        opacity: outOfStock ? 0.4 : 1,
-                      }}
-                    >
-                      {isBuying ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : outOfStock ? (
-                        <><AlertCircle className="w-4 h-4" /> Produto Indisponível</>
-                      ) : (
-                        <><MessageCircle className="w-4 h-4" /> Comprar</>
-                      )}
+                      style={{ backgroundColor: outOfStock ? '#94a3b8' : pc, color: '#fff', opacity: outOfStock ? 0.4 : 1 }}>
+                      {isBuying ? <Loader2 className="w-4 h-4 animate-spin" /> : outOfStock ? <><AlertCircle className="w-4 h-4" /> Produto Indisponível</> : <><MessageCircle className="w-4 h-4" /> Comprar</>}
                     </button>
                   </div>
                 </div>
@@ -239,12 +246,9 @@ const PublicStore = () => {
 
       {showWhatsAppButton && store.whatsapp && (
         <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-2">
-          <button
-            onClick={handleWhatsAppContact}
+          <button onClick={handleWhatsAppContact}
             className="w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-transform hover:scale-110 active:scale-95"
-            style={{ backgroundColor: '#25D366' }}
-            title="Fale conosco"
-          >
+            style={{ backgroundColor: '#25D366' }} title="Fale conosco">
             <Phone className="w-6 h-6 text-white" />
           </button>
           <button onClick={() => setShowWhatsAppButton(false)} className="w-5 h-5 rounded-full flex items-center justify-center opacity-50 hover:opacity-100 transition-opacity" style={{ backgroundColor: '#334155' }}>

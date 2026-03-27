@@ -1,35 +1,23 @@
 import { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading, isPro } = useAuth();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-
-  const shouldGoLogin = !loading && !user;
-  const shouldGoPlanos = !loading && !!user && !isPro && location.pathname !== '/planos';
-  const tokenSearch = location.search || '';
-  const loginPath = `/login${tokenSearch}`;
-  const planosPath = `/planos${tokenSearch}`;
 
   useEffect(() => {
-    if (shouldGoLogin) {
-      navigate(loginPath, { replace: true });
-      return;
+    if (!loading && !user) {
+      navigate('/login', { replace: true });
     }
+  }, [loading, user, navigate]);
 
-    if (shouldGoPlanos) {
-      navigate(planosPath, { replace: true });
-    }
-  }, [shouldGoLogin, shouldGoPlanos, loginPath, planosPath, navigate]);
-
-  if (loading || shouldGoLogin || shouldGoPlanos) {
+  if (loading || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
           <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-muted-foreground text-sm">Redirecionando...</p>
+          <p className="text-muted-foreground text-sm">Carregando...</p>
         </div>
       </div>
     );
