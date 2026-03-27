@@ -13,7 +13,8 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { sanitizeText } from '@/lib/sanitize';
 
 const Vitrine = () => {
-  const { config, updateConfig, addProduct, removeProduct } = useStore();
+  const { config, updateConfig, addProduct, removeProduct, updateProduct } = useStore();
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const { checkStockAlert } = useNotifications();
   const [showForm, setShowForm] = useState(false);
   const [copied, setCopied] = useState(false);
