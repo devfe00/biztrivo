@@ -92,6 +92,28 @@ const Vitrine = () => {
     reader.readAsDataURL(file);
   };
 
+  const handleEditSave = async () => {
+    if (!editingProduct) return;
+    if (editingProduct.discountPrice <= 0) { toast.error('O preço deve ser maior que zero.'); return; }
+    await updateProduct({
+      ...editingProduct,
+      name: sanitizeText(editingProduct.name),
+      description: sanitizeText(editingProduct.description),
+      stock: Math.max(0, editingProduct.stock),
+      originalPrice: Math.max(0, editingProduct.originalPrice),
+    });
+    setEditingProduct(null);
+    toast.success('Produto atualizado!');
+  };
+
+  const handleEditPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setEditingProduct(prev => prev ? { ...prev, photo: reader.result as string } : null);
+    reader.readAsDataURL(file);
+  };
+
   return (
     <div className="space-y-8">
       <div>
