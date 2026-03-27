@@ -274,9 +274,14 @@ const Vitrine = () => {
                     <span className="text-sm font-bold text-secondary">R$ {p.discountPrice.toFixed(2).replace('.', ',')}</span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">Estoque: {p.stock ?? 0}</p>
-                  <button onClick={() => removeProduct(p.id)} className="mt-3 text-xs text-muted-foreground hover:text-destructive flex items-center gap-1 transition-colors">
-                    <Trash2 className="w-3 h-3" /> Remover
-                  </button>
+                  <div className="mt-3 flex items-center gap-3">
+                    <button onClick={() => setEditingProduct({ ...p })} className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1 transition-colors">
+                      <Pencil className="w-3 h-3" /> Editar
+                    </button>
+                    <button onClick={() => removeProduct(p.id)} className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-1 transition-colors">
+                      <Trash2 className="w-3 h-3" /> Remover
+                    </button>
+                  </div>
                 </div>
               </Card>
             ))}
