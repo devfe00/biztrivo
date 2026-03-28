@@ -51,23 +51,21 @@ const PublicStore = () => {
     if (!slug) { setLoading(false); return; }
 
     const fetchStore = async () => {
-      // Find profile by matching slug (store_name slugified)
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('vitrine_active', true);
+      // Use security definer function to get store data by slug
+      // This avoids exposing email and other sensitive profile data
+      const { data: storeData, error } = await supabase.rpc('get_public_store_by_slug' as any, { _slug: slug });
 
-      if (!profiles) { setLoading(false); return; }
+      if (error || !storeData || (storeData as any[]).length === 0) {
+        setLoading(false);
+        return;
+      }
 
-      const slugify = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-      const profile = profiles.find(p => slugify(p.store_name) === slug);
+      const profile = (storeData as any[])[0];
 
-      if (!profile) { setLoading(false); return; }
-
-      // Fetch products for this user
+      // Fetch products for this user (allowed by public RLS policy)
       const { data: products } = await supabase
         .from('products')
-        .select('*')
+        .select('id, name, photo, original_price, discount_price, description, stock')
         .eq('user_id', profile.user_id);
 
       setStore({
@@ -118,6 +116,7 @@ const PublicStore = () => {
     setBuyingProductId(productId);
     setTimeout(() => {
       const phone = store.whatsapp.replace(/\D/g, '');
+      if (!/^\d{10,13}$/.test(phone)) return;
       const priceStr = price.toFixed(2).replace('.', ',');
       const orderCode = generateOrderCode();
       const message = encodeURIComponent(
@@ -131,6 +130,7 @@ const PublicStore = () => {
   const handleWhatsAppContact = () => {
     if (!store?.whatsapp) return;
     const phone = store.whatsapp.replace(/\D/g, '');
+    if (!/^\d{10,13}$/.test(phone)) return;
     const message = encodeURIComponent(`Olá! Estou visitando a vitrine ${store.storeName} e gostaria de mais informações!`);
     window.open(`https://wa.me/55${phone}?text=${message}`, '_blank');
   };

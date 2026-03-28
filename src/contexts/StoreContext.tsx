@@ -147,7 +147,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
 
   const addProduct = async (product: Omit<Product, 'id'>) => {
     if (!user) return;
-    const opKey = `add-product-${Date.now()}`;
+    const opKey = `add-product-${product.name}-${product.discountPrice}`;
     if (pendingOps.current.has(opKey)) return;
     pendingOps.current.add(opKey);
 
