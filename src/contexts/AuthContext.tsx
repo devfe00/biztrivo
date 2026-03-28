@@ -84,15 +84,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signInWithGoogle = async () => {
-    try {
-      const result = await lovable.auth.signInWithOAuth('google', {
-        redirect_uri: window.location.origin,
-      });
-      if (result.error) return { error: String(result.error) };
-      return { error: null };
-    } catch (e) {
-      return { error: e instanceof Error ? e.message : 'Erro ao entrar com Google' };
-    }
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+    if (error) return { error: error.message };
+    return { error: null };
   };
 
   const signOut = async () => {

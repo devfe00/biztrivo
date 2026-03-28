@@ -22,6 +22,7 @@ import Planos from "@/pages/Planos";
 import TermosDeUso from "@/pages/TermosDeUso";
 import PoliticaPrivacidade from "@/pages/PoliticaPrivacidade";
 import NotFound from "./pages/NotFound";
+import AuthCallback from "@/pages/AuthCallback";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +51,7 @@ const App = () => (
               <Route path="/relatorios" element={<ProtectedRoute><AppLayout><Relatorios /></AppLayout></ProtectedRoute>} />
               <Route path="/academy" element={<ProtectedRoute><AppLayout><Academy /></AppLayout></ProtectedRoute>} />
               <Route path="/configuracoes" element={<ProtectedRoute><AppLayout><Configuracoes /></AppLayout></ProtectedRoute>} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
               
               <Route path="*" element={<NotFound />} />
             </Routes>
