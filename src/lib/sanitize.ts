@@ -3,11 +3,13 @@
  */
 export const sanitizeText = (input: string): string => {
   return input
-    .replace(/<[^>]*>/g, '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
     .replace(/javascript:/gi, '')
     .replace(/on\w+\s*=/gi, '')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
     .trim();
 };
 
