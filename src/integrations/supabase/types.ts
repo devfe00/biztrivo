@@ -190,6 +190,7 @@ export type Database = {
         }[]
       }
       is_pro_user: { Args: { _user_id: string }; Returns: boolean }
+      is_vitrine_active: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
