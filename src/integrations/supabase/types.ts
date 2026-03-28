@@ -179,6 +179,16 @@ export type Database = {
         Args: { _email: string; _store_name: string; _user_id: string }
         Returns: undefined
       }
+      get_public_store_by_slug: {
+        Args: { _slug: string }
+        Returns: {
+          logo: string
+          primary_color: string
+          store_name: string
+          user_id: string
+          whatsapp: string
+        }[]
+      }
       is_pro_user: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
