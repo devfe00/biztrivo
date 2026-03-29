@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Como Precificar seus Produtos</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+  
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #f8fafc;
+    color: #1e293b;
+    line-height: 1.7;
+  }
+
+  .page {
+    max-width: 750px;
+    margin: 0 auto;
+    background: white;
+    min-height: 100vh;
+    padding: 60px 50px;
+    page-break-after: always;
+  }
+
+  .cover {
+    background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 60px 50px;
+  }
+
+  .cover .tag {
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.4);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 30px;
+  }
+
+  .cover h1 {
+    font-size: 46px;
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 20px;
+    max-width: 500px;
+  }
+
+  .cover p {
+    font-size: 18px;
+    opacity: 0.85;
+    max-width: 420px;
+    line-height: 1.6;
+    margin-bottom: 40px;
+  }
+
+  .cover .author {
+    font-size: 13px;
+    opacity: 0.7;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  .cover-deco {
+    margin-top: 60px;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .cover-deco span {
+    background: rgba(255,255,255,0.15);
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  h2 {
+    font-size: 26px;
+    font-weight: 800;
+    color: #047857;
+    margin-bottom: 12px;
+    margin-top: 40px;
+    padding-bottom: 8px;
+    border-bottom: 3px solid #d1fae5;
+  }
+
+  h2:first-of-type { margin-top: 0; }
+
+  h3 {
+    font-size: 17px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-top: 28px;
+    margin-bottom: 8px;
+  }
+
+  p {
+    font-size: 15px;
+    color: #374151;
+    margin-bottom: 14px;
+  }
+
+  .highlight {
+    background: #ecfdf5;
+    border-left: 4px solid #10b981;
+    padding: 16px 20px;
+    border-radius: 0 10px 10px 0;
+    margin: 20px 0;
+  }
+
+  .highlight strong {
+    color: #047857;
+  }
+
+  .example-box {
+    background: #f0fdf4;
+    border: 1.5px solid #bbf7d0;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin: 20px 0;
+  }
+
+  .example-box .label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: #059669;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .formula {
+    background: #1e293b;
+    color: #10b981;
+    padding: 16px 24px;
+    border-radius: 10px;
+    font-family: monospace;
+    font-size: 16px;
+    font-weight: 700;
+    margin: 20px 0;
+    text-align: center;
+    letter-spacing: 0.5px;
+  }
+
+  .checklist {
+    list-style: none;
+    margin: 16px 0;
+  }
+
+  .checklist li {
+    padding: 10px 0;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 15px;
+    color: #374151;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .checklist li::before {
+    content: "✓";
+    color: #10b981;
+    font-weight: 800;
+    font-size: 16px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .warning {
+    background: #fef3c7;
+    border-left: 4px solid #f59e0b;
+    padding: 16px 20px;
+    border-radius: 0 10px 10px 0;
+    margin: 20px 0;
+    font-size: 14px;
+    color: #92400e;
+  }
+
+  .warning strong { color: #d97706; }
+
+  .number-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 20px 0;
+  }
+
+  .number-card {
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+  }
+
+  .number-card .big {
+    font-size: 36px;
+    font-weight: 800;
+    color: #10b981;
+  }
+
+  .number-card .desc {
+    font-size: 13px;
+    color: #64748b;
+    margin-top: 4px;
+  }
+
+  .page-footer {
+    margin-top: 60px;
+    padding-top: 20px;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .page-footer .brand {
+    font-size: 13px;
+    font-weight: 700;
+    color: #10b981;
+  }
+
+  .page-footer .pg {
+    font-size: 12px;
+    color: #94a3b8;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 14px;
+  }
+
+  table th {
+    background: #047857;
+    color: white;
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 700;
+  }
+
+  table td {
+    padding: 10px 16px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #374151;
+  }
+
+  table tr:nth-child(even) td { background: #f8fafc; }
+
+  @media print {
+    .page { page-break-after: always; }
+  }
+</style>
+</head>
+<body>
+
+<!-- CAPA -->
+<div class="page cover">
+  <div class="tag">📚 Biztrivo Academy</div>
+  <h1>Como Precificar seus Produtos</h1>
+  <p>Chega de chute. Aprenda a calcular o preço certo, lucrar de verdade e nunca mais vender no prejuízo sem saber.</p>
+  <div class="cover-deco">
+    <span>✅ Checklist completo</span>
+    <span>📊 Exemplos reais</span>
+    <span>💰 Fórmula pronta</span>
+  </div>
+  <div style="margin-top: auto; padding-top: 60px;" class="author">
+    Biztrivo Academy — Para quem vende com propósito
+  </div>
+</div>
+
+<!-- PÁGINA 2 -->
+<div class="page">
+  <h2>O erro que quebra a maioria dos negócios</h2>
+  <p>A maior parte das pessoas que vende produtos faz assim: olha quanto o concorrente cobra, cobra um pouco menos, e torce pra sobrar dinheiro. <strong>Isso é precificação no chute e ela quebra negócio.</strong></p>
+  <p>Vender caro demais afasta cliente. Vender barato demais te faz trabalhar pra nada. O preço certo é aquele que cobre tudo o que você gasta, mais o seu lucro justo, mais margem pra imprevistos.</p>
+
+  <div class="highlight">
+    <strong>Regra de ouro:</strong> Preço não é o que o mercado cobra. Preço é o que te faz lucrar depois de pagar tudo.
+  </div>
+
+  <h2>Passo 1 — Custo do Produto (CMV)</h2>
+  <p>O CMV (Custo da Mercadoria Vendida) é tudo que você gastou para ter aquele produto disponível para vender.</p>
+
+  <ul class="checklist">
+    <li>Quanto você pagou pelo produto (ou pela matéria-prima)</li>
+    <li>Frete de compra (o que você pagou para receber)</li>
+    <li>Embalagem (sacola, caixinha, etiqueta)</li>
+    <li>Perdas e avarias (geralmente 2% a 5% do estoque)</li>
+  </ul>
+
+  <div class="example-box">
+    <div class="label">Exemplo prático</div>
+    <p>Você vende bolsas artesanais. Cada bolsa usa R$18 de material, R$3 de embalagem, e você considera R$1 de perda média. <strong>Custo do produto = R$22.</strong></p>
+  </div>
+
+  <h2>Passo 2 — Custos Fixos por Unidade</h2>
+  <p>Custos fixos são o que você paga todo mês independente de vender ou não: aluguel, energia, celular, internet, sistema. Você precisa diluir esses custos em cada produto vendido.</p>
+
+  <div class="formula">
+    Custo fixo por produto = Total fixo mensal ÷ Qtd. de peças vendidas/mês
+  </div>
+
+  <div class="example-box">
+    <div class="label">Exemplo prático</div>
+    <p>Você tem R$800/mês de custos fixos e vende 80 bolsas por mês. <strong>Custo fixo por bolsa = R$800 ÷ 80 = R$10.</strong></p>
+  </div>
+
+  <div class="page-footer">
+    <span class="brand">Biztrivo Academy</span>
+    <span class="pg">Página 2</span>
+  </div>
+</div>
+
+<!-- PÁGINA 3 -->
+<div class="page">
+  <h2>Passo 3 — Custos Variáveis</h2>
+  <p>Esses custos existem só quando você vende. Muita gente esquece deles e aí o lucro some.</p>
+
+  <ul class="checklist">
+    <li>Taxa do cartão ou marketplace (Mercado Livre, Shopee, iFood): geralmente 12% a 20%</li>
+    <li>Frete de envio (o que o cliente não paga)</li>
+    <li>Comissão de vendedores, se tiver</li>
+    <li>Imposto simples ou MEI: em média 6% sobre faturamento</li>
+  </ul>
+
+  <div class="warning">
+    <strong>⚠️ Atenção:</strong> Muitas pessoas colocam o produto no Mercado Livre e esquecem que a plataforma fica com até 16% de tudo que entra. Sem contar o frete. Sem contar o imposto. Precifique considerando esses descontos.
+  </div>
+
+  <h2>Passo 4 — A Fórmula do Preço Final</h2>
+  <p>Com todos os custos na mão, aplique essa fórmula:</p>
+
+  <div class="formula">
+    Preço = (CMV + Custo Fixo por unidade) ÷ (1 – % Custos Variáveis – % Lucro desejado)
+  </div>
+
+  <div class="example-box">
+    <div class="label">Montando o preço da bolsa</div>
+    <table>
+      <tr><th>Item</th><th>Valor</th></tr>
+      <tr><td>Custo do produto (CMV)</td><td>R$ 22,00</td></tr>
+      <tr><td>Custo fixo por unidade</td><td>R$ 10,00</td></tr>
+      <tr><td>Taxa da plataforma (15%)</td><td>incluída na fórmula</td></tr>
+      <tr><td>Imposto MEI (6%)</td><td>incluída na fórmula</td></tr>
+      <tr><td>Lucro desejado (20%)</td><td>incluída na fórmula</td></tr>
+    </table>
+    <p style="margin-top:12px;"><strong>Cálculo:</strong> (22 + 10) ÷ (1 – 0,15 – 0,06 – 0,20) = R$32 ÷ 0,59 = <strong>R$54,23</strong></p>
+    <p>Cobrar R$55 é o preço honesto que cobre tudo e ainda te dá 20% de lucro real.</p>
+  </div>
+
+  <h2>Checklist antes de definir seu preço</h2>
+  <ul class="checklist">
+    <li>Calculei o custo de cada produto individualmente?</li>
+    <li>Somei o frete de compra e a embalagem?</li>
+    <li>Dividi meus custos fixos pelo número de vendas mensais?</li>
+    <li>Incluí as taxas da plataforma ou do cartão?</li>
+    <li>Incluí os impostos do MEI ou Simples?</li>
+    <li>Defini um percentual de lucro antes de calcular?</li>
+    <li>Testei se o preço final está competitivo no mercado?</li>
+  </ul>
+
+  <div class="number-grid">
+    <div class="number-card">
+      <div class="big">20%</div>
+      <div class="desc">Lucro mínimo saudável para produtos físicos</div>
+    </div>
+    <div class="number-card">
+      <div class="big">3x</div>
+      <div class="desc">Regra rápida: muitos segmentos cobram 3x o custo</div>
+    </div>
+  </div>
+
+  <div class="highlight">
+    <strong>Dica final:</strong> Faça esse cálculo para cada produto do seu catálogo. Você vai descobrir quais estão te dando lucro e quais estão te sugando sem você saber.
+  </div>
+
+  <div class="page-footer">
+    <span class="brand">Biztrivo Academy</span>
+    <span class="pg">Página 3</span>
+  </div>
+</div>
+
+</body>
+</html>

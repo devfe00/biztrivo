@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Como Atender Reclamações e Reverter Clientes Insatisfeitos</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #1e293b; line-height: 1.7; }
+  .page { max-width: 750px; margin: 0 auto; background: white; min-height: 100vh; padding: 60px 50px; page-break-after: always; }
+  .cover { background: linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%); color: white; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; min-height: 100vh; padding: 60px 50px; }
+  .cover .tag { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 30px; }
+  .cover h1 { font-size: 40px; font-weight: 800; line-height: 1.15; margin-bottom: 20px; max-width: 520px; }
+  .cover p { font-size: 18px; opacity: 0.85; max-width: 420px; line-height: 1.6; margin-bottom: 40px; }
+  .cover-deco { margin-top: 60px; display: flex; gap: 16px; flex-wrap: wrap; }
+  .cover-deco span { background: rgba(255,255,255,0.15); padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; }
+  h2 { font-size: 26px; font-weight: 800; color: #dc2626; margin-bottom: 12px; margin-top: 40px; padding-bottom: 8px; border-bottom: 3px solid #fee2e2; }
+  h2:first-of-type { margin-top: 0; }
+  p { font-size: 15px; color: #374151; margin-bottom: 14px; }
+  .highlight { background: #fef2f2; border-left: 4px solid #ef4444; padding: 16px 20px; border-radius: 0 10px 10px 0; margin: 20px 0; }
+  .highlight strong { color: #dc2626; }
+  .highlight-green { background: #f0fdf4; border-left: 4px solid #22c55e; padding: 16px 20px; border-radius: 0 10px 10px 0; margin: 20px 0; }
+  .highlight-green strong { color: #16a34a; }
+  .warning { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px 20px; border-radius: 0 10px 10px 0; margin: 20px 0; font-size: 14px; color: #92400e; }
+  .warning strong { color: #d97706; }
+  .checklist { list-style: none; margin: 16px 0; }
+  .checklist li { padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 15px; color: #374151; display: flex; align-items: flex-start; gap: 12px; }
+  .checklist li::before { content: "✓"; color: #ef4444; font-weight: 800; font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .msg-bad { background: #fee2e2; border-radius: 18px 18px 18px 4px; padding: 14px 18px; margin: 10px 0; font-size: 14px; color: #991b1b; max-width: 90%; border: 1.5px solid #fca5a5; }
+  .msg-good { background: #dcfce7; border-radius: 18px 18px 18px 4px; padding: 14px 18px; margin: 10px 0; font-size: 14px; color: #166534; max-width: 90%; border: 1.5px solid #86efac; }
+  .msg-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+  .bad-lbl { color: #dc2626; }
+  .good-lbl { color: #16a34a; }
+  .step { display: flex; gap: 16px; align-items: flex-start; margin: 16px 0; padding: 18px; background: #f8fafc; border-radius: 12px; border: 1.5px solid #e2e8f0; }
+  .step-num { background: #dc2626; color: white; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; flex-shrink: 0; }
+  .step-content h4 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .step-content p { font-size: 14px; color: #64748b; margin: 0; }
+  .scenario { border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 20px 24px; margin: 16px 0; }
+  .scenario .s-tag { display: inline-block; background: #fee2e2; color: #dc2626; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 4px 12px; border-radius: 20px; margin-bottom: 10px; }
+  .scenario h4 { font-size: 16px; font-weight: 800; margin-bottom: 8px; }
+  .page-footer { margin-top: 60px; padding-top: 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+  .page-footer .brand { font-size: 13px; font-weight: 700; color: #dc2626; }
+  .page-footer .pg { font-size: 12px; color: #94a3b8; }
+</style>
+</head>
+<body>
+<div class="page cover">
+  <div class="tag">📚 Biztrivo Academy</div>
+  <h1>Como Atender Reclamações e Reverter Clientes Insatisfeitos</h1>
+  <p>Cliente bravo não é o fim é uma oportunidade de criar o fã mais fiel que você vai ter.</p>
+  <div class="cover-deco">
+    <span>🛡️ Protocolo de crise</span>
+    <span>💬 Respostas prontas</span>
+    <span>🔄 Como reverter</span>
+  </div>
+  <div style="margin-top: auto; padding-top: 60px; font-size: 13px; opacity: 0.7; font-weight: 600;">Biztrivo Academy — Para quem vende com propósito</div>
+</div>
+
+<div class="page">
+  <h2>Por que reclamação é uma oportunidade</h2>
+  <p>Parece contraditório, mas é real: clientes que tiveram um problema resolvido muito bem se tornam mais fiéis do que clientes que nunca tiveram problema nenhum.</p>
+  <p>O motivo é simples quando tudo dá certo, o cliente não viu você ser testado. Quando deu errado e você resolveu com excelência, ele viu seu caráter. E isso cria confiança de verdade.</p>
+  <div class="highlight">
+    <strong>Dado que muda a perspectiva:</strong> Para cada cliente que reclama, existem em média 26 que tiveram o mesmo problema e não falaram nada simplesmente foram embora. Quem reclama está te dando uma chance.
+  </div>
+  <h2>O que NUNCA fazer quando o cliente reclama</h2>
+  <div class="msg-bad">
+    <div class="msg-label bad-lbl">❌ Jamais responda assim</div>
+    "Mas eu avisei no anúncio que o prazo era de 10 dias. Você não leu as condições. Infelizmente não posso fazer nada."
+  </div>
+  <p>Mesmo que você esteja tecnicamente certo, essa resposta encerra qualquer chance de reverter. O cliente vai embora furioso e ainda conta para os amigos.</p>
+  <div class="msg-bad">
+    <div class="msg-label bad-lbl">❌ Também errado: sumir</div>
+    Deixar no visto, não responder ou demorar mais de 24h sem dar nenhum retorno.
+  </div>
+  <p>Silêncio é a pior resposta. Faz o cliente sentir que foi abandonado e o leva direto para o Reclame Aqui ou para stories do Instagram.</p>
+  <h2>O protocolo de 5 passos para reverter qualquer reclamação</h2>
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-content">
+      <h4>Responda rápido — em até 2 horas</h4>
+      <p>Mesmo que não tenha a solução ainda, confirme que recebeu e está resolvendo. A velocidade já acalma 50% da irritação.</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-content">
+      <h4>Reconheça — sem se defender</h4>
+      <p>"Entendo sua frustração" ou "Você tem razão em estar chateado" isso desarma a pessoa antes de tudo.</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-content">
+      <h4>Peça desculpas — mesmo que não seja culpa sua</h4>
+      <p>"Lamento que a experiência não foi o que você esperava" é suficiente e não te compromete juridicamente.</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-content">
+      <h4>Ofereça uma solução concreta</h4>
+      <p>Não pergunte "o que você quer que eu faça". Você propõe. "Vou reenviar o produto hoje" ou "Devolvo o valor integral até amanhã".</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">5</div>
+    <div class="step-content">
+      <h4>Feche com algo inesperado</h4>
+      <p>Um cupom, um brinde na próxima compra. É o que transforma a experiência ruim em história positiva.</p>
+    </div>
+  </div>
+  <div class="page-footer"><span class="brand">Biztrivo Academy</span><span class="pg">Página 2</span></div>
+</div>
+
+<div class="page">
+  <h2>Respostas prontas para as reclamações mais comuns</h2>
+  <div class="scenario">
+    <div class="s-tag">Cenário 1</div>
+    <h4>🚚 "Meu pedido não chegou / está atrasado"</h4>
+    <div class="msg-good">
+      <div class="msg-label good-lbl">✅ Como responder</div>
+      "Oi [Nome], que situação chata lamento muito pelo atraso! Vou verificar agora mesmo o rastreio e te retorno em no máximo 1 hora com uma posição. Se o prazo máximo for ultrapassado, garanto uma solução para você."
+    </div>
+  </div>
+  <div class="scenario">
+    <div class="s-tag">Cenário 2</div>
+    <h4>📦 "O produto veio diferente da foto / com defeito"</h4>
+    <div class="msg-good">
+      <div class="msg-label good-lbl">✅ Como responder</div>
+      "Oi [Nome], que pena! Isso não é o padrão que quero entregar. Pode me mandar uma foto? Já te adianto: vou te enviar o produto correto ou devolver o valor completo, você escolhe."
+    </div>
+  </div>
+  <div class="scenario">
+    <div class="s-tag">Cenário 3</div>
+    <h4>💬 "Atendimento demorou demais"</h4>
+    <div class="msg-good">
+      <div class="msg-label good-lbl">✅ Como responder</div>
+      "Você tem razão, [Nome], e peço desculpas pela demora. Estou aqui agora com total atenção pra você, como posso te ajudar?"
+    </div>
+  </div>
+  <div class="scenario">
+    <div class="s-tag">Cenário 4</div>
+    <h4>😤 Cliente muito agressivo</h4>
+    <div class="msg-good">
+      <div class="msg-label good-lbl">✅ Como responder</div>
+      "Entendo que você está frustrado e quero resolver isso com você. Para conseguirmos chegar a uma solução, preciso que a gente converse com respeito. Pode me contar o que aconteceu?"
+    </div>
+    <p style="font-size:13px; color:#64748b; margin-top:10px;">Se o cliente continuar agressivo depois de 2 tentativas: você pode e deve encerrar a conversa educadamente. Resolver problema não é aceitar desrespeito.</p>
+  </div>
+  <div class="warning">
+    <strong>⚠️ Quando o cliente ameaça publicar nas redes:</strong> Não entre em pânico e não ceda a chantagens. Resolva o problema da forma certa — não pelo medo. Se a solução for boa, o cliente não vai querer publicar nada.
+  </div>
+  <h2>Checklist de atendimento a reclamações</h2>
+  <ul class="checklist">
+    <li>Respondi em até 2 horas (mesmo sem solução ainda)?</li>
+    <li>Reconheci o problema sem me defender imediatamente?</li>
+    <li>Pedi desculpas pela experiência ruim?</li>
+    <li>Propus uma solução concreta sem esperar o cliente pedir?</li>
+    <li>Adicionei um gesto de boa vontade após resolver?</li>
+    <li>Registrei o problema para evitar que aconteça de novo?</li>
+  </ul>
+  <div class="highlight-green">
+    <strong>Dica final:</strong> Todo problema que se repete é um processo que está quebrado. Quando a mesma reclamação aparecer mais de 2 vezes, não é azar é sinal. Investigue a causa raiz e corrija antes que vire padrão.
+  </div>
+  <div class="page-footer"><span class="brand">Biztrivo Academy</span><span class="pg">Página 3</span></div>
+</div>
+</body>
+</html>

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sales Messaging Script</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #1e293b; line-height: 1.7; }
+
+  .page { max-width: 750px; margin: 0 auto; background: white; min-height: 100vh; padding: 60px 50px; page-break-after: always; }
+
+  .cover { background: linear-gradient(135deg, #25d366 0%, #128c7e 50%, #075e54 100%); color: white; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; min-height: 100vh; padding: 60px 50px; }
+  .cover .tag { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 30px; }
+  .cover h1 { font-size: 46px; font-weight: 800; line-height: 1.15; margin-bottom: 20px; max-width: 500px; }
+  .cover p { font-size: 18px; opacity: 0.85; max-width: 420px; line-height: 1.6; margin-bottom: 40px; }
+  .cover-deco { display: flex; gap: 16px; flex-wrap: wrap; }
+  .cover-deco span { background: rgba(255,255,255,0.15); padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; }
+
+  h2 { font-size: 26px; font-weight: 800; color: #128c7e; margin-bottom: 12px; margin-top: 40px; padding-bottom: 8px; border-bottom: 3px solid #dcfce7; }
+  h2:first-of-type { margin-top: 0; }
+  h3 { font-size: 17px; font-weight: 700; color: #1e293b; margin-top: 28px; margin-bottom: 8px; }
+  p { font-size: 15px; color: #374151; margin-bottom: 14px; }
+
+  .highlight { background: #f0fdf4; border-left: 4px solid #25d366; padding: 16px 20px; border-radius: 0 10px 10px 0; margin: 20px 0; }
+  .highlight strong { color: #128c7e; }
+
+  .warning { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px 20px; border-radius: 0 10px 10px 0; margin: 20px 0; font-size: 14px; color: #92400e; }
+  .warning strong { color: #d97706; }
+
+  .checklist { list-style: none; margin: 16px 0; }
+  .checklist li { padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 15px; color: #374151; display: flex; align-items: flex-start; gap: 12px; }
+  .checklist li::before { content: "✓"; color: #25d366; font-weight: 800; font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+  .msg-bubble { background: #dcfce7; border-radius: 18px 18px 18px 4px; padding: 16px 20px; margin: 12px 0; font-size: 14px; color: #166534; max-width: 90%; border: 1.5px solid #bbf7d0; }
+  .msg-bubble .msg-label { font-size: 11px; font-weight: 700; color: #128c7e; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+
+  .msg-bad { background: #fee2e2; border-radius: 18px 18px 18px 4px; padding: 16px 20px; margin: 12px 0; font-size: 14px; color: #991b1b; max-width: 90%; border: 1.5px solid #fca5a5; }
+  .msg-bad .msg-label { font-size: 11px; font-weight: 700; color: #dc2626; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+
+  .script-step { border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 20px 24px; margin: 16px 0; }
+  .script-step .step-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .script-step .num { background: #128c7e; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; flex-shrink: 0; }
+  .script-step .step-title { font-weight: 700; font-size: 16px; }
+
+  .page-footer { margin-top: 60px; padding-top: 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+  .page-footer .brand { font-size: 13px; font-weight: 700; color: #128c7e; }
+  .page-footer .pg { font-size: 12px; color: #94a3b8; }
+</style>
+</head>
+<body>
+
+<div class="page cover">
+  <div class="tag">📚 Biztrivo Academy</div>
+  <h1>Sales Messaging Script</h1>
+  <p>Messages that convert. From the first contact all the way to closing, without sounding like a robot.</p>
+  <div class="cover-deco">
+    <span>💬 Ready-to-use messages</span>
+    <span>🎯 Focused on conversion</span>
+    <span>🤝 Human tone</span>
+  </div>
+  <div style="margin-top: auto; padding-top: 60px; font-size: 13px; opacity: 0.7; font-weight: 600;">Biztrivo Academy</div>
+</div>
+
+<div class="page">
+  <h2>The problem with most sales approaches</h2>
+  <p>Most people reach out to customers in a way that pushes them away instead of pulling them in. They send a giant wall of text with everything about the product, or send a "Hey, how are you?" and disappear forever when the customer does not reply.</p>
+  <p>Selling by message is a conversation, not a digital flyer. People who understand that sell more.</p>
+
+  <div class="msg-bad">
+    <div class="msg-label">❌ Wrong, makes customers disappear</div>
+    "Hi! How are you? This is Ana from Store X! We have an amazing sale this week with 30% off all products. We have bags, shoes, accessories and much more with great quality at great prices! Can I send you the catalog?"
+  </div>
+
+  <p>Long, generic, clearly sent to a hundred people. The customer feels like just a number and never replies.</p>
+
+  <div class="highlight">
+    <strong>Golden rule:</strong> Short messages get read, long messages get ignored. Get to the point, use the customer's name, and show you remember them.
+  </div>
+
+  <h2>The 5-step conversion structure</h2>
+
+  <div class="script-step">
+    <div class="step-header"><div class="num">1</div><div class="step-title">Opening: spark attention</div></div>
+    <p style="font-size:13px; color:#64748b; margin-bottom:10px;">Personalize it. Mention something specific. Do not send the same text to 100 people.</p>
+    <div class="msg-bubble">
+      <div class="msg-label">✅ Right</div>
+      "Hi [Name]! You had asked me about the brown bag last week. A new collection just arrived today that matches exactly what you were looking for. Want me to show you?"
+    </div>
+  </div>
+
+  <div class="script-step">
+    <div class="step-header"><div class="num">2</div><div class="step-title">Qualification: find out what they actually want</div></div>
+    <p style="font-size:13px; color:#64748b; margin-bottom:10px;">Before sending products, find out what the person needs. It saves time for both of you.</p>
+    <div class="msg-bubble">
+      <div class="msg-label">✅ Qualifying message</div>
+      "Just so I show you what makes the most sense: are you looking for something for everyday use or a special occasion? Any color preference?"
+    </div>
+  </div>
+
+  <div class="script-step">
+    <div class="step-header"><div class="num">3</div><div class="step-title">Presentation: show the right product</div></div>
+    <p style="font-size:13px; color:#64748b; margin-bottom:10px;">Now you present the product. But only what makes sense for that specific person. Do not send the full catalog.</p>
+    <div class="msg-bubble">
+      <div class="msg-label">✅ Spot-on presentation</div>
+      "Check this one out. Genuine leather, gold clasp, fits a lot inside. It is exactly what you described. It is $189 and I have 2 left. Want more photos or are you ready to reserve one?"
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span class="brand">Biztrivo Academy</span>
+    <span class="pg">Page 2</span>
+  </div>
+</div>
+
+<div class="page">
+
+  <div class="script-step">
+    <div class="step-header"><div class="num">4</div><div class="step-title">Handling objections: do not disappear when they push back</div></div>
+    <p style="font-size:13px; color:#64748b; margin-bottom:10px;">Customers will raise objections. That is normal and actually a good sign. It means they are considering the purchase. Do not let the conversation die.</p>
+
+    <div class="msg-bubble">
+      <div class="msg-label">✅ Objection: "It's too expensive"</div>
+      "I get it! Just so you know, this line uses genuine leather. The synthetic versions go for around $120, but they do not last half as long. If you want, I can hold this one for you until tomorrow while you think it over. 😊"
+    </div>
+
+    <div class="msg-bubble">
+      <div class="msg-label">✅ Objection: "Maybe later"</div>
+      "No rush at all! Just a heads up: these are the last 2 pieces and this color sells out fast. If you want to lock it in, just say the word. I can hold it for 24 hours with no commitment."
+    </div>
+
+    <div class="msg-bubble">
+      <div class="msg-label">✅ Objection: "I'll think about it"</div>
+      "Take all the time you need! Reach out whenever you are ready. If there is anything specific I can help you figure out right now, just ask. 😊"
+    </div>
+  </div>
+
+  <div class="script-step">
+    <div class="step-header"><div class="num">5</div><div class="step-title">Closing: ask for the decision</div></div>
+    <p style="font-size:13px; color:#64748b; margin-bottom:10px;">Many people never close because they never ask. Ask directly. Simplify the customer's decision.</p>
+    <div class="msg-bubble">
+      <div class="msg-label">✅ Direct close</div>
+      "Would you prefer to pay in full with a 5% discount, or split it into 3 installments with no extra charge?"
+    </div>
+    <p style="font-size:13px; color:#64748b; margin-top:8px;">Notice: you offered two ways to pay, not "do you want it or not." That makes the decision much easier.</p>
+  </div>
+
+  <h2>Follow-up messages (for customers who went quiet)</h2>
+  <p>After 2 or 3 days with no reply, send a follow-up. Do not be pushy. Be useful.</p>
+
+  <div class="msg-bubble">
+    <div class="msg-label">✅ Follow-up after 2 days</div>
+    "Hi [Name], hope you are doing well! 😊 Just checking in to see if you were still interested in the bag. The unit I had set aside is still here. No pressure at all. Just let me know if you changed your mind so I can release it for someone else."
+  </div>
+
+  <div class="warning">
+    <strong>Follow-up limit:</strong> Send a maximum of 2 follow-up messages. On the third one, you become annoying. If the customer did not reply twice, leave them alone. They may come back on their own in 30 days when you share something new.
+  </div>
+
+  <h2>Good messaging checklist</h2>
+  <ul class="checklist">
+    <li>Did I use the customer's name in the message?</li>
+    <li>Was the opening short and personalized?</li>
+    <li>Did I ask questions before presenting a product?</li>
+    <li>Did I send a maximum of 2 or 3 product options, not the full catalog?</li>
+    <li>Did I respond to the objection without applying pressure?</li>
+    <li>Did I close with two payment options?</li>
+    <li>Did I limit follow-ups to a maximum of 2 messages?</li>
+  </ul>
+
+  <div class="highlight">
+    <strong>Golden tip:</strong> Save these scripts as quick replies in WhatsApp Business (Settings > Quick Replies). With a shortcut like "/hi" you send the opening message without typing anything from scratch.
+  </div>
+
+  <div class="page-footer">
+    <span class="brand">Biztrivo Academy</span>
+    <span class="pg">Page 3</span>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How to Create Smart Promotions</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #1e293b; line-height: 1.7; }
+
+  .page { max-width: 750px; margin: 0 auto; background: white; min-height: 100vh; padding: 60px 50px; page-break-after: always; }
+
+  .cover { background: linear-gradient(135deg, #ec4899 0%, #db2777 50%, #be185d 100%); color: white; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; min-height: 100vh; padding: 60px 50px; }
+  .cover .tag { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 30px; }
+  .cover h1 { font-size: 46px; font-weight: 800; line-height: 1.15; margin-bottom: 20px; max-width: 500px; }
+  .cover p { font-size: 18px; opacity: 0.85; max-width: 420px; line-height: 1.6; margin-bottom: 40px; }
+  .cover-deco { display: flex; gap: 16px; flex-wrap: wrap; }
+  .cover-deco span { background: rgba(255,255,255,0.15); padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; }
+
+  h2 { font-size: 26px; font-weight: 800; color: #db2777; margin-bottom: 12px; margin-top: 40px; padding-bottom: 8px; border-bottom: 3px solid #fce7f3; }
+  h2:first-of-type { margin-top: 0; }
+  h3 { font-size: 17px; font-weight: 700; color: #1e293b; margin-top: 28px; margin-bottom: 8px; }
+  p { font-size: 15px; color: #374151; margin-bottom: 14px; }
+
+  .highlight { background: #fdf2f8; border-left: 4px solid #ec4899; padding: 16px 20px; border-radius: 0 10px 10px 0; margin: 20px 0; }
+  .highlight strong { color: #db2777; }
+
+  .warning { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px 20px; border-radius: 0 10px 10px 0; margin: 20px 0; font-size: 14px; color: #92400e; }
+  .warning strong { color: #d97706; }
+
+  .checklist { list-style: none; margin: 16px 0; }
+  .checklist li { padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 15px; color: #374151; display: flex; align-items: flex-start; gap: 12px; }
+  .checklist li::before { content: "✓"; color: #ec4899; font-weight: 800; font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+  .promo-card { border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 20px 24px; margin: 16px 0; }
+  .promo-card .promo-tag { display: inline-block; background: #fce7f3; color: #db2777; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 4px 12px; border-radius: 20px; margin-bottom: 10px; }
+  .promo-card h4 { font-size: 17px; font-weight: 800; color: #1e293b; margin-bottom: 6px; }
+  .promo-card .example { background: #f8fafc; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #475569; margin-top: 12px; }
+  .promo-card .example strong { color: #db2777; }
+
+  .formula { background: #1e293b; color: #ec4899; padding: 16px 24px; border-radius: 10px; font-family: monospace; font-size: 15px; font-weight: 700; margin: 20px 0; text-align: center; }
+
+  table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+  table th { background: #db2777; color: white; padding: 10px 14px; text-align: left; font-weight: 700; font-size: 12px; }
+  table td { padding: 9px 14px; border-bottom: 1px solid #e2e8f0; color: #374151; }
+  table tr:nth-child(even) td { background: #fdf2f8; }
+
+  .page-footer { margin-top: 60px; padding-top: 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+  .page-footer .brand { font-size: 13px; font-weight: 700; color: #db2777; }
+  .page-footer .pg { font-size: 12px; color: #94a3b8; }
+</style>
+</head>
+<body>
+
+<div class="page cover">
+  <div class="tag">📚 Biztrivo Academy</div>
+  <h1>How to Create Smart Promotions</h1>
+  <p>Strategies that increase sales without destroying your margin. Because a dumb discount breaks businesses.</p>
+  <div class="cover-deco">
+    <span>🎯 7 promotion types</span>
+    <span>📊 Margin calculation</span>
+    <span>🧠 Pricing psychology</span>
+  </div>
+  <div style="margin-top: auto; padding-top: 60px; font-size: 13px; opacity: 0.7; font-weight: 600;">Biztrivo Academy</div>
+</div>
+
+<div class="page">
+  <h2>Dumb promotion vs. smart promotion</h2>
+  <p>A dumb promotion is giving a discount without knowing whether there is still profit left after. It is the kind that makes you work twice as hard to earn half as much. Many businesses go under on their best sales days, when they sell a lot but at a loss.</p>
+  <p>A smart promotion has a clear objective: move stale inventory, attract a new customer, raise the average order value, or build loyalty. And it always protects your minimum profit margin.</p>
+
+  <div class="warning">
+    <strong>Before any discount, calculate this:</strong> After applying the discount, am I still making money? If you cannot answer that immediately, you should not be running the promotion.
+  </div>
+
+  <div class="formula">
+    Minimum discounted price = Total cost ÷ (1 – desired minimum profit %)
+  </div>
+
+  <div class="highlight">
+    <strong>Example:</strong> If your product costs $40 all-in and you want at least 10% profit, the minimum price is $40 ÷ 0.90 = $44.44. Below that, you are working for free or at a loss.
+  </div>
+
+  <h2>7 promotion types that actually work</h2>
+
+  <div class="promo-card">
+    <div class="promo-tag">Type 1</div>
+    <h4>🎁 Buy X, Get Y</h4>
+    <p>The customer buys one product and gets another as a gift or at a discount. Ideal for moving complementary slow-moving stock and increasing order value.</p>
+    <div class="example"><strong>Example:</strong> "Buy 2 t-shirts and get a pair of socks free." You sell 2 items at once. The socks clear from your slow-moving stock. Everyone wins.</div>
+  </div>
+
+  <div class="promo-card">
+    <div class="promo-tag">Type 2</div>
+    <h4>⏰ Flash Sale</h4>
+    <p>A discount valid for a limited time (2 hours, 24 hours, until midnight). Urgency makes customers decide faster. Works great on Instagram Stories and messaging apps.</p>
+    <div class="example"><strong>Example:</strong> "Today only until 8pm: 15% off all bags. Back to regular price after." Announce in the morning and send a reminder at 7pm.</div>
+  </div>
+
+  <div class="promo-card">
+    <div class="promo-tag">Type 3</div>
+    <h4>📦 Volume Discount</h4>
+    <p>The more the customer buys, the cheaper per unit. It increases the sale volume and lets you spread your fixed costs across more units.</p>
+    <div class="example"><strong>Example:</strong> "1 soap: $15 | Kit of 3: $39 | Kit of 5: $60." Whoever buys 5 saves $15, and you sold 5x more in one transaction.</div>
+  </div>
+
+  <div class="promo-card">
+    <div class="promo-tag">Type 4</div>
+    <h4>💌 VIP List Exclusive</h4>
+    <p>Offer a discount or early access to customers on your VIP list. Builds loyalty with existing buyers and gives new ones a reason to sign up.</p>
+    <div class="example"><strong>Example:</strong> "VIP members get access to the new product 48 hours before the public, plus a 10% exclusive discount."</div>
+  </div>
+
+  <div class="promo-card">
+    <div class="promo-tag">Type 5</div>
+    <h4>🔄 Clear Old Stock</h4>
+    <p>Any product sitting unsold for more than 60 days is costing you space and cash. Better to sell it at a thinner margin than to keep it stagnant.</p>
+    <div class="example"><strong>Example:</strong> "Special selection: up to 30% off. Limited stock, first come first served." Apply the discount only to those specific items, not the whole store.</div>
+  </div>
+
+  <div class="page-footer">
+    <span class="brand">Biztrivo Academy</span>
+    <span class="pg">Page 2</span>
+  </div>
+</div>
+
+<div class="page">
+
+  <div class="promo-card">
+    <div class="promo-tag">Type 6</div>
+    <h4>🎂 Holiday or Seasonal Promotion</h4>
+    <p>Mother's Day, Christmas, Black Friday, your store's anniversary. Dates give the discount context so it feels special rather than desperate.</p>
+    <div class="example"><strong>Example:</strong> "Mother's Day Week: free shipping on everything." Free shipping can cost less than a percentage discount and customers perceive it as a big benefit.</div>
+  </div>
+
+  <div class="promo-card">
+    <div class="promo-tag">Type 7</div>
+    <h4>💰 Upfront Payment Discount</h4>
+    <p>Offer a discount for immediate payment. You receive the money instantly with no processing fees, and you still move product faster.</p>
+    <div class="example"><strong>Example:</strong> "Pay now: $89 | 3 installments: $94.50." The upfront discount offsets the card fee you are no longer paying, so your actual profit stays the same or improves.</div>
+  </div>
+
+  <h2>The psychology behind pricing</h2>
+  <p>Some pricing tactics make customers perceive greater value without you actually giving a real discount:</p>
+
+  <table>
+    <tr><th>Tactic</th><th>How it works</th><th>Example</th></tr>
+    <tr><td><strong>Anchor price</strong></td><td>Show the "was" price before the "now" price</td><td>~~$120~~ now $89</td></tr>
+    <tr><td><strong>Odd pricing</strong></td><td>$97 feels much less than $100</td><td>$97 vs $100</td></tr>
+    <tr><td><strong>Free shipping</strong></td><td>Customers prefer free shipping over a discount</td><td>Free shipping > 10% off</td></tr>
+    <tr><td><strong>Real scarcity</strong></td><td>Last units create genuine urgency</td><td>"Only 3 left in stock"</td></tr>
+  </table>
+
+  <h2>Checklist before launching a promotion</h2>
+  <ul class="checklist">
+    <li>Did I calculate the minimum price that still gives me a profit?</li>
+    <li>Does the promotion have a defined start and end date?</li>
+    <li>Do I know how many units I will make available?</li>
+    <li>Do I have a clear reason for the promotion (date, inventory, launch)?</li>
+    <li>Do I have a plan for how to promote it (messages, Stories, posts)?</li>
+    <li>Will I measure how many sales the promotion actually generated?</li>
+  </ul>
+
+  <div class="highlight">
+    <strong>Final takeaway:</strong> A good promotion is not the maximum discount possible. It is the smallest discount that generates the result you need. Test it, measure it, adjust it. Whoever knows their numbers runs the game.
+  </div>
+
+  <div class="page-footer">
+    <span class="brand">Biztrivo Academy</span>
+    <span class="pg">Page 3</span>
+  </div>
+</div>
+
+</body>
+</html>

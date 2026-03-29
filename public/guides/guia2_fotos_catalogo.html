@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guia de Fotos para Catálogo</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #1e293b; line-height: 1.7; }
+
+  .page { max-width: 750px; margin: 0 auto; background: white; min-height: 100vh; padding: 60px 50px; page-break-after: always; }
+
+  .cover {
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 50%, #3730a3 100%);
+    color: white; display: flex; flex-direction: column; justify-content: center;
+    align-items: flex-start; min-height: 100vh; padding: 60px 50px;
+  }
+
+  .cover .tag { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 30px; }
+  .cover h1 { font-size: 46px; font-weight: 800; line-height: 1.15; margin-bottom: 20px; max-width: 500px; }
+  .cover p { font-size: 18px; opacity: 0.85; max-width: 420px; line-height: 1.6; margin-bottom: 40px; }
+  .cover-deco { margin-top: 60px; display: flex; gap: 16px; flex-wrap: wrap; }
+  .cover-deco span { background: rgba(255,255,255,0.15); padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; }
+
+  h2 { font-size: 26px; font-weight: 800; color: #4f46e5; margin-bottom: 12px; margin-top: 40px; padding-bottom: 8px; border-bottom: 3px solid #e0e7ff; }
+  h2:first-of-type { margin-top: 0; }
+  h3 { font-size: 17px; font-weight: 700; color: #1e293b; margin-top: 28px; margin-bottom: 8px; }
+  p { font-size: 15px; color: #374151; margin-bottom: 14px; }
+
+  .highlight { background: #eef2ff; border-left: 4px solid #6366f1; padding: 16px 20px; border-radius: 0 10px 10px 0; margin: 20px 0; }
+  .highlight strong { color: #4f46e5; }
+
+  .example-box { background: #f5f3ff; border: 1.5px solid #c4b5fd; border-radius: 12px; padding: 20px 24px; margin: 20px 0; }
+  .example-box .label { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; color: #6366f1; text-transform: uppercase; margin-bottom: 10px; }
+
+  .warning { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px 20px; border-radius: 0 10px 10px 0; margin: 20px 0; font-size: 14px; color: #92400e; }
+  .warning strong { color: #d97706; }
+
+  .good-bad { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+  .good { background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 12px; padding: 18px; }
+  .bad { background: #fff1f2; border: 1.5px solid #fca5a5; border-radius: 12px; padding: 18px; }
+  .good-label { font-size: 12px; font-weight: 700; color: #16a34a; letter-spacing: 1px; margin-bottom: 10px; }
+  .bad-label { font-size: 12px; font-weight: 700; color: #dc2626; letter-spacing: 1px; margin-bottom: 10px; }
+
+  .checklist { list-style: none; margin: 16px 0; }
+  .checklist li { padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 15px; color: #374151; display: flex; align-items: flex-start; gap: 12px; }
+  .checklist li::before { content: "✓"; color: #6366f1; font-weight: 800; font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+  .tip-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+  .tip-card { background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 20px; }
+  .tip-card .icon { font-size: 28px; margin-bottom: 10px; }
+  .tip-card h4 { font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 6px; }
+  .tip-card p { font-size: 13px; color: #64748b; margin: 0; }
+
+  .page-footer { margin-top: 60px; padding-top: 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+  .page-footer .brand { font-size: 13px; font-weight: 700; color: #6366f1; }
+  .page-footer .pg { font-size: 12px; color: #94a3b8; }
+</style>
+</head>
+<body>
+
+<!-- CAPA -->
+<div class="page cover">
+  <div class="tag">📚 Biztrivo Academy</div>
+  <h1>Guia de Fotos para Catálogo</h1>
+  <p>Fotos profissionais sem precisar de câmera cara. Só com o celular que você já tem no bolso.</p>
+  <div class="cover-deco">
+    <span>📱 Só com celular</span>
+    <span>🕐 Rápido de aplicar</span>
+    <span>💡 Técnicas reais</span>
+  </div>
+  <div style="margin-top: auto; padding-top: 60px; font-size: 13px; opacity: 0.7; font-weight: 600;">
+    Biztrivo Academy — Para quem vende com propósito
+  </div>
+</div>
+
+<!-- PÁGINA 2 -->
+<div class="page">
+  <h2>Por que a foto importa tanto?</h2>
+  <p>No mundo físico, o cliente pega o produto, cheira, testa. No digital, ele só tem a foto. <strong>A foto é o produto.</strong> Se ela for ruim, escura ou sem capricho, o cliente acha que o produto também é.</p>
+  <p>A boa notícia: você não precisa de câmera profissional. Os celulares de hoje fotografam melhor do que câmeras de estúdio de 10 anos atrás. O que falta é técnica e isso você aprende agora.</p>
+
+  <div class="highlight">
+    <strong>Regra de ouro:</strong> Boa foto = boa luz + fundo limpo + produto organizado. É isso. Não tem segredo maior que esse.
+  </div>
+
+  <h2>O básico que muda tudo: Luz</h2>
+  <p>Luz é o ingrediente número 1. Sem ela, nenhuma câmera do mundo salva a foto.</p>
+
+  <h3>Use luz natural sempre que possível</h3>
+  <p>Posicione seu produto perto de uma janela com luz do dia, mas <strong>sem sol batendo diretamente</strong>. Luz de sol direta cria sombras duras e escurece partes do produto. A luz ideal é o céu nublado ou a luz filtrada por uma cortina.</p>
+
+  <div class="good-bad">
+    <div class="good">
+      <div class="good-label">✅ CERTO</div>
+      <p style="font-size:13px; color:#166534;">Janela com luz do dia (sem sol direto). Produto a 45° da janela. Fundo branco ou neutro.</p>
+    </div>
+    <div class="bad">
+      <div class="bad-label">❌ ERRADO</div>
+      <p style="font-size:13px; color:#991b1b;">Sol batendo direto no produto. Flash do celular ligado. Lâmpada amarela de teto como única luz.</p>
+    </div>
+  </div>
+
+  <h3>E se for à noite?</h3>
+  <p>Compre uma <strong>ring light</strong> básica — custa R$50 a R$80 e transforma qualquer foto. Ou compre duas lâmpadas LED brancas (6500K) e direcione para o produto. Evite misturar luz amarela com luz branca na mesma foto.</p>
+
+  <h2>Fundo: menos é mais</h2>
+  <p>O fundo da foto compete com o produto. Quanto mais bagunçado, mais o olho do cliente se perde.</p>
+
+  <div class="tip-grid">
+    <div class="tip-card">
+      <div class="icon">🗒️</div>
+      <h4>Papel sulfite ou cartolina branca</h4>
+      <p>Custa centavos, fica ótimo. Coloque atrás e embaixo do produto formando uma curva.</p>
+    </div>
+    <div class="tip-card">
+      <div class="icon">🧱</div>
+      <h4>Madeira, mármore ou tecido</h4>
+      <p>Para looks mais elaborados. Compre papel contact com textura — rende muito e é barato.</p>
+    </div>
+    <div class="tip-card">
+      <div class="icon">🌿</div>
+      <h4>Fundo temático</h4>
+      <p>Um vaso de planta, uma folha verde, um livro. Use para dar contexto e vida ao produto.</p>
+    </div>
+    <div class="tip-card">
+      <div class="icon">⬛</div>
+      <h4>Fundo escuro</h4>
+      <p>Funciona ótimo para produtos dourados, jóias e itens premium. Madeira escura ou tecido preto.</p>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span class="brand">Biztrivo Academy</span>
+    <span class="pg">Página 2</span>
+  </div>
+</div>
+
+<!-- PÁGINA 3 -->
+<div class="page">
+  <h2>Como segurar o celular e enquadrar</h2>
+
+  <h3>Ative a grade (regra dos terços)</h3>
+  <p>No iOS: Configurações > Câmera > Grade. No Android: Configurações da câmera > Grade. Com a grade ativa, coloque o produto <strong>na interseção das linhas</strong>, não centralizado. Fica muito mais bonito.</p>
+
+  <h3>Tipos de ângulo por produto</h3>
+  <ul class="checklist">
+    <li><strong>De cima (flat lay):</strong> Ótimo para roupas, alimentos, acessórios, papelaria</li>
+    <li><strong>Na altura do produto (90°):</strong> Ótimo para calçados, bolsas, objetos 3D</li>
+    <li><strong>Ângulo de 45°:</strong> Funciona para quase qualquer produto — mostra frente e topo</li>
+    <li><strong>Detalhe (macro):</strong> Aproxime para mostrar textura, costura, material</li>
+  </ul>
+
+  <div class="warning">
+    <strong>⚠️ Nunca use zoom digital do celular.</strong> O zoom digital perde qualidade e deixa a foto granulada. Se precisar aproximar, se aproxime fisicamente do produto.
+  </div>
+
+  <h2>Quantas fotos por produto?</h2>
+  <p>Plataformas como Shopee, Mercado Livre e Instagram permitem várias fotos. Use todas.</p>
+
+  <div class="example-box">
+    <div class="label">Sequência ideal de fotos</div>
+    <ul class="checklist" style="margin:0;">
+      <li><strong>Foto 1:</strong> Fundo branco, produto centralizado — a foto "oficial"</li>
+      <li><strong>Foto 2:</strong> Ângulo diferente (lateral ou de cima)</li>
+      <li><strong>Foto 3:</strong> Detalhe — textura, etiqueta, costuras, ingredientes</li>
+      <li><strong>Foto 4:</strong> Produto sendo usado (lifestyle) — pessoa segurando, usando</li>
+      <li><strong>Foto 5:</strong> Embalagem ou produto com fundo temático</li>
+    </ul>
+  </div>
+
+  <h2>Edição no celular: rápido e gratuito</h2>
+  <p>Não precisa de Photoshop. Use o <strong>Lightroom Mobile</strong> (gratuito) ou o editor do próprio Instagram.</p>
+
+  <ul class="checklist">
+    <li>Aumente levemente a exposição (claridade) — fotos um pouco mais claras vendem mais</li>
+    <li>Suba as sombras para iluminar partes escuras do produto</li>
+    <li>Reduza os tons quentes se a foto ficou amarelada</li>
+    <li>Suba um pouco a saturação para as cores ficarem mais vivas</li>
+    <li>Deixe o branco do fundo bem branco — sem tons cinza ou amarelados</li>
+  </ul>
+
+  <div class="highlight">
+    <strong>Dica de ouro:</strong> Tire sempre mais fotos do que acha que precisa. Você vai descartar metade — e isso é normal. Os profissionais fazem o mesmo.
+  </div>
+
+  <h2>Checklist antes de publicar</h2>
+  <ul class="checklist">
+    <li>A foto está bem iluminada, sem sombras no produto?</li>
+    <li>O fundo está limpo, sem objetos estranhos?</li>
+    <li>O produto está em foco (não desfocado)?</li>
+    <li>Tirei pelo menos 3 ângulos diferentes?</li>
+    <li>Fiz a edição básica de exposição e balanço de branco?</li>
+    <li>As cores na foto representam as cores reais do produto?</li>
+  </ul>
+
+  <div class="page-footer">
+    <span class="brand">Biztrivo Academy</span>
+    <span class="pg">Página 3</span>
+  </div>
+</div>
+
+</body>
+</html>
