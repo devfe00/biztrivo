@@ -15,7 +15,7 @@ const AuthCallback = () => {
       // Check subscription status
       const { data: sub } = await supabase
         .from('subscriptions')
-        .select('status, plan')
+        .select('status, plan, current_period_end')
         .eq('user_id', session.user.id)
         .maybeSingle();
 
