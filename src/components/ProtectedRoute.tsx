@@ -1,18 +1,41 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+
+const STRIPE_PAYMENT_URL = 'https://buy.stripe.com/test_aFadRa19XalV7n6fPab3q00';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const [checkingSubscription, setCheckingSubscription] = useState(true);
+  const [hasSubscription, setHasSubscription] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
       navigate('/login', { replace: true });
+      setCheckingSubscription(false);
+      return;
+    }
+
+    if (!loading && user) {
+      supabase
+        .from('subscriptions')
+        .select('status')
+        .eq('user_id', user.id)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (data?.status === 'active') {
+            setHasSubscription(true);
+          } else {
+            window.location.href = STRIPE_PAYMENT_URL;
+          }
+          setCheckingSubscription(false);
+        });
     }
   }, [loading, user, navigate]);
 
-  if (loading || !user) {
+  if (loading || checkingSubscription) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
@@ -22,6 +45,8 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       </div>
     );
   }
+
+  if (!hasSubscription) return null;
 
   return <>{children}</>;
 };
