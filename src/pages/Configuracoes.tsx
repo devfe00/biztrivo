@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Lock, LogOut, Camera, Save, Eye, EyeOff, AlertCircle, CheckCircle, ArrowLeft } from 'lucide-react';
+import { User, Lock, LogOut, Camera, Save, Eye, EyeOff, AlertCircle, CheckCircle, ArrowLeft, CreditCard } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useStore } from '@/contexts/StoreContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -17,12 +17,26 @@ const Configuracoes: React.FC = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  const [activeTab, setActiveTab] = useState<'profile' | 'password'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'password' | 'subscription'>('profile');
+  const [subscription, setSubscription] = useState<{ status: string; plan: string; current_period_end: string | null } | null>(null);
+  const [cancellingSubscription, setCancellingSubscription] = useState(false);
 
   useEffect(() => {
     setStoreName(config.storeName);
     setProfileImage(config.profileImage);
   }, [config.storeName, config.profileImage]);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from('subscriptions')
+      .select('status, plan, current_period_end')
+      .eq('user_id', user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) setSubscription(data);
+      });
+  }, [user]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -67,12 +81,45 @@ const Configuracoes: React.FC = () => {
     setLoading(false);
   };
 
+  const handleCancelSubscription = async () => {
+    if (!window.confirm('Tem certeza que deseja cancelar sua assinatura? Você ainda terá acesso por 30 dias após o cancelamento.')) return;
+
+    setCancellingSubscription(true);
+    setMessage(null);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setMessage({ type: 'error', text: 'Sessão expirada. Faça login novamente.' });
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('cancel-subscription', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+
+      if (error) {
+        setMessage({ type: 'error', text: 'Erro ao cancelar assinatura. Tente novamente.' });
+      } else {
+        setSubscription(prev => prev ? { ...prev, status: 'cancelled', current_period_end: data.grace_period_end } : null);
+        setMessage({ type: 'success', text: 'Assinatura cancelada. Você ainda tem acesso por 30 dias.' });
+      }
+    } catch {
+      setMessage({ type: 'error', text: 'Erro inesperado. Tente novamente.' });
+    } finally {
+      setCancellingSubscription(false);
+    }
+  };
+
   const handleLogout = async () => {
     if (window.confirm('Tem certeza que deseja sair?')) {
       await signOut();
       navigate('/login');
     }
   };
+
+  const isGracePeriod = subscription?.status === 'cancelled' && subscription?.current_period_end && new Date(subscription.current_period_end) > new Date();
+  const gracePeriodEnd = subscription?.current_period_end ? new Date(subscription.current_period_end).toLocaleDateString('pt-BR') : '';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4 md:p-8">
@@ -101,6 +148,10 @@ const Configuracoes: React.FC = () => {
             <button onClick={() => setActiveTab('password')}
               className={`flex-1 px-6 py-4 text-sm font-medium transition-colors ${activeTab === 'password' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'}`}>
               <div className="flex items-center justify-center gap-2"><Lock size={18} /><span>Senha</span></div>
+            </button>
+            <button onClick={() => setActiveTab('subscription')}
+              className={`flex-1 px-6 py-4 text-sm font-medium transition-colors ${activeTab === 'subscription' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'}`}>
+              <div className="flex items-center justify-center gap-2"><CreditCard size={18} /><span>Assinatura</span></div>
             </button>
           </div>
 
@@ -167,6 +218,74 @@ const Configuracoes: React.FC = () => {
                   {loading ? <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /><span>Alterando...</span></> : <><Lock size={20} /><span>Alterar Senha</span></>}
                 </button>
               </form>
+            )}
+
+            {activeTab === 'subscription' && (
+              <div className="space-y-6">
+                <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Detalhes da Assinatura</h3>
+                  
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Plano</span>
+                      <span className="font-medium text-gray-900 capitalize">{subscription?.plan || 'Free'}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Status</span>
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                        subscription?.status === 'active' ? 'bg-green-100 text-green-800' :
+                        isGracePeriod ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-red-100 text-red-800'
+                      }`}>
+                        {subscription?.status === 'active' ? 'Ativa' :
+                         isGracePeriod ? 'Cancelada (Período de Carência)' :
+                         'Inativa'}
+                      </span>
+                    </div>
+                    {isGracePeriod && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Acesso até</span>
+                        <span className="font-medium text-yellow-700">{gracePeriodEnd}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {isGracePeriod && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3">
+                    <AlertCircle size={20} className="text-yellow-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-yellow-800 text-sm">
+                      Sua assinatura foi cancelada, mas você ainda tem acesso até <strong>{gracePeriodEnd}</strong>. Após essa data, seu acesso será suspenso.
+                    </p>
+                  </div>
+                )}
+
+                {subscription?.status === 'active' && subscription?.plan === 'pro' && (
+                  <button
+                    onClick={handleCancelSubscription}
+                    disabled={cancellingSubscription}
+                    className="w-full bg-red-50 text-red-600 py-3 rounded-lg font-semibold hover:bg-red-100 transition-all border border-red-200 flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    {cancellingSubscription ? (
+                      <><div className="w-5 h-5 border-2 border-red-600 border-t-transparent rounded-full animate-spin" /><span>Cancelando...</span></>
+                    ) : (
+                      <><CreditCard size={20} /><span>Cancelar Assinatura</span></>
+                    )}
+                  </button>
+                )}
+
+                {subscription?.status !== 'active' && !isGracePeriod && (
+                  <button
+                    onClick={() => {
+                      const email = user?.email || '';
+                      window.location.href = `https://buy.stripe.com/test_aFadRa19XalV7n6fPab3q00?prefilled_email=${encodeURIComponent(email)}`;
+                    }}
+                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg flex items-center justify-center gap-2"
+                  >
+                    <CreditCard size={20} /><span>Assinar Plano Pro</span>
+                  </button>
+                )}
+              </div>
             )}
           </div>
         </div>
