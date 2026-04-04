@@ -19,7 +19,11 @@ const AuthCallback = () => {
         .eq('user_id', session.user.id)
         .maybeSingle();
 
-      const isActive = sub?.status === 'active' && sub?.plan === 'pro';
+      // Allow active or cancelled-with-grace-period
+      const isActive = sub?.plan === 'pro' && (
+        sub?.status === 'active' ||
+        (sub?.status === 'cancelled' && sub?.current_period_end && new Date(sub.current_period_end) > new Date())
+      );
 
       if (isActive) {
         navigate('/');
