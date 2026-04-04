@@ -197,7 +197,7 @@ const Register: React.FC = () => {
                     <p className="text-sm text-green-800 mt-1">Agora finalize o pagamento para liberar seu acesso.</p>
                   </div>
                 </div>
-                <button type="button" onClick={() => { window.location.href = `https://buy.stripe.com/test_aFadRa19XalV7n6fPab3q00?prefilled_email=${encodeURIComponent(formData.email)}`; }}
+                <button type="button" onClick={() => { window.location.href = `https://buy.stripe.com/00w5kEbOLdj35OmfwpgEg00?prefilled_email=${encodeURIComponent(formData.email)}`; }}
                   className="mt-4 w-full bg-gradient-to-r from-green-400 to-blue-500 text-white py-3 rounded-lg font-semibold hover:from-green-500 hover:to-blue-600 transition-all shadow-lg">
                   Ir para pagamento
                 </button>

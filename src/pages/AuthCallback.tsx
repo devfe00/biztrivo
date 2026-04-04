@@ -29,7 +29,7 @@ const AuthCallback = () => {
         navigate('/');
       } else {
         const email = session.user.email || '';
-        window.location.href = `https://buy.stripe.com/test_aFadRa19XalV7n6fPab3q00?prefilled_email=${encodeURIComponent(email)}`;
+       window.location.href = `https://buy.stripe.com/00w5kEbOLdj35OmfwpgEg00?prefilled_email=${encodeURIComponent(email)}`;
       }
     });
   }, [navigate]);
