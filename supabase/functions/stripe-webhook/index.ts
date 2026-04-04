@@ -98,13 +98,25 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Find user by email
-      const { data: users } = await supabase.auth.admin.listUsers();
-      const user = users?.users?.find(
-        (u: any) => u.email?.toLowerCase() === customerEmail.toLowerCase()
-      );
+      // Find user by email in profiles table (more reliable than auth.admin)
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("user_id")
+        .ilike("email", customerEmail)
+        .limit(1)
+        .maybeSingle();
 
-      if (!user) {
+      // Fallback: search in auth users
+      let userId = profile?.user_id;
+      if (!userId) {
+        const { data: users } = await supabase.auth.admin.listUsers();
+        const user = users?.users?.find(
+          (u: any) => u.email?.toLowerCase() === customerEmail.toLowerCase()
+        );
+        userId = user?.id;
+      }
+
+      if (!userId) {
         console.error("User not found for email:", customerEmail);
         return new Response(JSON.stringify({ error: "User not found" }), {
           status: 404,
@@ -121,7 +133,7 @@ Deno.serve(async (req) => {
           stripe_subscription_id: subscriptionId || null,
           updated_at: new Date().toISOString(),
         })
-        .eq("user_id", user.id);
+        .eq("user_id", userId);
 
       if (error) {
         console.error("Error updating subscription:", error);
@@ -131,7 +143,7 @@ Deno.serve(async (req) => {
         });
       }
 
-      console.log("Subscription activated for user:", user.id);
+      console.log("Subscription activated for user:", userId);
     } else if (event.type === "customer.subscription.updated") {
       const subscription = event.data.object;
       const stripeSubId = subscription.id;
