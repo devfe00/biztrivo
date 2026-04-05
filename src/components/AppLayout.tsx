@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { useStore } from '@/contexts/StoreContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Toaster } from "sonner";
+import Footer from '@/components/Footer';
 
 const navItems = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -147,11 +148,12 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
           </div>
         </header>
 
-        <div className="flex-1 md:p-8 p-4 pt-16 md:pt-8">
-          <div className="max-w-5xl mx-auto animate-fade-in pb-10">
-            {children}
-          </div>
-        </div>
+       <div className="flex-1 md:p-8 p-4 pt-16 md:pt-8">
+  <div className="max-w-5xl mx-auto animate-fade-in">
+    {children}
+    <Footer />
+  </div>
+</div>
       </main>
       <Toaster position="top-right" richColors />
     </div>
