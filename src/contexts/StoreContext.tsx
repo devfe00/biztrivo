@@ -33,6 +33,7 @@ export interface StoreConfig {
   vitrineActive: boolean;
   vitrineClicks: number;
   profileImage: string;
+  dailyGoal: number;
 }
 
 interface StoreContextType {
@@ -57,6 +58,7 @@ const defaultConfig: StoreConfig = {
   vitrineActive: false,
   vitrineClicks: 0,
   profileImage: '',
+  dailyGoal: 0,
 };
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -111,6 +113,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
         vitrineActive: profile?.vitrine_active ?? false,
         vitrineClicks: profile?.vitrine_clicks ?? 0,
         profileImage: profile?.profile_image ?? '',
+        dailyGoal: Number(profile?.daily_goal) || 0,
         products,
         transactions,
       });
@@ -139,6 +142,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
     if (partial.whatsapp !== undefined) dbUpdate.whatsapp = partial.whatsapp;
     if (partial.vitrineActive !== undefined) dbUpdate.vitrine_active = partial.vitrineActive;
     if (partial.profileImage !== undefined) dbUpdate.profile_image = partial.profileImage;
+    if (partial.dailyGoal !== undefined) dbUpdate.daily_goal = partial.dailyGoal;
 
     if (Object.keys(dbUpdate).length > 0) {
       await supabase.from('profiles').update(dbUpdate).eq('user_id', user.id);

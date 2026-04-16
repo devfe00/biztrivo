@@ -7,15 +7,16 @@ import confetti from 'canvas-confetti';
 import { Input } from '@/components/ui/input';
 
 const Dashboard = () => {
-  const { config } = useStore();
+  const { config, updateConfig } = useStore();
 
-  const [dailyGoal, setDailyGoal] = useState(() => {
-    const saved = localStorage.getItem('dailyGoal');
-    return saved ? parseFloat(saved) : 0;
-  });
+  const [dailyGoal, setDailyGoal] = useState(config.dailyGoal);
   const [isEditingGoal, setIsEditingGoal] = useState(false);
   const [goalInput, setGoalInput] = useState('');
   const [goalReached, setGoalReached] = useState(false);
+
+  useEffect(() => {
+    setDailyGoal(config.dailyGoal);
+  }, [config.dailyGoal]);
 
   const todayStr = new Date().toISOString().split('T')[0];
   const todayTransactions = useMemo(() =>
@@ -42,7 +43,7 @@ const Dashboard = () => {
     const value = parseFloat(goalInput.replace(',', '.'));
     if (value > 0) {
       setDailyGoal(value);
-      localStorage.setItem('dailyGoal', value.toString());
+      updateConfig({ dailyGoal: value });
       setIsEditingGoal(false);
       setGoalInput('');
     }

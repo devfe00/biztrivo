@@ -54,7 +54,7 @@ const Configuracoes: React.FC = () => {
     setLoading(true);
     setMessage(null);
     try {
-      updateConfig({ storeName, profileImage });
+      await updateConfig({ storeName, profileImage });
       setMessage({ type: 'success', text: 'Perfil atualizado com sucesso!' });
     } catch {
       setMessage({ type: 'error', text: 'Erro ao atualizar perfil.' });
