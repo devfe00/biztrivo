@@ -142,6 +142,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
     if (partial.whatsapp !== undefined) dbUpdate.whatsapp = partial.whatsapp;
     if (partial.vitrineActive !== undefined) dbUpdate.vitrine_active = partial.vitrineActive;
     if (partial.profileImage !== undefined) dbUpdate.profile_image = partial.profileImage;
+    if (partial.dailyGoal !== undefined) dbUpdate.daily_goal = partial.dailyGoal;
 
     if (Object.keys(dbUpdate).length > 0) {
       await supabase.from('profiles').update(dbUpdate).eq('user_id', user.id);
