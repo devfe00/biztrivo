@@ -58,6 +58,7 @@ const defaultConfig: StoreConfig = {
   vitrineActive: false,
   vitrineClicks: 0,
   profileImage: '',
+  dailyGoal: 0,
 };
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -112,6 +113,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
         vitrineActive: profile?.vitrine_active ?? false,
         vitrineClicks: profile?.vitrine_clicks ?? 0,
         profileImage: profile?.profile_image ?? '',
+        dailyGoal: Number(profile?.daily_goal) || 0,
         products,
         transactions,
       });
