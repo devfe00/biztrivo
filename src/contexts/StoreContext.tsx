@@ -33,6 +33,7 @@ export interface StoreConfig {
   vitrineActive: boolean;
   vitrineClicks: number;
   profileImage: string;
+  dailyGoal: number;
 }
 
 interface StoreContextType {
