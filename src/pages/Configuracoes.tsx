@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Lock, LogOut, Camera, Save, Eye, EyeOff, AlertCircle, CheckCircle, ArrowLeft, CreditCard } from 'lucide-react';
+import { User, Lock, LogOut, Camera, Save, Eye, EyeOff, AlertCircle, CheckCircle, ArrowLeft, CreditCard, Tag } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useStore } from '@/contexts/StoreContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,6 +20,8 @@ const Configuracoes: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'profile' | 'password' | 'subscription'>('profile');
   const [subscription, setSubscription] = useState<{ status: string; plan: string; current_period_end: string | null } | null>(null);
   const [cancellingSubscription, setCancellingSubscription] = useState(false);
+  const [ajudaeStatus, setAjudaeStatus] = useState<{ plan: string; active: boolean; redeemed: boolean } | null>(null);
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
 
   useEffect(() => {
     setStoreName(config.storeName);
@@ -36,7 +38,50 @@ const Configuracoes: React.FC = () => {
       .then(({ data }) => {
         if (data) setSubscription(data);
       });
+
+    // Verifica se o email do usuário é assinante Ajudaê
+    if (user.email) {
+      supabase
+        .from('ajudae_subscribers' as any)
+        .select('plan, active, coupon_redeemed_at')
+        .ilike('email', user.email)
+        .maybeSingle()
+        .then(({ data }: any) => {
+          if (data) {
+            setAjudaeStatus({
+              plan: data.plan,
+              active: data.active,
+              redeemed: !!data.coupon_redeemed_at,
+            });
+          }
+        });
+    }
   }, [user]);
+
+  const handleApplyAjudaeCoupon = async () => {
+    setApplyingCoupon(true);
+    setMessage(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setMessage({ type: 'error', text: 'Sessão expirada. Faça login novamente.' });
+        return;
+      }
+      const { data, error } = await supabase.functions.invoke('apply-ajudae-coupon', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (error || (data && data.error)) {
+        setMessage({ type: 'error', text: data?.error || 'Erro ao aplicar cupom.' });
+      } else {
+        setMessage({ type: 'success', text: `Cupom aplicado! Você ganhou ${data.discountPct}% de desconto recorrente.` });
+        setAjudaeStatus(prev => prev ? { ...prev, redeemed: true } : null);
+      }
+    } catch {
+      setMessage({ type: 'error', text: 'Erro inesperado.' });
+    } finally {
+      setApplyingCoupon(false);
+    }
+  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -272,6 +317,39 @@ const Configuracoes: React.FC = () => {
                       <><CreditCard size={20} /><span>Cancelar Assinatura</span></>
                     )}
                   </button>
+                )}
+
+                {ajudaeStatus && ajudaeStatus.active && subscription?.status === 'active' && subscription?.plan === 'pro' && (
+                  <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-5">
+                    <div className="flex items-start gap-3 mb-3">
+                      <Tag size={22} className="text-green-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <h4 className="font-semibold text-gray-900">Cupom Ajudaê disponível</h4>
+                        <p className="text-sm text-gray-700 mt-1">
+                          Identificamos que você é assinante <strong className="capitalize">{ajudaeStatus.plan}</strong> da Ajudaê.
+                          {ajudaeStatus.redeemed
+                            ? ' Cupom já aplicado nesta conta. ✅'
+                            : ` Aplique seu desconto recorrente de ${ajudaeStatus.plan === 'premium' ? '30%' : '15%'}.`}
+                        </p>
+                      </div>
+                    </div>
+                    {!ajudaeStatus.redeemed && (
+                      <button
+                        onClick={handleApplyAjudaeCoupon}
+                        disabled={applyingCoupon}
+                        className="w-full bg-green-600 text-white py-2.5 rounded-lg font-semibold hover:bg-green-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                      >
+                        {applyingCoupon ? (
+                          <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /><span>Aplicando...</span></>
+                        ) : (
+                          <><Tag size={18} /><span>Aplicar Cupom Ajudaê</span></>
+                        )}
+                      </button>
+                    )}
+                    <p className="text-xs text-gray-500 mt-2">
+                      ⚠️ O desconto é mantido enquanto você for assinante ativo da Ajudaê. Se cancelar lá, o desconto é removido na próxima cobrança.
+                    </p>
+                  </div>
                 )}
 
                 {subscription?.status !== 'active' && !isGracePeriod && (
