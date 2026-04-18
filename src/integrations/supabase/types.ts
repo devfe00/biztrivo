@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      ajudae_subscribers: {
+        Row: {
+          active: boolean
+          coupon_redeemed_at: string | null
+          created_at: string
+          email: string
+          id: string
+          plan: string
+          redeemed_by_user_id: string | null
+          stripe_coupon_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          coupon_redeemed_at?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          plan: string
+          redeemed_by_user_id?: string | null
+          stripe_coupon_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          coupon_redeemed_at?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          plan?: string
+          redeemed_by_user_id?: string | null
+          stripe_coupon_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           created_at: string
