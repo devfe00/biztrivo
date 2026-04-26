@@ -17,7 +17,7 @@ const Login: React.FC = () => {
   const [recoveryEmail, setRecoveryEmail] = useState('');
   const [recoverySuccess, setRecoverySuccess] = useState(false);
   const tokenSearch = location.search || '';
-  const homePath = `/${tokenSearch}`;
+const homePath = `/dashboard${tokenSearch}`;
 
   React.useEffect(() => {
     if (user) navigate(homePath, { replace: true });

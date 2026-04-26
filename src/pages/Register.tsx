@@ -197,10 +197,17 @@ const Register: React.FC = () => {
                     <p className="text-sm text-green-800 mt-1">Agora finalize o pagamento para liberar seu acesso.</p>
                   </div>
                 </div>
-                <button type="button" onClick={() => { window.location.href = `https://buy.stripe.com/00w5kEbOLdj35OmfwpgEg00?prefilled_email=${encodeURIComponent(formData.email)}`; }}
-                  className="mt-4 w-full bg-gradient-to-r from-green-400 to-blue-500 text-white py-3 rounded-lg font-semibold hover:from-green-500 hover:to-blue-600 transition-all shadow-lg">
-                  Ir para pagamento
-                </button>
+               <button type="button" onClick={() => {
+  const isBrazil = navigator.language?.startsWith('pt-BR') ||
+    Intl.DateTimeFormat().resolvedOptions().timeZone === 'America/Sao_Paulo';
+  const paymentLink = isBrazil
+    ? 'https://buy.stripe.com/00w5kEbOLdj35OmfwpgEg00'
+    : 'https://buy.stripe.com/5kQ8wQcSPa6Ra4CfwpgEg01';
+  window.location.href = `${paymentLink}?prefilled_email=${encodeURIComponent(formData.email)}`;
+}}
+  className="mt-4 w-full bg-gradient-to-r from-green-400 to-blue-500 text-white py-3 rounded-lg font-semibold hover:from-green-500 hover:to-blue-600 transition-all shadow-lg">
+  Ir para pagamento
+</button>
               </div>
             )}
 

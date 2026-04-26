@@ -23,6 +23,7 @@ import TermosDeUso from "@/pages/TermosDeUso";
 import PoliticaPrivacidade from "@/pages/PoliticaPrivacidade";
 import NotFound from "./pages/NotFound";
 import AuthCallback from "@/pages/AuthCallback";
+import LandingPage from '@/pages/LandingPage';
 
 const queryClient = new QueryClient();
 
@@ -36,6 +37,7 @@ const App = () => (
         <AuthProvider>
           <StoreProvider>
             <Routes>
+              <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/reset-password" element={<ResetPassword />} />
@@ -44,7 +46,7 @@ const App = () => (
               <Route path="/politica-privacidade" element={<PoliticaPrivacidade />} />
               <Route path="/loja/:slug" element={<PublicStore />} />
               
-              <Route path="/" element={<ProtectedRoute><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
+              <Route path="/dashboard" element={<ProtectedRoute><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
               <Route path="/caixa" element={<ProtectedRoute><AppLayout><Caixa /></AppLayout></ProtectedRoute>} />
               <Route path="/vitrine" element={<ProtectedRoute><AppLayout><Vitrine /></AppLayout></ProtectedRoute>} />
               <Route path="/calculadora" element={<ProtectedRoute><AppLayout><Calculadora /></AppLayout></ProtectedRoute>} />
