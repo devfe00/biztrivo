@@ -9,7 +9,7 @@ import { Toaster } from "sonner";
 import Footer from '@/components/Footer';
 
 const navItems = [
-  { path: '/', label: 'Dashboard', icon: LayoutDashboard },
+  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/caixa', label: 'Financeiro', icon: Wallet },
   { path: '/vitrine', label: 'Minha Vitrine', icon: Store },
   { path: '/calculadora', label: 'Calculadora', icon: Calculator },

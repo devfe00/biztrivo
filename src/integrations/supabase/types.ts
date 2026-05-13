@@ -50,6 +50,21 @@ export type Database = {
         }
         Relationships: []
       }
+      free_access_emails: {
+        Row: {
+          created_at: string
+          email: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           created_at: string
