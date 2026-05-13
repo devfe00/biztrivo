@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-
-const STRIPE_PAYMENT_URL = 'https://buy.stripe.com/test_aFadRa19XalV7n6fPab3q00';
+import { toast } from '@/hooks/use-toast';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
@@ -21,14 +20,22 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     if (!loading && user) {
       supabase
         .from('subscriptions')
-        .select('status')
+        .select('status, current_period_end')
         .eq('user_id', user.id)
         .maybeSingle()
         .then(({ data }) => {
-          if (data?.status === 'active') {
+          const isActive =
+            data?.status === 'active' &&
+            (!data.current_period_end || new Date(data.current_period_end) > new Date());
+          if (isActive) {
             setHasSubscription(true);
           } else {
-            window.location.href = STRIPE_PAYMENT_URL;
+            toast({
+              title: 'Acesso restrito',
+              description: 'Sua assinatura não está ativa. Escolha um plano para continuar.',
+              variant: 'destructive',
+            });
+            navigate('/planos', { replace: true });
           }
           setCheckingSubscription(false);
         });
