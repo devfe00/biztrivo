@@ -9,11 +9,11 @@ import { Toaster } from "sonner";
 import Footer from '@/components/Footer';
 
 const navItems = [
-  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/caixa', label: 'Financeiro', icon: Wallet },
-  { path: '/vitrine', label: 'Minha Vitrine', icon: Store },
-  { path: '/calculadora', label: 'Calculadora', icon: Calculator },
-  { path: '/relatorios', label: 'Relatórios', icon: BarChart3 },
+  { path: '/dashboard', label: 'Painel', icon: LayoutDashboard },
+  { path: '/caixa', label: 'Caixa', icon: Wallet },
+  { path: '/vitrine', label: 'Vitrine', icon: Store },
+  { path: '/calculadora', label: 'Preço', icon: Calculator },
+  { path: '/relatorios', label: 'Relatório', icon: BarChart3 },
   { path: '/academy', label: 'Academy', icon: GraduationCap },
 ];
 
@@ -50,8 +50,8 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
   return (
     <div className="flex min-h-screen bg-background">
       <aside className="hidden md:flex w-64 flex-col border-r border-border bg-card">
-        <div className="p-6">
-          <img src="/logo.png" alt="Biztrivo" className="h-11 w-auto object-contain" />
+        <div className="p-4">
+          <img src="/logo.png" alt="Biztrivo" className="h-7 w-auto object-contain" />
         </div>
         <nav className="flex-1 px-3 space-y-1">
           {navItems.map(item => {
@@ -59,10 +59,10 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
             return (
               <Link key={item.path} to={item.path}
                 className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 relative group",
+                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all duration-200 relative group",
                   active ? "gradient-primary text-primary-foreground shadow-glow" : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}>
-                <item.icon className="w-5 h-5" />
+                <item.icon className="w-4 h-4" />
                 <span>{item.label}</span>
               </Link>
             );
@@ -70,10 +70,10 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
         </nav>
       </aside>
 
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 bg-card border-b border-border shadow-sm">
-        <img src="/logo.png" alt="Biztrivo" className="h-10 w-auto object-contain" />
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-2 bg-card border-b border-border shadow-sm">
+        <img src="/logo.png" alt="Biztrivo" className="h-6 w-auto object-contain" />
         <button onClick={() => setMobileOpen(!mobileOpen)} className="p-2 rounded-lg hover:bg-muted">
-          {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
       </div>
 
@@ -86,10 +86,10 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
                 return (
                   <Link key={item.path} to={item.path} onClick={() => setMobileOpen(false)}
                     className={cn(
-                      "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all",
+                      "flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all",
                       active ? "gradient-primary text-primary-foreground shadow-glow" : "text-muted-foreground hover:text-foreground hover:bg-muted"
                     )}>
-                    <item.icon className="w-5 h-5" />
+                    <item.icon className="w-4 h-4" />
                     <span>{item.label}</span>
                   </Link>
                 );

@@ -18,9 +18,16 @@ const Dashboard = () => {
     setDailyGoal(config.dailyGoal);
   }, [config.dailyGoal]);
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  // Use LOCAL date (not UTC) so transactions added late at night in BR (UTC-3)
+  // are not bucketed into "tomorrow" and disappear from the dashboard.
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const todayTransactions = useMemo(() =>
-    config.transactions.filter(t => t.date.startsWith(todayStr)),
+    config.transactions.filter(t => {
+      const d = new Date(t.date);
+      const local = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      return local === todayStr;
+    }),
     [config.transactions, todayStr]
   );
 
