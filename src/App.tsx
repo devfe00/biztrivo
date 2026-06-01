@@ -24,6 +24,7 @@ import PoliticaPrivacidade from "@/pages/PoliticaPrivacidade";
 import NotFound from "./pages/NotFound";
 import AuthCallback from "@/pages/AuthCallback";
 import LandingPage from '@/pages/LandingPage';
+import CookieBanner from "@/components/CookieBanner";
 
 const queryClient = new QueryClient();
 
@@ -57,6 +58,7 @@ const App = () => (
               
               <Route path="*" element={<NotFound />} />
             </Routes>
+            <CookieBanner />
           </StoreProvider>
         </AuthProvider>
       </BrowserRouter>
