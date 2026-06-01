@@ -397,6 +397,31 @@ const PoliticaPrivacidade: React.FC = () => {
               </ul>
             </section>
 
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">16. Política de Cookies (LGPD)</h2>
+              <p>
+                Em conformidade com a LGPD (Lei 13.709/2018), utilizamos cookies e tecnologias semelhantes apenas com 
+                a sua autorização, exceto quando estritamente necessários para o funcionamento do serviço. Ao acessar 
+                a plataforma pela primeira vez, exibimos um banner de consentimento onde você pode <strong>aceitar</strong> 
+                ou <strong>recusar</strong> o uso de cookies não essenciais.
+              </p>
+              <p className="mt-3"><strong>Tipos de cookies que utilizamos:</strong></p>
+              <ul className="list-disc pl-6 space-y-2 mt-3">
+                <li><strong>Essenciais:</strong> Sempre ativos. Necessários para autenticação, sessão, segurança e preferências básicas. Sem eles a plataforma não funciona.</li>
+                <li><strong>Analíticos:</strong> Nos ajudam a entender como você usa o Biztrivo (ex.: Google Analytics). Só são ativados após seu consentimento.</li>
+                <li><strong>Publicidade:</strong> Permitem exibir conteúdo e anúncios mais relevantes (ex.: Google Ads). Só são ativados após seu consentimento.</li>
+              </ul>
+              <p className="mt-3">
+                Você pode <strong>revogar seu consentimento a qualquer momento</strong> limpando os cookies do seu 
+                navegador ou entrando em contato pelo email <strong>biztrivo@outlook.com.br</strong>. A recusa de 
+                cookies não essenciais não impede o uso da plataforma.
+              </p>
+              <p className="mt-3">
+                Implementamos o <em>Google Consent Mode v2</em>, garantindo que nenhum dado de analytics ou publicidade 
+                seja enviado a terceiros sem sua autorização expressa.
+              </p>
+            </section>
+
             <div className="mt-12 p-6 bg-green-50 border border-green-200 rounded-lg">
               <p className="text-sm text-green-900">
                 <strong>Compromisso com a Privacidade:</strong> O Biztrivo está comprometido em proteger sua 
