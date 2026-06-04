@@ -60,6 +60,7 @@
     --font-body: 'Inter', sans-serif;
   }
 
+  /* Tema escuro padrão (reservado para uso futuro via classe .dark) */
   .dark {
     --background: 220 25% 6%;
     --foreground: 210 20% 95%;
@@ -98,9 +99,87 @@
     --sidebar-border: 220 20% 18%;
     --sidebar-ring: 217 91% 60%;
   }
-}
 
-@layer base {
+  /* Preto Espaço Sideral — profundo, quase puro */
+  .dark-space {
+    --background: 240 10% 4%;
+    --foreground: 210 20% 95%;
+
+    --card: 240 10% 7%;
+    --card-foreground: 210 20% 95%;
+
+    --popover: 240 10% 7%;
+    --popover-foreground: 210 20% 95%;
+
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 142 71% 45%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 240 10% 12%;
+    --muted-foreground: 215 16% 60%;
+
+    --accent: 142 71% 45%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 240 10% 15%;
+    --input: 240 10% 15%;
+    --ring: 217 91% 60%;
+
+    --sidebar-background: 240 10% 6%;
+    --sidebar-foreground: 210 20% 95%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 10% 11%;
+    --sidebar-accent-foreground: 210 20% 95%;
+    --sidebar-border: 240 10% 15%;
+    --sidebar-ring: 217 91% 60%;
+  }
+
+  /* Azul Meia-Noite — azul profundo, rico */
+  .dark-midnight {
+    --background: 222 47% 8%;
+    --foreground: 210 20% 95%;
+
+    --card: 222 47% 11%;
+    --card-foreground: 210 20% 95%;
+
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 20% 95%;
+
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 142 71% 45%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 222 30% 16%;
+    --muted-foreground: 215 20% 60%;
+
+    --accent: 142 71% 45%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 222 30% 20%;
+    --input: 222 30% 20%;
+    --ring: 217 91% 60%;
+
+    --sidebar-background: 222 47% 9%;
+    --sidebar-foreground: 210 20% 95%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 222 30% 15%;
+    --sidebar-accent-foreground: 210 20% 95%;
+    --sidebar-border: 222 30% 20%;
+    --sidebar-ring: 217 91% 60%;
+  }
+
   * {
     @apply border-border;
   }

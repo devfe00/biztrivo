@@ -167,35 +167,35 @@ const Configuracoes: React.FC = () => {
   const gracePeriodEnd = subscription?.current_period_end ? new Date(subscription.current_period_end).toLocaleDateString('pt-BR') : '';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4 md:p-8">
+    <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
-          <button onClick={() => navigate('/')} className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 transition-colors">
+          <button onClick={() => navigate('/')} className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-4 transition-colors">
             <ArrowLeft size={20} /><span>Voltar ao Dashboard</span>
           </button>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Configurações</h1>
-          <p className="text-gray-600 mt-2">Gerencie seu perfil e preferências</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground">Configurações</h1>
+          <p className="text-muted-foreground mt-2">Gerencie seu perfil e preferências</p>
         </div>
 
         {message && (
-          <div className={`mb-6 p-4 rounded-lg flex items-start gap-3 ${message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
+          <div className={`mb-6 p-4 rounded-lg flex items-start gap-3 ${message.type === 'success' ? 'bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/30' : 'bg-destructive/10 text-destructive border border-destructive/30'}`}>
             {message.type === 'success' ? <CheckCircle size={20} className="flex-shrink-0 mt-0.5" /> : <AlertCircle size={20} className="flex-shrink-0 mt-0.5" />}
             <span>{message.text}</span>
           </div>
         )}
 
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-          <div className="flex border-b border-gray-200">
+        <div className="bg-card rounded-lg shadow-lg overflow-hidden border border-border">
+          <div className="flex border-b border-border">
             <button onClick={() => setActiveTab('profile')}
-              className={`flex-1 px-6 py-4 text-sm font-medium transition-colors ${activeTab === 'profile' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'}`}>
+              className={`flex-1 px-6 py-4 text-sm font-medium transition-colors ${activeTab === 'profile' ? 'text-primary border-b-2 border-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}>
               <div className="flex items-center justify-center gap-2"><User size={18} /><span>Perfil</span></div>
             </button>
             <button onClick={() => setActiveTab('password')}
-              className={`flex-1 px-6 py-4 text-sm font-medium transition-colors ${activeTab === 'password' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'}`}>
+              className={`flex-1 px-6 py-4 text-sm font-medium transition-colors ${activeTab === 'password' ? 'text-primary border-b-2 border-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}>
               <div className="flex items-center justify-center gap-2"><Lock size={18} /><span>Senha</span></div>
             </button>
             <button onClick={() => setActiveTab('subscription')}
-              className={`flex-1 px-6 py-4 text-sm font-medium transition-colors ${activeTab === 'subscription' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'}`}>
+              className={`flex-1 px-6 py-4 text-sm font-medium transition-colors ${activeTab === 'subscription' ? 'text-primary border-b-2 border-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}>
               <div className="flex items-center justify-center gap-2"><CreditCard size={18} /><span>Assinatura</span></div>
             </button>
           </div>
@@ -216,16 +216,16 @@ const Configuracoes: React.FC = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="storeName" className="block text-sm font-medium text-gray-700 mb-2">Nome da Loja *</label>
+                  <label htmlFor="storeName" className="block text-sm font-medium text-foreground mb-2">Nome da Loja *</label>
                   <input id="storeName" type="text" value={storeName} onChange={(e) => setStoreName(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className="w-full px-4 py-3 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent transition-all bg-background text-foreground"
                     placeholder="Digite o nome da sua loja" required />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                  <input type="email" value={user?.email || ''} className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed" disabled />
-                  <p className="text-xs text-gray-500 mt-1">O email não pode ser alterado</p>
+                  <label className="block text-sm font-medium text-foreground mb-2">Email</label>
+                  <input type="email" value={user?.email || ''} className="w-full px-4 py-3 border border-input rounded-lg bg-muted text-muted-foreground cursor-not-allowed" disabled />
+                  <p className="text-xs text-muted-foreground mt-1">O email não pode ser alterado</p>
                 </div>
 
                 <button type="submit" disabled={loading}
@@ -238,23 +238,23 @@ const Configuracoes: React.FC = () => {
             {activeTab === 'password' && (
               <form onSubmit={handleChangePassword} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Nova Senha *</label>
+                  <label className="block text-sm font-medium text-foreground mb-2">Nova Senha *</label>
                   <div className="relative">
                     <input type={showNewPassword ? 'text' : 'password'} value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-12"
+                      className="w-full px-4 py-3 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent pr-12 bg-background text-foreground"
                       placeholder="Mínimo 6 caracteres" required />
                     <button type="button" onClick={() => setShowNewPassword(!showNewPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700">
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                       {showNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                     </button>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Confirmar Nova Senha *</label>
+                  <label className="block text-sm font-medium text-foreground mb-2">Confirmar Nova Senha *</label>
                   <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent bg-background text-foreground"
                     placeholder="Digite novamente" required />
                 </div>
 
@@ -267,20 +267,20 @@ const Configuracoes: React.FC = () => {
 
             {activeTab === 'subscription' && (
               <div className="space-y-6">
-                <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Detalhes da Assinatura</h3>
+                <div className="bg-muted rounded-lg p-6 border border-border">
+                  <h3 className="text-lg font-semibold text-foreground mb-4">Detalhes da Assinatura</h3>
                   
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Plano</span>
-                      <span className="font-medium text-gray-900 capitalize">{subscription?.plan || 'Free'}</span>
+                      <span className="text-muted-foreground">Plano</span>
+                      <span className="font-medium text-foreground capitalize">{subscription?.plan || 'Free'}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Status</span>
+                      <span className="text-muted-foreground">Status</span>
                       <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                        subscription?.status === 'active' ? 'bg-green-100 text-green-800' :
-                        isGracePeriod ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-red-100 text-red-800'
+                        subscription?.status === 'active' ? 'bg-green-500/15 text-green-600 dark:text-green-400' :
+                        isGracePeriod ? 'bg-yellow-500/15 text-yellow-600 dark:text-yellow-400' :
+                        'bg-destructive/15 text-destructive'
                       }`}>
                         {subscription?.status === 'active' ? 'Ativa' :
                          isGracePeriod ? 'Cancelada (Período de Carência)' :
@@ -289,17 +289,17 @@ const Configuracoes: React.FC = () => {
                     </div>
                     {isGracePeriod && (
                       <div className="flex justify-between items-center">
-                        <span className="text-gray-600">Acesso até</span>
-                        <span className="font-medium text-yellow-700">{gracePeriodEnd}</span>
+                        <span className="text-muted-foreground">Acesso até</span>
+                        <span className="font-medium text-yellow-500">{gracePeriodEnd}</span>
                       </div>
                     )}
                   </div>
                 </div>
 
                 {isGracePeriod && (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3">
-                    <AlertCircle size={20} className="text-yellow-600 flex-shrink-0 mt-0.5" />
-                    <p className="text-yellow-800 text-sm">
+                  <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 flex items-start gap-3">
+                    <AlertCircle size={20} className="text-yellow-500 flex-shrink-0 mt-0.5" />
+                    <p className="text-yellow-600 dark:text-yellow-400 text-sm">
                       Sua assinatura foi cancelada, mas você ainda tem acesso até <strong>{gracePeriodEnd}</strong>. Após essa data, seu acesso será suspenso.
                     </p>
                   </div>
@@ -309,10 +309,10 @@ const Configuracoes: React.FC = () => {
                   <button
                     onClick={handleCancelSubscription}
                     disabled={cancellingSubscription}
-                    className="w-full bg-red-50 text-red-600 py-3 rounded-lg font-semibold hover:bg-red-100 transition-all border border-red-200 flex items-center justify-center gap-2 disabled:opacity-50"
+                    className="w-full bg-destructive/10 text-destructive py-3 rounded-lg font-semibold hover:bg-destructive/20 transition-all border border-destructive/30 flex items-center justify-center gap-2 disabled:opacity-50"
                   >
                     {cancellingSubscription ? (
-                      <><div className="w-5 h-5 border-2 border-red-600 border-t-transparent rounded-full animate-spin" /><span>Cancelando...</span></>
+                      <><div className="w-5 h-5 border-2 border-destructive border-t-transparent rounded-full animate-spin" /><span>Cancelando...</span></>
                     ) : (
                       <><CreditCard size={20} /><span>Cancelar Assinatura</span></>
                     )}
@@ -320,12 +320,12 @@ const Configuracoes: React.FC = () => {
                 )}
 
                 {ajudaeStatus && ajudaeStatus.active && subscription?.status === 'active' && subscription?.plan === 'pro' && (
-                  <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-5">
+                  <div className="bg-gradient-to-r from-green-500/10 to-primary/10 border border-green-500/30 rounded-lg p-5">
                     <div className="flex items-start gap-3 mb-3">
-                      <Tag size={22} className="text-green-600 flex-shrink-0 mt-0.5" />
+                      <Tag size={22} className="text-green-500 flex-shrink-0 mt-0.5" />
                       <div>
-                        <h4 className="font-semibold text-gray-900">Cupom Ajudaê disponível</h4>
-                        <p className="text-sm text-gray-700 mt-1">
+                        <h4 className="font-semibold text-foreground">Cupom Ajudaê disponível</h4>
+                        <p className="text-sm text-muted-foreground mt-1">
                           Identificamos que você é assinante <strong className="capitalize">{ajudaeStatus.plan}</strong> da Ajudaê.
                           {ajudaeStatus.redeemed
                             ? ' Cupom já aplicado nesta conta. ✅'
@@ -346,7 +346,7 @@ const Configuracoes: React.FC = () => {
                         )}
                       </button>
                     )}
-                    <p className="text-xs text-gray-500 mt-2">
+                    <p className="text-xs text-muted-foreground mt-2">
                       ⚠️ O desconto é mantido enquanto você for assinante ativo da Ajudaê. Se cancelar lá, o desconto é removido na próxima cobrança.
                     </p>
                   </div>
@@ -370,7 +370,7 @@ const Configuracoes: React.FC = () => {
 
         <div className="mt-6">
           <button onClick={handleLogout}
-            className="w-full bg-red-50 text-red-600 py-3 rounded-lg font-semibold hover:bg-red-100 transition-all border border-red-200 flex items-center justify-center gap-2">
+            className="w-full bg-destructive/10 text-destructive py-3 rounded-lg font-semibold hover:bg-destructive/20 transition-all border border-destructive/30 flex items-center justify-center gap-2">
             <LogOut size={20} /><span>Sair da Conta</span>
           </button>
         </div>
