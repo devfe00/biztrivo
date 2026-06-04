@@ -79,8 +79,8 @@ const translations = {
     },
     // Stats
     stats: [
-      { value: '870+', label: 'Lojistas ativos' },
-      { value: 'R$ 680k+', label: 'Em vendas controladas' },
+      { value: '70+', label: 'Lojistas ativos' },
+      { value: 'R$ 59k+', label: 'Em vendas controladas' },
       { value: '99.9%', label: 'Uptime garantido' },
       { value: '4.8★', label: 'Avaliação média' },
     ],
@@ -99,7 +99,7 @@ const translations = {
       {
         title: 'Vitrine Online Grátis',
         description:
-          'Crie um catálogo digital com seus produtos e compartilhe um link. Seus clientes compram direto pelo WhatsApp — sem taxa, sem complicação.',
+          'Crie um catálogo digital com seus produtos e compartilhe um link. Seus clientes compram direto pelo WhatsApp sem taxa, sem complicação.',
       },
       {
         title: 'Relatórios Financeiros',
@@ -127,7 +127,7 @@ const translations = {
       eyebrow: 'Vitrine Online',
       title: 'Seu catálogo no WhatsApp em minutos',
       subtitle:
-        'Cadastre seus produtos, ative a vitrine e compartilhe um link único. Seus clientes veem tudo organizado e pedem direto pelo WhatsApp — você só atende e vende.',
+        'Cadastre seus produtos, ative a vitrine e compartilhe um link único. Seus clientes veem tudo organizado e pedem direto pelo WhatsApp, você só atende e vende.',
       bullets: [
         'Link personalizado da sua loja',
         'Fotos, preços e descrições dos produtos',
@@ -205,7 +205,7 @@ const translations = {
       subtitle:
         'Cadastre-se grátis agora e tenha sua vitrine online funcionando em menos de 5 minutos.',
       cta: 'Criar minha conta grátis',
-      disclaimer: 'Sem cartão de crédito. Sem compromisso.',
+      disclaimer: ' Sem compromisso.',
     },
     // Footer
     footer: {
@@ -380,7 +380,7 @@ const translations = {
       title: 'Ready to sell more and control everything?',
       subtitle: 'Sign up free now and have your online storefront running in under 5 minutes.',
       cta: 'Create my free account',
-      disclaimer: 'No credit card. No commitment.',
+      disclaimer: ' No commitment.',
     },
     footer: {
       rights: '© 2026 Biztrivo. All rights reserved.',
@@ -454,7 +454,7 @@ const translations = {
       {
         title: 'Vitrina Online Gratis',
         description:
-          'Crea un catálogo digital con tus productos y comparte un enlace. Tus clientes compran directo por WhatsApp — sin comisión, sin complicación.',
+          'Crea un catálogo digital con tus productos y comparte un enlace. Tus clientes compran directo por WhatsApp, sin comisión, sin complicación.',
       },
       {
         title: 'Informes Financieros',
@@ -481,7 +481,7 @@ const translations = {
       eyebrow: 'Vitrina Online',
       title: 'Tu catálogo en WhatsApp en minutos',
       subtitle:
-        'Registra tus productos, activa la vitrina y comparte un enlace único. Tus clientes ven todo organizado y piden directo por WhatsApp — tú solo atiendes y vendes.',
+        'Registra tus productos, activa la vitrina y comparte un enlace único. Tus clientes ven todo organizado y piden directo por WhatsApp, tú solo atiendes y vendes.',
       bullets: [
         'Enlace personalizado de tu tienda',
         'Fotos, precios y descripciones de productos',
@@ -555,7 +555,7 @@ const translations = {
       subtitle:
         'Regístrate gratis ahora y ten tu vitrina online funcionando en menos de 5 minutos.',
       cta: 'Crear mi cuenta gratis',
-      disclaimer: 'Sin tarjeta de crédito. Sin compromiso.',
+      disclaimer: ' Sin compromiso.',
     },
     footer: {
       rights: '© 2026 Biztrivo. Todos los derechos reservados.',
@@ -629,7 +629,7 @@ const translations = {
       {
         title: 'Vitrine en Ligne Gratuite',
         description:
-          'Créez un catalogue numérique et partagez un lien. Vos clients achètent directement via WhatsApp — sans commission, sans complication.',
+          'Créez un catalogue numérique et partagez un lien. Vos clients achètent directement via WhatsApp, sans commission, sans complication.',
       },
       {
         title: 'Rapports Financiers',
@@ -656,7 +656,7 @@ const translations = {
       eyebrow: 'Vitrine en Ligne',
       title: 'Votre catalogue sur WhatsApp en quelques minutes',
       subtitle:
-        'Ajoutez vos produits, activez votre vitrine et partagez un lien unique. Vos clients voient tout organisé et commandent via WhatsApp — il ne reste qu\'à vendre.',
+        'Ajoutez vos produits, activez votre vitrine et partagez un lien unique. Vos clients voient tout organisé et commandent via WhatsApp, il ne reste qu\'à vendre.',
       bullets: [
         'Lien personnalisé de votre boutique',
         'Photos, prix et descriptions des produits',
@@ -730,7 +730,7 @@ const translations = {
       subtitle:
         'Inscrivez-vous gratuitement et lancez votre vitrine en ligne en moins de 5 minutes.',
       cta: 'Créer mon compte gratuit',
-      disclaimer: 'Sans carte de crédit. Sans engagement.',
+      disclaimer: ' Sans engagement.',
     },
     footer: {
       rights: '© 2026 Biztrivo. Tous droits réservés.',
