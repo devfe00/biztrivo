@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { useMemo, useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { Input } from '@/components/ui/input';
+import CashflowForecast from '@/components/CashflowForecast';
 
 const Dashboard = () => {
   const { config, updateConfig } = useStore();
@@ -204,6 +205,8 @@ const Dashboard = () => {
           </div>
         </Card>
       </div>
+
+      <CashflowForecast />
     </div>
   );
 };

@@ -10,8 +10,10 @@ import AppLayout from "@/components/AppLayout";
 import Dashboard from "@/pages/Dashboard";
 import Caixa from "@/pages/Caixa";
 import Vitrine from "@/pages/Vitrine";
+import Offline from "@/pages/Offline";
 import Academy from "@/pages/Academy";
 import Relatorios from "@/pages/Relatorios";
+import MEI from "@/pages/MEI";
 import Calculadora from "@/pages/Calculadora";
 import PublicStore from "@/pages/PublicStore";
 import Login from "@/pages/Login";
@@ -50,8 +52,10 @@ const App = () => (
               <Route path="/dashboard" element={<ProtectedRoute><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
               <Route path="/caixa" element={<ProtectedRoute><AppLayout><Caixa /></AppLayout></ProtectedRoute>} />
               <Route path="/vitrine" element={<ProtectedRoute><AppLayout><Vitrine /></AppLayout></ProtectedRoute>} />
+              <Route path="/offline" element={<ProtectedRoute><AppLayout><Offline /></AppLayout></ProtectedRoute>} />
               <Route path="/calculadora" element={<ProtectedRoute><AppLayout><Calculadora /></AppLayout></ProtectedRoute>} />
               <Route path="/relatorios" element={<ProtectedRoute><AppLayout><Relatorios /></AppLayout></ProtectedRoute>} />
+              <Route path="/mei" element={<ProtectedRoute><AppLayout><MEI /></AppLayout></ProtectedRoute>} />
               <Route path="/academy" element={<ProtectedRoute><AppLayout><Academy /></AppLayout></ProtectedRoute>} />
               <Route path="/configuracoes" element={<ProtectedRoute><AppLayout><Configuracoes /></AppLayout></ProtectedRoute>} />
               <Route path="/auth/callback" element={<AuthCallback />} />
