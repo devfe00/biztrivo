@@ -257,7 +257,7 @@ const MEI = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
           <div className="p-3 rounded-lg bg-background">
             <p className="text-xs text-muted-foreground">Receita com comércio, indústria e transporte</p>
-            <p className="text-lg font-bold font-heading">{fmt(report.totalComercio + report.totalDesconhecido /* assume desconhecido como comércio por segurança */ * 0)}</p>
+            <p className="text-lg font-bold font-heading">{fmt(report.totalComercio)}</p>
             <p className="text-[10px] text-muted-foreground">(apenas categorias classificadas)</p>
           </div>
           <div className="p-3 rounded-lg bg-background">
