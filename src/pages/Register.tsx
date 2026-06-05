@@ -3,6 +3,7 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Eye, EyeOff, Store, Mail, Lock, AlertCircle, CheckCircle, CreditCard } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { redirectToCheckout } from '@/lib/billing';
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
@@ -16,10 +17,10 @@ const Register: React.FC = () => {
   const [success, setSuccess] = useState(false);
   const paymentRef = useRef<HTMLDivElement | null>(null);
   const tokenSearch = location.search || '';
-  const homePath = `/${tokenSearch}`;
+  const homePath = `/dashboard${tokenSearch}`;
 
   useEffect(() => {
-    if (user && !success) navigate(homePath, { replace: true });
+    if (user && !success) redirectToCheckout(user.email);
   }, [user, homePath, navigate]);
 
   useEffect(() => {
@@ -53,6 +54,7 @@ const Register: React.FC = () => {
     } else {
       setSuccess(true);
       toast.success('Cadastro concluído!', { description: 'Agora finalize o pagamento para liberar o acesso.' });
+      redirectToCheckout(formData.email);
     }
     setLoading(false);
   };

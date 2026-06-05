@@ -3,6 +3,7 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, AlertCircle, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { getCurrentSubscription, hasActiveSubscription, redirectToCheckout } from '@/lib/billing';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -21,7 +22,11 @@ const Login: React.FC = () => {
 const homePath = `/dashboard${tokenSearch}`;
 
   React.useEffect(() => {
-    if (user) navigate(homePath, { replace: true });
+    if (!user) return;
+    getCurrentSubscription(user.id).then((sub) => {
+      if (hasActiveSubscription(sub)) navigate(homePath, { replace: true });
+      else redirectToCheckout(user.email);
+    });
   }, [user, homePath, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,19 +38,10 @@ const homePath = `/dashboard${tokenSearch}`;
   if (signInError) {
     setError(signInError);
   } else {
-    const { data: sub } = await supabase
-      .from('subscriptions')
-      .select('status')
-      .eq('user_id', (await supabase.auth.getUser()).data.user?.id ?? '')
-      .maybeSingle();
-    const isActive = sub?.status === 'active' || sub?.status === 'cancelled';
-    if (!isActive) {
-      const isBrazil = navigator.language?.startsWith('pt-BR') ||
-        Intl.DateTimeFormat().resolvedOptions().timeZone === 'America/Sao_Paulo';
-      const paymentLink = isBrazil
-        ? 'https://buy.stripe.com/00w5kEbOLdj35OmfwpgEg00'
-        : 'https://buy.stripe.com/5kQ8wQcSPa6Ra4CfwpgEg01';
-      window.location.href = `${paymentLink}?prefilled_email=${encodeURIComponent(email)}`;
+    const currentUser = (await supabase.auth.getUser()).data.user;
+    const sub = currentUser ? await getCurrentSubscription(currentUser.id) : null;
+    if (!hasActiveSubscription(sub)) {
+      redirectToCheckout(currentUser?.email ?? email);
     } else {
       navigate(homePath);
     }

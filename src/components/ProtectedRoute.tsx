@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { hasActiveSubscription, redirectToCheckout } from '@/lib/billing';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
@@ -20,22 +20,14 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     if (!loading && user) {
       supabase
         .from('subscriptions')
-        .select('status, current_period_end')
+        .select('status, plan, current_period_end')
         .eq('user_id', user.id)
         .maybeSingle()
         .then(({ data }) => {
-          const isActive =
-            data?.status === 'active' &&
-            (!data.current_period_end || new Date(data.current_period_end) > new Date());
-          if (isActive) {
+          if (hasActiveSubscription(data)) {
             setHasSubscription(true);
           } else {
-            toast({
-              title: 'Acesso restrito',
-              description: 'Sua assinatura não está ativa. Escolha um plano para continuar.',
-              variant: 'destructive',
-            });
-            navigate('/planos', { replace: true });
+            redirectToCheckout(user.email);
           }
           setCheckingSubscription(false);
         });
