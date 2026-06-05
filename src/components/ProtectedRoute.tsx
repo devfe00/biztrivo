@@ -1,12 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { hasActiveSubscription, redirectToCheckout } from '@/lib/billing';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
-  const navigate = useNavigate();
   const [checkingSubscription, setCheckingSubscription] = useState(true);
   const [hasSubscription, setHasSubscription] = useState(false);
 
@@ -32,7 +30,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
           setCheckingSubscription(false);
         });
     }
-  }, [loading, user, navigate]);
+  }, [loading, user]);
 
   if (loading || checkingSubscription) {
     return (
