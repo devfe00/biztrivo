@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, AlertCircle, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -24,15 +25,33 @@ const homePath = `/dashboard${tokenSearch}`;
   }, [user, homePath, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    if (!email || !password) { setError('Preencha todos os campos'); return; }
-    setLoading(true);
-    const { error: signInError } = await signIn(email, password);
-    if (signInError) setError(signInError);
-    else navigate(homePath);
-    setLoading(false);
-  };
+  e.preventDefault();
+  setError('');
+  if (!email || !password) { setError('Preencha todos os campos'); return; }
+  setLoading(true);
+  const { error: signInError } = await signIn(email, password);
+  if (signInError) {
+    setError(signInError);
+  } else {
+    const { data: sub } = await supabase
+      .from('subscriptions')
+      .select('status')
+      .eq('user_id', (await supabase.auth.getUser()).data.user?.id ?? '')
+      .maybeSingle();
+    const isActive = sub?.status === 'active' || sub?.status === 'cancelled';
+    if (!isActive) {
+      const isBrazil = navigator.language?.startsWith('pt-BR') ||
+        Intl.DateTimeFormat().resolvedOptions().timeZone === 'America/Sao_Paulo';
+      const paymentLink = isBrazil
+        ? 'https://buy.stripe.com/00w5kEbOLdj35OmfwpgEg00'
+        : 'https://buy.stripe.com/5kQ8wQcSPa6Ra4CfwpgEg01';
+      window.location.href = `${paymentLink}?prefilled_email=${encodeURIComponent(email)}`;
+    } else {
+      navigate(homePath);
+    }
+  }
+  setLoading(false);
+};
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);

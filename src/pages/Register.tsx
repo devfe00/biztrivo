@@ -19,7 +19,7 @@ const Register: React.FC = () => {
   const homePath = `/${tokenSearch}`;
 
   useEffect(() => {
-    if (user) navigate(homePath, { replace: true });
+    if (user && !success) navigate(homePath, { replace: true });
   }, [user, homePath, navigate]);
 
   useEffect(() => {
