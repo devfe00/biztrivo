@@ -5,18 +5,20 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, Trash2, ExternalLink, Copy, Check, Image as ImageIcon, AlertCircle, Download, Rocket, Share2, Pencil, Instagram } from 'lucide-react';
+import { Plus, Trash2, ExternalLink, Copy, Check, Image as ImageIcon, AlertCircle, Download, Rocket, Share2, Pencil, Instagram, FileText } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { QRCodeCanvas } from 'qrcode.react';
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { sanitizeText } from '@/lib/sanitize';
 import InstagramPostGenerator from '@/components/InstagramPostGenerator';
+import InvoiceComparator from '@/components/InvoiceComparator';
 
 const Vitrine = () => {
   const { config, updateConfig, addProduct, removeProduct, updateProduct } = useStore();
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [igProduct, setIgProduct] = useState<Product | null>(null);
+  const [invoiceOpen, setInvoiceOpen] = useState(false);
   const { checkStockAlert } = useNotifications();
   const [showForm, setShowForm] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -200,9 +202,14 @@ const Vitrine = () => {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold font-heading">Produtos ({config.products.length})</h2>
-          <button onClick={() => setShowForm(!showForm)} className="px-4 py-2 rounded-lg gradient-primary text-primary-foreground text-sm font-medium flex items-center gap-2 shadow-glow hover:opacity-90 transition-opacity">
-            <Plus className="w-4 h-4" /> Adicionar
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setInvoiceOpen(true)} className="px-4 py-2 rounded-lg bg-muted text-sm font-medium flex items-center gap-2 hover:bg-accent transition-colors">
+              <FileText className="w-4 h-4" /> Comparar Nota
+            </button>
+            <button onClick={() => setShowForm(!showForm)} className="px-4 py-2 rounded-lg gradient-primary text-primary-foreground text-sm font-medium flex items-center gap-2 shadow-glow hover:opacity-90 transition-opacity">
+              <Plus className="w-4 h-4" /> Adicionar
+            </button>
+          </div>
         </div>
 
         {showForm && (
@@ -303,6 +310,12 @@ const Vitrine = () => {
           onOpenChange={(o) => !o && setIgProduct(null)}
         />
       )}
+
+      <InvoiceComparator
+        products={config.products}
+        open={invoiceOpen}
+        onOpenChange={setInvoiceOpen}
+      />
 
       <Dialog open={!!editingProduct} onOpenChange={open => !open && setEditingProduct(null)}>
         <DialogContent className="max-w-lg">
