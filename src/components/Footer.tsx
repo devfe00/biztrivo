@@ -1,4 +1,4 @@
-import { Instagram, Mail, FileText, Shield } from 'lucide-react';
+import { Instagram, Linkedin, Mail, FileText, Shield } from 'lucide-react';
 
 const Footer = () => {
   const year = new Date().getFullYear();
@@ -32,6 +32,15 @@ const Footer = () => {
               title="E-mail"
             >
               <Mail className="w-4 h-4 md:w-5 md:h-5 text-primary-foreground" />
+            </a>
+            <a
+              href="https://www.linkedin.com/company/biztrivo"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+              title="LinkedIn"
+            >
+              <Linkedin className="w-4 h-4 md:w-5 md:h-5 text-primary-foreground" />
             </a>
           </div>
         </div>

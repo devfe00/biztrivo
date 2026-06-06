@@ -19,6 +19,7 @@ import {
   Store,
   Download,
   Instagram,
+  Linkedin,
   Mail,
 } from 'lucide-react';
 
@@ -1217,34 +1218,38 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* ── FOOTER ── */}
-      <footer className="mt-0">
-        <div className="h-1 w-full bg-gradient-to-r from-green-500 to-blue-600" />
-        <div className="bg-gradient-to-r from-green-700 to-blue-800 px-6 py-6">
-          <div className="max-w-6xl mx-auto flex items-center justify-between">
-            <div>
-              <p className="text-white font-bold text-lg">Biztrivo</p>
-              <p className="text-white/60 text-xs mt-0.5">CNPJ: 65.321.369/0001-41</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <a href="https://www.instagram.com/biztrivo/" target="_blank" rel="noopener noreferrer"
-                className="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors">
-                <Instagram size={18} className="text-white" />
-              </a>
-              <a href="mailto:biztrivo@outlook.com"
-                className="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors">
-                <Mail size={18} className="text-white" />
-              </a>
-            </div>
-          </div>
-          <div className="max-w-6xl mx-auto border-t border-white/15 mt-4 pt-4 flex items-center justify-between text-xs text-white/60">
-            <p>{t.footer.rights}</p>
-            <div className="flex items-center gap-4">
-              <Link to="/termos-de-uso" className="hover:text-white transition-colors">{t.footer.terms}</Link>
-              <Link to="/politica-privacidade" className="hover:text-white transition-colors">{t.footer.privacy}</Link>
-            </div>
-          </div>
-        </div>
-      </footer>
+<footer className="mt-0">
+  <div className="h-1 w-full bg-gradient-to-r from-green-500 to-blue-600" />
+  <div className="bg-gradient-to-r from-green-700 to-blue-800 px-6 py-6">
+    <div className="max-w-6xl mx-auto flex items-center justify-between">
+      <div>
+        <p className="text-white font-bold text-lg">Biztrivo</p>
+        <p className="text-white/60 text-xs mt-0.5">CNPJ: 65.321.369/0001-41</p>
+      </div>
+      <div className="flex items-center gap-3">
+        <a href="https://www.instagram.com/biztrivo/" target="_blank" rel="noopener noreferrer"
+          className="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors">
+          <Instagram size={18} className="text-white" />
+        </a>
+        <a href="https://www.linkedin.com/company/biztrivo" target="_blank" rel="noopener noreferrer"
+          className="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors">
+          <Linkedin size={18} className="text-white" />
+        </a>
+        <a href="mailto:biztrivo@outlook.com"
+          className="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors">
+          <Mail size={18} className="text-white" />
+        </a>
+      </div>
+    </div>
+    <div className="max-w-6xl mx-auto border-t border-white/15 mt-4 pt-4 flex items-center justify-between text-xs text-white/60">
+      <p>{t.footer.rights}</p>
+      <div className="flex items-center gap-4">
+        <Link to="/termos-de-uso" className="hover:text-white transition-colors">{t.footer.terms}</Link>
+        <Link to="/politica-privacidade" className="hover:text-white transition-colors">{t.footer.privacy}</Link>
+      </div>
+    </div>
+  </div>
+</footer>
     </div>
   );
 };
