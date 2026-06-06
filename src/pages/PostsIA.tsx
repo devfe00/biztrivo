@@ -64,7 +64,7 @@ const TEMPLATES = [
   {
     id: 'ultimas',
     label: '⚡ Últimas Unidades',
-    text: `⚡ ÚLTIMAS UNIDADES!\n\n{produto} por R$ {preco} — quase acabando...\n\nSe você tava esperando o momento certo, é AGORA! 🚨\n\n📩 Chama antes que acabe!`,
+    text: `⚡ ÚLTIMAS UNIDADES!\n\n{produto} por R$ {preco} quase acabando...\n\nSe você tava esperando o momento certo, é AGORA! 🚨\n\n📩 Chama antes que acabe!`,
   },
   {
     id: 'destaque',
@@ -81,7 +81,7 @@ const DICAS = [
   { icon: '💬', text: 'Responda todos os comentários em até 1 hora após publicar. O algoritmo valoriza posts com engajamento rápido.' },
   { icon: '📖', text: 'Stories devem ser postados todos os dias, mesmo que o feed descanse. Stories mantêm você no topo da lista.' },
   { icon: '🔁', text: 'Reutilize posts que foram bem. Se um produto vendeu muito, crie uma variação do mesmo conteúdo 2 meses depois.' },
-  { icon: '👁️', text: 'A primeira linha da legenda é decisiva. Ela aparece antes do "ver mais" — faça ela gerar curiosidade ou urgência.' },
+  { icon: '👁️', text: 'A primeira linha da legenda é decisiva. Ela aparece antes do "ver mais", faça ela gerar curiosidade ou urgência.' },
 ];
 
 const loadHistory = (): PostRecord[] => {
@@ -1070,7 +1070,7 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
                 <PenLine className="w-4 h-4 text-primary" /> Reescritor de Legenda
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                Cole qualquer texto — de um post antigo, de um concorrente ou de qualquer lugar — e a IA reescreve na voz da sua loja.
+                Cole qualquer texto de um post antigo, de um concorrente ou de qualquer lugar, e a IA reescreve na voz da sua loja.
               </p>
             </div>
             <div>

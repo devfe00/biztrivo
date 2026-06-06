@@ -276,7 +276,7 @@ const Contador = () => {
           <Info className="w-5 h-5 text-primary shrink-0 mt-0.5" />
           <p className="text-sm">
             Os dados são lidos automaticamente do seu <strong>Caixa</strong>.
-            Nenhum lançamento duplicado a DRE reflete exatamente o que você já registrou,
+            Nenhum lançamento duplicado, a DRE reflete exatamente o que você já registrou,
             reorganizado por linha contábil.
           </p>
         </div>
