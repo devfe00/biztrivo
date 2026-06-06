@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Wallet, Store, GraduationCap, BarChart3, Calculator, Menu, X, User, Settings, LogOut, ChevronDown, WifiOff, FileText } from 'lucide-react';
+import { LayoutDashboard, Wallet, Store, GraduationCap, BarChart3, Calculator, Menu, X, User, Settings, LogOut, ChevronDown, WifiOff, FileText, Instagram } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { useStore } from '@/contexts/StoreContext';
@@ -13,6 +13,7 @@ const navItems = [
   { path: '/dashboard', label: 'Painel', icon: LayoutDashboard },
   { path: '/caixa', label: 'Caixa', icon: Wallet },
   { path: '/vitrine', label: 'Vitrine', icon: Store },
+  { path: '/posts-ia', label: 'Posts IA', icon: Instagram },
   { path: '/offline', label: 'Modo Offline', icon: WifiOff },
   { path: '/calculadora', label: 'Preço', icon: Calculator },
   { path: '/relatorios', label: 'Relatório', icon: BarChart3 },
