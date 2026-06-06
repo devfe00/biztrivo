@@ -5,16 +5,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, Trash2, ExternalLink, Copy, Check, Image as ImageIcon, AlertCircle, Download, Rocket, Share2, Pencil } from 'lucide-react';
+import { Plus, Trash2, ExternalLink, Copy, Check, Image as ImageIcon, AlertCircle, Download, Rocket, Share2, Pencil, Instagram } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { QRCodeCanvas } from 'qrcode.react';
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { sanitizeText } from '@/lib/sanitize';
+import InstagramPostGenerator from '@/components/InstagramPostGenerator';
 
 const Vitrine = () => {
   const { config, updateConfig, addProduct, removeProduct, updateProduct } = useStore();
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [igProduct, setIgProduct] = useState<Product | null>(null);
   const { checkStockAlert } = useNotifications();
   const [showForm, setShowForm] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -278,6 +280,9 @@ const Vitrine = () => {
                     <button onClick={() => setEditingProduct({ ...p })} className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1 transition-colors">
                       <Pencil className="w-3 h-3" /> Editar
                     </button>
+                    <button onClick={() => setIgProduct(p)} className="text-xs text-muted-foreground hover:text-pink-500 flex items-center gap-1 transition-colors">
+                      <Instagram className="w-3 h-3" /> Post IA
+                    </button>
                     <button onClick={() => removeProduct(p.id)} className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-1 transition-colors">
                       <Trash2 className="w-3 h-3" /> Remover
                     </button>
@@ -288,6 +293,16 @@ const Vitrine = () => {
           </div>
         )}
       </div>
+
+      {igProduct && (
+        <InstagramPostGenerator
+          product={igProduct}
+          storeName={config.storeName}
+          whatsapp={config.whatsapp}
+          open={!!igProduct}
+          onOpenChange={(o) => !o && setIgProduct(null)}
+        />
+      )}
 
       <Dialog open={!!editingProduct} onOpenChange={open => !open && setEditingProduct(null)}>
         <DialogContent className="max-w-lg">
