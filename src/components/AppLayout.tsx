@@ -14,10 +14,11 @@ const navItems = [
   { path: '/caixa', label: 'Caixa', icon: Wallet },
   { path: '/vitrine', label: 'Vitrine', icon: Store },
   { path: '/posts-ia', label: 'Posts IA', icon: Instagram },
-  { path: '/offline', label: 'Modo Offline', icon: WifiOff },
+  { path: '/offline', label: 'Offline', icon: WifiOff },
   { path: '/calculadora', label: 'Preço', icon: Calculator },
   { path: '/relatorios', label: 'Relatório', icon: BarChart3 },
   { path: '/mei', label: 'MEI', icon: FileText },
+  { path: '/contador', label: 'Modo Contador', icon: Calculator },
   { path: '/academy', label: 'Academy', icon: GraduationCap },
 ];
 

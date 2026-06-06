@@ -365,8 +365,8 @@ const PoliticaPrivacidade: React.FC = () => {
                 <strong>Contato do DPO:</strong>
               </p>
               <ul className="list-none pl-0 space-y-2 mt-3">
-                <li><strong>Email:</strong> dpo@biztrivo.com</li>
-                <li><strong>Endereço:</strong> [Seu endereço completo]</li>
+                <li><strong>Email:</strong> biztrivo@outlook.com</li>
+                <li><strong>Endereço:</strong> Av. Brigadeiro Luís Antônio, 5083 - Jardim Paulista, São Paulo - SP, 01402-002</li>
               </ul>
             </section>
 
@@ -389,10 +389,10 @@ const PoliticaPrivacidade: React.FC = () => {
                 de seus dados pessoais:
               </p>
               <ul className="list-none pl-0 space-y-2 mt-3">
-                <li><strong>Email Geral:</strong> biztrivo@outlook.com.br</li>
+                <li><strong>Email Geral:</strong> biztrivo@outlook.com</li>
                 <li><strong>Email Privacidade:</strong> biztrivo@outlook.com.br</li>
-                <li><strong>Email DPO:</strong> biztrivo@outlook.com.br</li>
-                <li><strong>Endereço:</strong> Empresa Remota</li>
+                <li><strong>Email DPO:</strong> biztrivo@outlook.com</li>
+                <li><strong>Endereço:</strong> Av. Brigadeiro Luís Antônio, 5083 - Jardim Paulista, São Paulo - SP, 01402-002 - Empresa Remota</li>
                 <li><strong>CNPJ:</strong> 63.526.345/0001-01</li>
               </ul>
             </section>
@@ -424,7 +424,7 @@ const PoliticaPrivacidade: React.FC = () => {
 
             <div className="mt-12 p-6 bg-green-50 border border-green-200 rounded-lg">
               <p className="text-sm text-green-900">
-                <strong>Compromisso com a Privacidade:</strong> O Biztrivo está comprometido em proteger sua 
+                <strong>Compromisso com a Privacidade:</strong> A Biztrivo está comprometida em proteger sua 
                 privacidade e tratar seus dados pessoais com total transparência, segurança e em conformidade 
                 com a legislação brasileira de proteção de dados. Seus dados são seus, e você tem controle total 
                 sobre eles.

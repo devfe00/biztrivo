@@ -106,7 +106,7 @@ const Offline = () => {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold font-heading">Modo Offline</h1>
+        <h1 className="text-3xl font-bold font-heading">Offline</h1>
         <p className="text-muted-foreground mt-1">Registre vendas sem internet e sincronize depois.</p>
       </div>
 

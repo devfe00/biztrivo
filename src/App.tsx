@@ -15,6 +15,7 @@ import Offline from "@/pages/Offline";
 import Academy from "@/pages/Academy";
 import Relatorios from "@/pages/Relatorios";
 import MEI from "@/pages/MEI";
+import Contador from "@/pages/Contador";
 import Calculadora from "@/pages/Calculadora";
 import PublicStore from "@/pages/PublicStore";
 import Login from "@/pages/Login";
@@ -58,6 +59,7 @@ const App = () => (
               <Route path="/calculadora" element={<ProtectedRoute><AppLayout><Calculadora /></AppLayout></ProtectedRoute>} />
               <Route path="/relatorios" element={<ProtectedRoute><AppLayout><Relatorios /></AppLayout></ProtectedRoute>} />
               <Route path="/mei" element={<ProtectedRoute><AppLayout><MEI /></AppLayout></ProtectedRoute>} />
+              <Route path="/contador" element={<ProtectedRoute><AppLayout><Contador /></AppLayout></ProtectedRoute>} />
               <Route path="/academy" element={<ProtectedRoute><AppLayout><Academy /></AppLayout></ProtectedRoute>} />
               <Route path="/configuracoes" element={<ProtectedRoute><AppLayout><Configuracoes /></AppLayout></ProtectedRoute>} />
               <Route path="/auth/callback" element={<AuthCallback />} />

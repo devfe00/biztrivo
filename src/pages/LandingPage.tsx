@@ -22,15 +22,10 @@ import {
   Mail,
 } from 'lucide-react';
 
-// ─────────────────────────────────────────────
-// i18n — Traduções completas
-// ─────────────────────────────────────────────
-
 type Lang = 'pt' | 'en' | 'es' | 'fr';
 
 const translations = {
   pt: {
-    // Navbar
     nav: {
       features: 'Funcionalidades',
       testimonials: 'Depoimentos',
@@ -39,9 +34,7 @@ const translations = {
       register: 'Começar grátis',
       registerMobile: 'Cadastrar',
     },
-    // Hero
     hero: {
-      badge: 'Tudo que sua loja precisa em um só lugar',
       h1a: 'Venda mais.',
       h1b: 'Controle tudo.',
       subtitle:
@@ -49,7 +42,6 @@ const translations = {
       cta: 'Criar minha conta grátis',
       login: 'Já tenho conta',
     },
-    // Dashboard mockup labels
     dashboard: {
       url: 'biztrivo.com/dashboard',
       chartLabel: 'Entradas vs Saídas — últimos 3 meses',
@@ -196,10 +188,13 @@ const translations = {
         'Calculadora de Preço',
         'Academy completo',
         'Suporte por email',
+        'Modo Contador',
+        'MEI',
+        'PostsAI',
+        'Modo Offline',
       ],
       cta: 'Assinar agora',
     },
-    // CTA final
     ctaFinal: {
       title: 'Pronto para vender mais e controlar tudo?',
       subtitle:
@@ -207,7 +202,6 @@ const translations = {
       cta: 'Criar minha conta grátis',
       disclaimer: ' Sem compromisso.',
     },
-    // Footer
     footer: {
       rights: '© 2026 Biztrivo. Todos os direitos reservados.',
       terms: 'Termos de Uso',
@@ -261,8 +255,8 @@ const translations = {
       ],
     },
     stats: [
-      { value: '870+', label: 'Active retailers' },
-      { value: '$ 120k+', label: 'In tracked sales' },
+      { value: '20+', label: 'Active retailers' },
+      { value: '$ 10k+', label: 'In tracked sales' },
       { value: '99.9%', label: 'Guaranteed uptime' },
       { value: '4.8★', label: 'Average rating' },
     ],
@@ -435,8 +429,8 @@ const translations = {
       ],
     },
     stats: [
-      { value: '870+', label: 'Comerciantes activos' },
-      { value: '$ 120k+', label: 'En ventas controladas' },
+      { value: '44+', label: 'Comerciantes activos' },
+      { value: '$ 20k+', label: 'En ventas controladas' },
       { value: '99.9%', label: 'Uptime garantizado' },
       { value: '4.8★', label: 'Valoración media' },
     ],
@@ -610,8 +604,8 @@ const translations = {
       ],
     },
     stats: [
-      { value: '870+', label: 'Commerçants actifs' },
-      { value: '€ 120k+', label: 'En ventes suivies' },
+      { value: '27+', label: 'Commerçants actifs' },
+      { value: '€ 16k+', label: 'En ventes suivies' },
       { value: '99,9 %', label: 'Disponibilité garantie' },
       { value: '4,8★', label: 'Note moyenne' },
     ],
@@ -740,9 +734,6 @@ const translations = {
   },
 } as const;
 
-// ─────────────────────────────────────────────
-// Detect browser language
-// ─────────────────────────────────────────────
 function detectLang(): Lang {
   const lang = navigator.language || '';
   if (lang.startsWith('pt')) return 'pt';
@@ -751,9 +742,6 @@ function detectLang(): Lang {
   return 'en';
 }
 
-// ─────────────────────────────────────────────
-// Feature icons (order matches features arrays)
-// ─────────────────────────────────────────────
 const featureIcons = [
   <Wallet size={28} />,
   <Store size={28} />,
@@ -772,9 +760,6 @@ const featureColors = [
   'from-rose-400 to-red-500',
 ];
 
-// ─────────────────────────────────────────────
-// Hooks
-// ─────────────────────────────────────────────
 function useReveal() {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
@@ -809,9 +794,6 @@ function useCounter(target: number, decimals = 0, duration = 1400, active = fals
   return count;
 }
 
-// ─────────────────────────────────────────────
-// Components
-// ─────────────────────────────────────────────
 const Reveal: React.FC<{ children: React.ReactNode; delay?: number; className?: string }> = ({
   children, delay = 0, className = '',
 }) => {
@@ -854,9 +836,6 @@ const StatCard: React.FC<{ value: string; label: string; active: boolean }> = ({
   );
 };
 
-// ─────────────────────────────────────────────
-// Language selector flag button
-// ─────────────────────────────────────────────
 const langLabels: Record<Lang, string> = { pt: '🇧🇷 PT', en: '🇺🇸 EN', es: '🇪🇸 ES', fr: '🇫🇷 FR' };
 
 const LangSwitcher: React.FC<{ lang: Lang; setLang: (l: Lang) => void }> = ({ lang, setLang }) => {
@@ -887,9 +866,6 @@ const LangSwitcher: React.FC<{ lang: Lang; setLang: (l: Lang) => void }> = ({ la
   );
 };
 
-// ─────────────────────────────────────────────
-// Main Component
-// ─────────────────────────────────────────────
 const LandingPage: React.FC = () => {
   const [lang, setLang] = useState<Lang>(detectLang);
   const t = translations[lang];
@@ -980,10 +956,7 @@ const LandingPage: React.FC = () => {
         />
 
         <div className="relative max-w-5xl mx-auto px-6 text-center pt-28 pb-20">
-          <div className="inline-flex items-center gap-2 bg-white border border-green-200 rounded-full px-4 py-1.5 text-sm text-green-700 font-medium mb-8 shadow-sm">
-            <Zap size={14} className="text-green-500" />
-            {t.hero.badge}
-          </div>
+          
 
           <h1 className="text-5xl md:text-7xl font-extrabold text-gray-900 leading-tight mb-6 tracking-tight">
             {t.hero.h1a}{' '}
@@ -1069,7 +1042,6 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* ── FEATURES ── */}
       <section id="funcionalidades" className="py-24 bg-white">
         <div className="max-w-6xl mx-auto px-6">
           <Reveal className="text-center mb-16">
@@ -1148,7 +1120,6 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* ── ACADEMY ── */}
       <section className="py-20 bg-white">
         <div className="max-w-5xl mx-auto px-6 text-center">
           <Reveal>
@@ -1174,7 +1145,6 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* ── TESTIMONIALS ── */}
       <section id="depoimentos" className="py-24 bg-gray-50">
         <div className="max-w-6xl mx-auto px-6">
           <Reveal className="text-center mb-16">
@@ -1202,7 +1172,6 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* ── PRICING ── */}
       <section id="planos" className="py-24 bg-white">
         <div className="max-w-4xl mx-auto px-6">
           <Reveal className="text-center mb-16">
@@ -1230,7 +1199,6 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* ── CTA FINAL ── */}
       <section className="py-24 bg-gradient-to-br from-green-50 to-blue-50">
         <Reveal className="max-w-3xl mx-auto px-6 text-center">
           <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6">
