@@ -43,6 +43,21 @@ const resourcesPT = [
     desc: 'Reverta clientes insatisfeitos e fidelize',
     file: '/guides/guia8_reclamacoes.html',
   },
+  {
+    title: 'Guia do Modo Contador',
+    desc: 'DRE automática, Score Financeiro e impostos',
+    file: '/guides/guia9_modo_contador.html',
+  },
+  {
+    title: 'Guia MEI Inteligente',
+    desc: 'Controle de limite anual, DAS e desenquadramento',
+    file: '/guides/guia10_mei.html',
+  },
+  {
+    title: 'Guia PostsAI para Instagram',
+    desc: 'Gere posts profissionais com IA em segundos',
+    file: '/guides/guia11_posts_ia.html',
+  },
 ];
 
 // --- LISTA EM INGLÊS ---
@@ -86,6 +101,21 @@ const resourcesEN = [
     title: 'Handling Customer Complaints',
     desc: 'Turn unhappy customers into loyal fans',
     file: '/guides/en_guide8_complaints.html',
+  },
+  {
+    title: 'Accountant Mode Guide',
+    desc: 'Automatic P&L, Financial Score and taxes',
+    file: '/guides/en_guide9_accountant.html',
+  },
+  {
+    title: 'Smart MEI Guide',
+    desc: 'Annual limit control, DAS and risk alerts',
+    file: '/guides/en_guide10_mei.html',
+  },
+  {
+    title: 'PostsAI for Instagram Guide',
+    desc: 'Generate professional posts with AI in seconds',
+    file: '/guides/en_guide11_posts_ai.html',
   },
 ];
 
