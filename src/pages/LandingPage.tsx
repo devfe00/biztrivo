@@ -114,6 +114,21 @@ const translations = {
         description:
           'Sua vitrine conectada diretamente ao WhatsApp. O cliente vê o produto, clica em comprar e já entra em contato com você automaticamente.',
       },
+      {
+        title: 'Modo Contador',
+        description:
+          'Tenha DRE automática, Score Financeiro e estimativa de impostos prontos a partir do seu caixa. Conversa direta com seu contador, sem planilha.',
+      },
+      {
+        title: 'MEI Inteligente',
+        description:
+          'Acompanhe seu limite anual de faturamento MEI, alertas de risco de desenquadramento e lembrete do DAS mensal sempre na palma da mão.',
+      },
+      {
+        title: 'PostsAI Instagram',
+        description:
+          'Gere posts profissionais para o Instagram dos seus produtos com inteligência artificial: imagem, legenda e hashtags prontas em segundos.',
+      },
     ],
     // Storefront section
     storefront: {
@@ -297,6 +312,21 @@ const translations = {
         description:
           'Your storefront connected directly to WhatsApp. Customers see the product, tap buy, and message you automatically.',
       },
+      {
+        title: 'Accountant Mode',
+        description:
+          'Automatic P&L, Financial Score and tax estimates built from your cash register. Talk to your accountant with real numbers, no spreadsheets.',
+      },
+      {
+        title: 'Smart MEI',
+        description:
+          'Track your MEI annual revenue limit, get early alerts before exceeding it, and never miss the monthly DAS tax reminder.',
+      },
+      {
+        title: 'PostsAI for Instagram',
+        description:
+          'Generate professional Instagram posts for your products with AI: image, caption and hashtags ready in seconds.',
+      },
     ],
     storefront: {
       eyebrow: 'Online Storefront',
@@ -368,6 +398,10 @@ const translations = {
         'Price Calculator',
         'Full Academy',
         'Email support',
+        'Accountant Mode',
+        'Smart MEI',
+        'PostsAI',
+        'Offline Mode',
       ],
       cta: 'Subscribe now',
     },
@@ -471,6 +505,21 @@ const translations = {
         description:
           'Tu vitrina conectada directamente a WhatsApp. El cliente ve el producto, hace clic en comprar y te contacta automáticamente.',
       },
+      {
+        title: 'Modo Contador',
+        description:
+          'DRE automática, Score Financiero y estimación de impuestos generados desde tu caja. Habla con tu contador con datos reales, sin planillas.',
+      },
+      {
+        title: 'MEI Inteligente',
+        description:
+          'Controla tu límite anual de facturación MEI, recibe alertas de riesgo y nunca olvides el pago mensual del DAS.',
+      },
+      {
+        title: 'PostsAI para Instagram',
+        description:
+          'Genera publicaciones profesionales de Instagram de tus productos con IA: imagen, texto y hashtags listos en segundos.',
+      },
     ],
     storefront: {
       eyebrow: 'Vitrina Online',
@@ -542,6 +591,10 @@ const translations = {
         'Calculadora de Precios',
         'Academy completo',
         'Soporte por email',
+        'Modo Contador',
+        'MEI Inteligente',
+        'PostsAI',
+        'Modo Offline',
       ],
       cta: 'Suscribirme ahora',
     },
@@ -646,6 +699,21 @@ const translations = {
         description:
           'Votre vitrine connectée directement à WhatsApp. Le client voit le produit, clique sur acheter et vous contacte automatiquement.',
       },
+      {
+        title: 'Mode Comptable',
+        description:
+          'Compte de résultat automatique, Score Financier et estimation des taxes générés depuis votre caisse. Parlez à votre comptable avec des chiffres réels.',
+      },
+      {
+        title: 'MEI Intelligent',
+        description:
+          'Suivez votre plafond annuel de chiffre d\'affaires MEI, recevez des alertes en cas de risque et ne ratez plus jamais le paiement mensuel du DAS.',
+      },
+      {
+        title: 'PostsAI pour Instagram',
+        description:
+          'Générez des publications Instagram professionnelles pour vos produits avec l\'IA : image, légende et hashtags prêts en quelques secondes.',
+      },
     ],
     storefront: {
       eyebrow: 'Vitrine en Ligne',
@@ -717,6 +785,10 @@ const translations = {
         'Calculateur de Prix',
         'Academy complet',
         'Support par email',
+        'Mode Comptable',
+        'MEI Intelligent',
+        'PostsAI',
+        'Mode Hors-ligne',
       ],
       cta: "S'abonner maintenant",
     },
