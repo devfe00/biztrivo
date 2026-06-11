@@ -45,7 +45,7 @@ const translations = {
     },
     dashboard: {
       url: 'biztrivo.com/dashboard',
-      chartLabel: 'Entradas vs Saídas — últimos 3 meses',
+      chartLabel: 'Entradas vs Saídas últimos 3 meses',
       cards: [
         {
           label: 'Saldo do Dia',
@@ -230,7 +230,7 @@ const translations = {
     },
     dashboard: {
       url: 'biztrivo.com/dashboard',
-      chartLabel: 'Revenue vs Expenses — last 3 months',
+      chartLabel: 'Revenue vs Expenses last 3 months',
       cards: [
         {
           label: "Today's Balance",
@@ -270,12 +270,12 @@ const translations = {
       {
         title: 'Daily Cash Register',
         description:
-          'Log income and expenses in seconds. Track your balance, separate personal costs, and set revenue goals — complete with confetti when you hit them! 🎉',
+          'Log income and expenses in seconds. Track your balance, separate personal costs, and set revenue goals complete with confetti when you hit them! 🎉',
       },
       {
         title: 'Free Online Storefront',
         description:
-          'Create a digital catalog and share a link. Customers buy directly via WhatsApp — no fees, no complexity.',
+          'Create a digital catalog and share a link. Customers buy directly via WhatsApp no fees, no complexity.',
       },
       {
         title: 'Financial Reports',
@@ -302,7 +302,7 @@ const translations = {
       eyebrow: 'Online Storefront',
       title: 'Your catalog on WhatsApp in minutes',
       subtitle:
-        'Add your products, activate your storefront, and share a unique link. Customers see everything organized and order via WhatsApp — you just sell.',
+        'Add your products, activate your storefront, and share a unique link. Customers see everything organized and order via WhatsApp you just sell.',
       bullets: [
         'Personalized link for your store',
         'Photos, prices, and product descriptions',
@@ -404,7 +404,7 @@ const translations = {
     },
     dashboard: {
       url: 'biztrivo.com/dashboard',
-      chartLabel: 'Ingresos vs Gastos — últimos 3 meses',
+      chartLabel: 'Ingresos vs Gastos últimos 3 meses',
       cards: [
         {
           label: 'Saldo del Día',
@@ -579,7 +579,7 @@ const translations = {
     },
     dashboard: {
       url: 'biztrivo.com/dashboard',
-      chartLabel: 'Recettes vs Dépenses — 3 derniers mois',
+      chartLabel: 'Recettes vs Dépenses 3 derniers mois',
       cards: [
         {
           label: 'Solde du Jour',
