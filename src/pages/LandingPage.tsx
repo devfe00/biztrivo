@@ -21,6 +21,9 @@ import {
   Instagram,
   Linkedin,
   Mail,
+  FileSpreadsheet,
+  Briefcase,
+  Sparkles,
 } from 'lucide-react';
 
 type Lang = 'pt' | 'en' | 'es' | 'fr';
