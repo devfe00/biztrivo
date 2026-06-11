@@ -822,6 +822,9 @@ const featureIcons = [
   <Calculator size={28} />,
   <BookOpen size={28} />,
   <MessageCircle size={28} />,
+  <FileSpreadsheet size={28} />,
+  <Briefcase size={28} />,
+  <Sparkles size={28} />,
 ];
 
 const featureColors = [
@@ -831,6 +834,9 @@ const featureColors = [
   'from-orange-400 to-pink-500',
   'from-teal-400 to-blue-500',
   'from-rose-400 to-red-500',
+  'from-amber-400 to-orange-500',
+  'from-sky-400 to-indigo-500',
+  'from-fuchsia-400 to-pink-500',
 ];
 
 function useReveal() {
