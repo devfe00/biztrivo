@@ -21,6 +21,9 @@ import {
   Instagram,
   Linkedin,
   Mail,
+  FileSpreadsheet,
+  Briefcase,
+  Sparkles,
 } from 'lucide-react';
 
 type Lang = 'pt' | 'en' | 'es' | 'fr';
@@ -45,7 +48,7 @@ const translations = {
     },
     dashboard: {
       url: 'biztrivo.com/dashboard',
-      chartLabel: 'Entradas vs Saídas — últimos 3 meses',
+      chartLabel: 'Entradas vs Saídas últimos 3 meses',
       cards: [
         {
           label: 'Saldo do Dia',
@@ -113,6 +116,21 @@ const translations = {
         title: 'Integração WhatsApp',
         description:
           'Sua vitrine conectada diretamente ao WhatsApp. O cliente vê o produto, clica em comprar e já entra em contato com você automaticamente.',
+      },
+      {
+        title: 'Modo Contador',
+        description:
+          'Tenha DRE automática, Score Financeiro e estimativa de impostos prontos a partir do seu caixa. Conversa direta com seu contador, sem planilha.',
+      },
+      {
+        title: 'MEI Inteligente',
+        description:
+          'Acompanhe seu limite anual de faturamento MEI, alertas de risco de desenquadramento e lembrete do DAS mensal sempre na palma da mão.',
+      },
+      {
+        title: 'PostsAI Instagram',
+        description:
+          'Gere posts profissionais para o Instagram dos seus produtos com inteligência artificial: imagem, legenda e hashtags prontas em segundos.',
       },
     ],
     // Storefront section
@@ -230,7 +248,7 @@ const translations = {
     },
     dashboard: {
       url: 'biztrivo.com/dashboard',
-      chartLabel: 'Revenue vs Expenses — last 3 months',
+      chartLabel: 'Revenue vs Expenses last 3 months',
       cards: [
         {
           label: "Today's Balance",
@@ -270,12 +288,12 @@ const translations = {
       {
         title: 'Daily Cash Register',
         description:
-          'Log income and expenses in seconds. Track your balance, separate personal costs, and set revenue goals — complete with confetti when you hit them! 🎉',
+          'Log income and expenses in seconds. Track your balance, separate personal costs, and set revenue goals complete with confetti when you hit them! 🎉',
       },
       {
         title: 'Free Online Storefront',
         description:
-          'Create a digital catalog and share a link. Customers buy directly via WhatsApp — no fees, no complexity.',
+          'Create a digital catalog and share a link. Customers buy directly via WhatsApp no fees, no complexity.',
       },
       {
         title: 'Financial Reports',
@@ -297,12 +315,27 @@ const translations = {
         description:
           'Your storefront connected directly to WhatsApp. Customers see the product, tap buy, and message you automatically.',
       },
+      {
+        title: 'Accountant Mode',
+        description:
+          'Automatic P&L, Financial Score and tax estimates built from your cash register. Talk to your accountant with real numbers, no spreadsheets.',
+      },
+      {
+        title: 'Smart MEI',
+        description:
+          'Track your MEI annual revenue limit, get early alerts before exceeding it, and never miss the monthly DAS tax reminder.',
+      },
+      {
+        title: 'PostsAI for Instagram',
+        description:
+          'Generate professional Instagram posts for your products with AI: image, caption and hashtags ready in seconds.',
+      },
     ],
     storefront: {
       eyebrow: 'Online Storefront',
       title: 'Your catalog on WhatsApp in minutes',
       subtitle:
-        'Add your products, activate your storefront, and share a unique link. Customers see everything organized and order via WhatsApp — you just sell.',
+        'Add your products, activate your storefront, and share a unique link. Customers see everything organized and order via WhatsApp you just sell.',
       bullets: [
         'Personalized link for your store',
         'Photos, prices, and product descriptions',
@@ -368,6 +401,10 @@ const translations = {
         'Price Calculator',
         'Full Academy',
         'Email support',
+        'Accountant Mode',
+        'Smart MEI',
+        'PostsAI',
+        'Offline Mode',
       ],
       cta: 'Subscribe now',
     },
@@ -404,7 +441,7 @@ const translations = {
     },
     dashboard: {
       url: 'biztrivo.com/dashboard',
-      chartLabel: 'Ingresos vs Gastos — últimos 3 meses',
+      chartLabel: 'Ingresos vs Gastos últimos 3 meses',
       cards: [
         {
           label: 'Saldo del Día',
@@ -470,6 +507,21 @@ const translations = {
         title: 'Integración WhatsApp',
         description:
           'Tu vitrina conectada directamente a WhatsApp. El cliente ve el producto, hace clic en comprar y te contacta automáticamente.',
+      },
+      {
+        title: 'Modo Contador',
+        description:
+          'DRE automática, Score Financiero y estimación de impuestos generados desde tu caja. Habla con tu contador con datos reales, sin planillas.',
+      },
+      {
+        title: 'MEI Inteligente',
+        description:
+          'Controla tu límite anual de facturación MEI, recibe alertas de riesgo y nunca olvides el pago mensual del DAS.',
+      },
+      {
+        title: 'PostsAI para Instagram',
+        description:
+          'Genera publicaciones profesionales de Instagram de tus productos con IA: imagen, texto y hashtags listos en segundos.',
       },
     ],
     storefront: {
@@ -542,6 +594,10 @@ const translations = {
         'Calculadora de Precios',
         'Academy completo',
         'Soporte por email',
+        'Modo Contador',
+        'MEI Inteligente',
+        'PostsAI',
+        'Modo Offline',
       ],
       cta: 'Suscribirme ahora',
     },
@@ -579,7 +635,7 @@ const translations = {
     },
     dashboard: {
       url: 'biztrivo.com/dashboard',
-      chartLabel: 'Recettes vs Dépenses — 3 derniers mois',
+      chartLabel: 'Recettes vs Dépenses 3 derniers mois',
       cards: [
         {
           label: 'Solde du Jour',
@@ -645,6 +701,21 @@ const translations = {
         title: 'Intégration WhatsApp',
         description:
           'Votre vitrine connectée directement à WhatsApp. Le client voit le produit, clique sur acheter et vous contacte automatiquement.',
+      },
+      {
+        title: 'Mode Comptable',
+        description:
+          'Compte de résultat automatique, Score Financier et estimation des taxes générés depuis votre caisse. Parlez à votre comptable avec des chiffres réels.',
+      },
+      {
+        title: 'MEI Intelligent',
+        description:
+          'Suivez votre plafond annuel de chiffre d\'affaires MEI, recevez des alertes en cas de risque et ne ratez plus jamais le paiement mensuel du DAS.',
+      },
+      {
+        title: 'PostsAI pour Instagram',
+        description:
+          'Générez des publications Instagram professionnelles pour vos produits avec l\'IA : image, légende et hashtags prêts en quelques secondes.',
       },
     ],
     storefront: {
@@ -717,6 +788,10 @@ const translations = {
         'Calculateur de Prix',
         'Academy complet',
         'Support par email',
+        'Mode Comptable',
+        'MEI Intelligent',
+        'PostsAI',
+        'Mode Hors-ligne',
       ],
       cta: "S'abonner maintenant",
     },
@@ -750,6 +825,9 @@ const featureIcons = [
   <Calculator size={28} />,
   <BookOpen size={28} />,
   <MessageCircle size={28} />,
+  <FileSpreadsheet size={28} />,
+  <Briefcase size={28} />,
+  <Sparkles size={28} />,
 ];
 
 const featureColors = [
@@ -759,6 +837,9 @@ const featureColors = [
   'from-orange-400 to-pink-500',
   'from-teal-400 to-blue-500',
   'from-rose-400 to-red-500',
+  'from-amber-400 to-orange-500',
+  'from-sky-400 to-indigo-500',
+  'from-fuchsia-400 to-pink-500',
 ];
 
 function useReveal() {
