@@ -103,20 +103,6 @@ const saveHashtags = (h: HashtagSet) => localStorage.setItem(HASHTAG_KEY, JSON.s
 const loadBio = (): string => localStorage.getItem(BIO_KEY) || '';
 const saveBio = (b: string) => localStorage.setItem(BIO_KEY, b);
 
-async function callClaude(prompt: string): Promise<string> {
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1000,
-      messages: [{ role: 'user', content: prompt }],
-    }),
-  });
-  const data = await res.json();
-  return data.content?.map((b: any) => b.text || '').join('') ?? '';
-}
-
 export default function PostsIA() {
   const { config } = useStore();
 
@@ -141,17 +127,17 @@ export default function PostsIA() {
     () => Object.fromEntries(TEMPLATES.map(t => [t.id, t.text]))
   );
 
-  // Plano mensal
+  //plano mensal
   const [plano, setPlano] = useState<PlanoItem[]>(loadPlano);
   const [gerandoPlano, setGerandoPlano] = useState(false);
   const [planoChecked, setPlanoChecked] = useState<Record<number, boolean>>({});
   const [planoExpanded, setPlanoExpanded] = useState<number | null>(null);
 
-  // Dica contextual
+  //dica
   const [dicaIdx, setDicaIdx] = useState(() => Math.floor(Math.random() * DICAS.length));
   const [dicaSmartMsg, setDicaSmartMsg] = useState('');
 
-  // Hashtags
+  //##
   const [hashtags, setHashtags] = useState<HashtagSet | null>(loadHashtags);
   const [gerandoHashtags, setGerandoHashtags] = useState(false);
   const [copiedHashSet, setCopiedHashSet] = useState<string | null>(null);
@@ -161,18 +147,30 @@ export default function PostsIA() {
   const [gerandoBio, setGerandoBio] = useState(false);
   const [bioCopiado, setBioCopiado] = useState(false);
 
-  // Reescritor de legenda
+  //reescritor de legenda
   const [textoOriginal, setTextoOriginal] = useState('');
   const [toneRewrite, setToneRewrite] = useState<Tone>('promocional');
   const [legendaReescrita, setLegendaReescrita] = useState('');
   const [reescrevendo, setReescrevendo] = useState(false);
   const [copiedRewrite, setCopiedRewrite] = useState(false);
 
-  // Stories
+  //stories
   const [selectedProductStories, setSelectedProductStories] = useState('');
   const [gerandoStories, setGerandoStories] = useState(false);
   const [stories, setStories] = useState<{ slide: string; texto: string }[] | null>(null);
   const [copiedStory, setCopiedStory] = useState<number | null>(null);
+
+  const USAGE_KEY = 'posts_ia_usage';
+  const [aiUsage, setAiUsage] = useState<{ percent: number; resetAt: number | null }>(() => {
+    try { return JSON.parse(localStorage.getItem(USAGE_KEY) || 'null') ?? { percent: 0, resetAt: null }; }
+    catch { return { percent: 0, resetAt: null }; }
+  });
+  const isBlocked = aiUsage.resetAt !== null && Date.now() < aiUsage.resetAt;
+  const updateUsage = (percent: number, rateLimited = false) => {
+    const newUsage = { percent: rateLimited ? 100 : percent, resetAt: rateLimited ? Date.now() + 5 * 60 * 60 * 1000 : null };
+    setAiUsage(newUsage);
+    localStorage.setItem(USAGE_KEY, JSON.stringify(newUsage));
+  };
 
   // ── Derived ──
   const selectedProduct = config.products.find(p => p.id === selectedProductId) ?? null;
@@ -195,6 +193,14 @@ export default function PostsIA() {
       setDicaSmartMsg('');
     }
   }, [history]);
+
+  useEffect(() => {
+    if (aiUsage.resetAt && Date.now() >= aiUsage.resetAt) {
+      const cleared = { percent: 0, resetAt: null };
+      setAiUsage(cleared);
+      localStorage.setItem(USAGE_KEY, JSON.stringify(cleared));
+    }
+  }, []);
 
   // ── Análise de desempenho ──
   const postsComStats = history.filter(r => r.reach !== undefined && r.likes !== undefined);
@@ -311,7 +317,8 @@ Crie um plano de conteúdo para 30 dias para a loja "${config.storeName}" que ve
 Responda APENAS com um JSON array de 30 objetos, sem texto antes ou depois, sem markdown.
 Cada objeto: { "day": <número 1-30>, "productName": "<nome do produto>", "tone": "<promocional|elegante|divertido>", "type": "<Post no Feed|Stories|Reels|Enquete|Depoimento>", "idea": "<ideia criativa de 1 frase max 80 chars>" }
 Varie os tipos de conteúdo e tons ao longo do mês. Distribua os produtos de forma equilibrada.`;
-      const raw = await callClaude(prompt);
+      const { text: raw, percent } = await callFunction<{ text: string; percent: number }>(FUNCTIONS.postsIA, { action: 'gerarPlano', prompt });
+      updateUsage(percent);
       const clean = raw.replace(/```json|```/g, '').trim();
       const parsed: PlanoItem[] = JSON.parse(clean);
       setPlano(parsed);
@@ -319,7 +326,8 @@ Varie os tipos de conteúdo e tons ao longo do mês. Distribua os produtos de fo
       setPlanoChecked({});
       toast.success('Plano mensal gerado!');
     } catch (e: any) {
-      toast.error('Erro ao gerar plano. Tente novamente.');
+      if (e?.message?.includes('Limite')) updateUsage(100, true);
+      toast.error(e?.message || 'Erro ao gerar plano. Tente novamente.');
     } finally {
       setGerandoPlano(false);
     }
@@ -335,14 +343,16 @@ A loja "${config.storeName}" vende: ${nomes}.
 Gere 3 sets de hashtags em PT-BR. Responda APENAS com JSON, sem texto, sem markdown:
 { "large": [10 hashtags com +1M posts], "medium": [10 hashtags com 100k-500k posts], "niche": [10 hashtags nichadas com -50k posts, específicas do nicho] }
 Todas em português, sem o símbolo #.`;
-      const raw = await callClaude(prompt);
+      const { text: raw, percent } = await callFunction<{ text: string; percent: number }>(FUNCTIONS.postsIA, { action: 'gerarHashtags', prompt });
+      updateUsage(percent);
       const clean = raw.replace(/```json|```/g, '').trim();
       const parsed: HashtagSet = JSON.parse(clean);
       setHashtags(parsed);
       saveHashtags(parsed);
       toast.success('Sets de hashtags gerados!');
-    } catch {
-      toast.error('Erro ao gerar hashtags. Tente novamente.');
+    } catch (e: any) {
+      if (e?.message?.includes('Limite')) updateUsage(100, true);
+      toast.error(e?.message || 'Erro ao gerar hashtags. Tente novamente.');
     } finally {
       setGerandoHashtags(false);
     }
@@ -366,13 +376,15 @@ Produtos principais: ${nomes || 'produtos variados'}.
 WhatsApp: ${config.whatsapp || 'não informado'}.
 A bio deve ter: emojis estratégicos, palavras-chave do nicho, CTA direto, máximo 150 caracteres.
 Responda APENAS com o texto da bio, sem aspas, sem explicações.`;
-      const result = await callClaude(prompt);
+      const { text: result, percent } = await callFunction<{ text: string; percent: number }>(FUNCTIONS.postsIA, { action: 'gerarBio', prompt });
+      updateUsage(percent);
       const bioTexto = result.trim();
       setBio(bioTexto);
       saveBio(bioTexto);
       toast.success('Bio gerada!');
-    } catch {
-      toast.error('Erro ao gerar bio. Tente novamente.');
+    } catch (e: any) {
+      if (e?.message?.includes('Limite')) updateUsage(100, true);
+      toast.error(e?.message || 'Erro ao gerar bio. Tente novamente.');
     } finally {
       setGerandoBio(false);
     }
@@ -398,10 +410,12 @@ Responda APENAS com a legenda reescrita, sem aspas, sem explicações.
 
 TEXTO ORIGINAL:
 ${textoOriginal}`;
-      const result = await callClaude(prompt);
+      const { text: result, percent } = await callFunction<{ text: string; percent: number }>(FUNCTIONS.postsIA, { action: 'reescreverLegenda', prompt });
+      updateUsage(percent);
       setLegendaReescrita(result.trim());
-    } catch {
-      toast.error('Erro ao reescrever. Tente novamente.');
+    } catch (e: any) {
+      if (e?.message?.includes('Limite')) updateUsage(100, true);
+      toast.error(e?.message || 'Erro ao reescrever. Tente novamente.');
     } finally {
       setReescrevendo(false);
     }
@@ -432,13 +446,15 @@ Slide 2: Reveal (mostra o produto com preço e benefício principal).
 Slide 3: CTA (urgência + link WhatsApp ${config.whatsapp || ''}).
 Use emojis. Cada texto deve ter no máximo 80 caracteres. Tom direto e animado.
 Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..."},{"slide":"Slide 2 - Reveal","texto":"..."},{"slide":"Slide 3 - CTA","texto":"..."}]`;
-      const raw = await callClaude(prompt);
+      const { text: raw, percent } = await callFunction<{ text: string; percent: number }>(FUNCTIONS.postsIA, { action: 'gerarStories', prompt });
+      updateUsage(percent);
       const clean = raw.replace(/```json|```/g, '').trim();
       const parsed = JSON.parse(clean);
       setStories(parsed);
       toast.success('Sequência de Stories gerada!');
-    } catch {
-      toast.error('Erro ao gerar Stories. Tente novamente.');
+    } catch (e: any) {
+      if (e?.message?.includes('Limite')) updateUsage(100, true);
+      toast.error(e?.message || 'Erro ao gerar Stories. Tente novamente.');
     } finally {
       setGerandoStories(false);
     }
@@ -500,6 +516,17 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
           </button>
         ))}
       </div>
+
+      {isBlocked && (
+        <div className="flex items-center gap-3 rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          🚫 Limite de IA atingido. Disponível novamente às {new Date(aiUsage.resetAt!).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}.
+        </div>
+      )}
+      {!isBlocked && aiUsage.percent >= 90 && (
+        <div className="flex items-center gap-3 rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-4 py-3 text-sm text-yellow-700 dark:text-yellow-300">
+          ⚠️ {aiUsage.percent}% dos créditos de IA usados. Recarregam em até 5h.
+        </div>
+      )}
 
       {activeTab === 'gerar' && (
         <Card className="p-6 border-none shadow-md space-y-6">

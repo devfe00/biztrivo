@@ -30,6 +30,7 @@ export const FUNCTIONS = {
   compareInvoice:       'https://compareinvoice-mfnr6ijotq-rj.a.run.app',
   forecastCashflow:     'https://forecastcashflow-mfnr6ijotq-rj.a.run.app',
   getPublicStoreBySlug: 'https://getpublicstorebyslug-mfnr6ijotq-rj.a.run.app',
+  postsIA:              'https://postsia-mfnr6ijotq-rj.a.run.app',
 };
 
 // Helper para chamar functions autenticadas
