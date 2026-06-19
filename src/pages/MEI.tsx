@@ -2,15 +2,14 @@ import { useMemo, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { FileText, Download, AlertTriangle, CheckCircle2, Info } from 'lucide-react';
 import { useStore } from '@/contexts/StoreContext';
+import { formatCNPJ } from '@/lib/cnpj';
+import { callFunction, FUNCTIONS } from '@/integrations/firebase/firebase';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { toast } from 'sonner';
 
-//limite oficial MEI 2026 — atualizar manualmente quando o governo alterar.
 const LIMITE_MEI_ANUAL = 81000;
 
-//categorias padrão classificadas como Comércio/Indústria vs Serviços.
-//categorias não reconhecidas vão para "não classificadas" (alerta).
 const COMERCIO_INDUSTRIA = new Set([
   'vendas', 'venda', 'produtos', 'produto', 'mercadoria', 'comércio', 'comercio',
   'revenda', 'fabricação', 'fabricacao', 'indústria', 'industria',
@@ -30,12 +29,14 @@ const classify = (cat: string): 'comercio' | 'servicos' | 'desconhecido' => {
 const MEI = () => {
   const { config, updateConfig } = useStore();
   const [year, setYear] = useState(new Date().getFullYear());
+  const [cnpjInput, setCnpjInput] = useState('');
+  const [checkingCnpj, setCheckingCnpj] = useState(false);
+  const [cnpjError, setCnpjError] = useState<string | null>(null);
 
   const report = useMemo(() => {
     const start = new Date(`${year}-01-01T00:00:00`);
     const end = new Date(`${year + 1}-01-01T00:00:00`);
 
-    // Apenas entradas NÃO pessoais (receita do negócio)
     const entradas = config.transactions.filter(t => {
       if (t.type !== 'entrada' || t.isPersonal) return false;
       const d = new Date(t.date);
@@ -74,20 +75,29 @@ const MEI = () => {
     const percentLimite = (totalAno / LIMITE_MEI_ANUAL) * 100;
 
     return {
-      months,
-      totalAno,
-      totalComercio,
-      totalServicos,
-      totalDesconhecido,
-      mesesSemReceita,
-      acimaLimite,
-      percentLimite,
-      qtdTransacoes: entradas.length,
+      months, totalAno, totalComercio, totalServicos, totalDesconhecido,
+      mesesSemReceita, acimaLimite, percentLimite, qtdTransacoes: entradas.length,
     };
   }, [config.transactions, year]);
 
   const fmt = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   const meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+  const handleActivarMei = async () => {
+    setCnpjError(null);
+    if (!cnpjInput.trim()) { setCnpjError('Informe o CNPJ.'); return; }
+    setCheckingCnpj(true);
+    try {
+      await callFunction(FUNCTIONS.activateMei, { cnpj: cnpjInput });
+      await updateConfig({ isMei: true, cnpj: cnpjInput });
+      toast.success('MEI ativado com sucesso!');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Não foi possível validar o CNPJ.';
+      setCnpjError(msg);
+    } finally {
+      setCheckingCnpj(false);
+    }
+  };
 
   const exportPDF = () => {
     const doc = new jsPDF();
@@ -96,7 +106,6 @@ const MEI = () => {
     doc.setFontSize(10);
     doc.setTextColor(100);
     doc.text(`${config.storeName} • Gerado em ${new Date().toLocaleDateString('pt-BR')}`, 14, 25);
-
     doc.setTextColor(0);
     doc.setFontSize(11);
     doc.text(`Receita Bruta Total: ${fmt(report.totalAno)}`, 14, 36);
@@ -107,29 +116,20 @@ const MEI = () => {
       doc.text(`Não classificadas: ${fmt(report.totalDesconhecido)} (revisar)`, 14, 57);
       doc.setTextColor(0);
     }
-
     autoTable(doc, {
       startY: 65,
       head: [['Mês', 'Comércio/Indústria', 'Serviços', 'Não classif.', 'Total Mês']],
-      body: report.months.map((m, i) => [
-        meses[i],
-        fmt(m.comercio),
-        fmt(m.servicos),
-        fmt(m.desconhecido),
-        fmt(m.total),
-      ]),
+      body: report.months.map((m, i) => [meses[i], fmt(m.comercio), fmt(m.servicos), fmt(m.desconhecido), fmt(m.total)]),
       foot: [['Total', fmt(report.totalComercio), fmt(report.totalServicos), fmt(report.totalDesconhecido), fmt(report.totalAno)]],
       styles: { fontSize: 9 },
       headStyles: { fillColor: [59, 130, 246] },
       footStyles: { fillColor: [240, 240, 240], textColor: 0, fontStyle: 'bold' },
     });
-
     const finalY = (doc as any).lastAutoTable.finalY + 10;
     doc.setFontSize(9);
     doc.setTextColor(120);
     doc.text('Este relatório consolida os seus dados registrados no Biztrivo.', 14, finalY);
     doc.text('A DASN-SIMEI oficial deve ser feita em gov.br/mei até 31/maio do ano seguinte.', 14, finalY + 5);
-
     doc.save(`MEI_${year}_${config.storeName.replace(/\s+/g, '_')}.pdf`);
     toast.success('PDF gerado');
   };
@@ -146,14 +146,26 @@ const MEI = () => {
           <div>
             <p className="text-lg font-semibold font-heading">Esta área é para MEI</p>
             <p className="text-sm text-muted-foreground mt-1 max-w-sm">
-              Você possui CNPJ MEI ativo? Ative para acessar o relatório anual e os campos prontos para a DASN-SIMEI.
+              Informe seu CNPJ para validarmos a situação cadastral na Receita Federal antes de liberar esta área.
             </p>
           </div>
+          <div className="w-full max-w-xs space-y-2">
+            <input
+              type="text"
+              value={cnpjInput}
+              onChange={e => setCnpjInput(formatCNPJ(e.target.value))}
+              placeholder="00.000.000/0000-00"
+              maxLength={18}
+              className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm text-center"
+            />
+            {cnpjError && <p className="text-xs text-destructive">{cnpjError}</p>}
+          </div>
           <button
-            onClick={() => updateConfig({ isMei: true })}
-            className="px-6 py-2.5 rounded-xl gradient-primary text-primary-foreground font-medium text-sm shadow-glow hover:opacity-90 transition-opacity"
+            onClick={handleActivarMei}
+            disabled={checkingCnpj}
+            className="px-6 py-2.5 rounded-xl gradient-primary text-primary-foreground font-medium text-sm shadow-glow hover:opacity-90 transition-opacity disabled:opacity-60"
           >
-            Sim, sou MEI — Ativar
+            {checkingCnpj ? 'Verificando CNPJ...' : 'Sim, sou MEI — Ativar'}
           </button>
         </Card>
       </div>
@@ -296,8 +308,9 @@ const MEI = () => {
           </div>
         </div>
       </Card>
+
       <button
-        onClick={() => updateConfig({ isMei: false })}
+        onClick={() => updateConfig({ isMei: false, cnpj: '' })}
         className="text-xs text-muted-foreground hover:text-destructive transition-colors mx-auto block"
       >
         Não sou mais MEI — desativar esta área

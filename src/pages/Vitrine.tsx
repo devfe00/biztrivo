@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { QRCodeCanvas } from 'qrcode.react';
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { sanitizeText } from '@/lib/sanitize';
+import { validateImageFile } from '@/lib/fileValidation';
 import InstagramPostGenerator from '@/components/InstagramPostGenerator';
 import InvoiceComparator from '@/components/InvoiceComparator';
 
@@ -80,9 +81,15 @@ const Vitrine = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const check = validateImageFile(file);
+    if (!check.ok) {
+      toast.error(check.error ?? 'Arquivo inválido.');
+      e.target.value = '';
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => setPhoto(reader.result as string);
     reader.readAsDataURL(file);
@@ -91,6 +98,12 @@ const Vitrine = () => {
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const check = validateImageFile(file);
+    if (!check.ok) {
+      toast.error(check.error ?? 'Arquivo inválido.');
+      e.target.value = '';
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => updateConfig({ logo: reader.result as string });
     reader.readAsDataURL(file);
@@ -113,6 +126,12 @@ const Vitrine = () => {
   const handleEditPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const check = validateImageFile(file);
+    if (!check.ok) {
+      toast.error(check.error ?? 'Arquivo inválido.');
+      e.target.value = '';
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => setEditingProduct(prev => prev ? { ...prev, photo: reader.result as string } : null);
     reader.readAsDataURL(file);

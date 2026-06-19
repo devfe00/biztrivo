@@ -1,5 +1,4 @@
 // src/contexts/StoreContext.tsx
-// Substitui a versão com Supabase — usa Firestore diretamente
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
 import {
   doc, collection, getDoc, getDocs, addDoc, updateDoc, deleteDoc,
@@ -9,6 +8,7 @@ import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 import { useAuth } from '@/contexts/AuthContext';
 import { db, storage } from '@/integrations/firebase/firebase';
 import { sanitizeText } from '@/lib/sanitize';
+import { onlyDigits } from '@/lib/cnpj';
 
 async function uploadImageIfNeeded(dataUrlOrUrl: string, path: string): Promise<string> {
   if (!dataUrlOrUrl || !dataUrlOrUrl.startsWith('data:')) {
@@ -62,11 +62,12 @@ export interface StoreConfig {
   dailyGoal: number;
   slug: string;
   isMei: boolean;
+  cnpj: string;
 }
 
 interface StoreContextType {
   config: StoreConfig;
-  updateConfig: (partial: Partial<StoreConfig>) => void;
+  updateConfig: (partial: Partial<StoreConfig>) => Promise<void>;
   addProduct: (product: Omit<Product, 'id'>) => Promise<void>;
   removeProduct: (id: string) => Promise<void>;
   updateProduct: (product: Product) => Promise<void>;
@@ -89,6 +90,7 @@ const defaultConfig: StoreConfig = {
   dailyGoal: 0,
   slug: '',
   isMei: false,
+  cnpj: '',
 };
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -108,8 +110,9 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
 
     setIsLoading(true);
     try {
-      const [profileSnap, productsSnap, transactionsSnap] = await Promise.all([
+      const [profileSnap, privateSnap, productsSnap, transactionsSnap] = await Promise.all([
         getDoc(doc(db, 'profiles', user.uid)),
+        getDoc(doc(db, 'privateProfiles', user.uid)),
         getDocs(query(
           collection(db, 'products'),
           where('userId', '==', user.uid),
@@ -123,6 +126,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
       ]);
 
       const profile = profileSnap.exists() ? profileSnap.data() : null;
+      const priv = privateSnap.exists() ? privateSnap.data() : null;
 
       const products: Product[] = productsSnap.docs.map(d => {
         const p = d.data();
@@ -156,11 +160,13 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
         primaryColor: profile?.primaryColor ?? '#3b82f6',
         whatsapp: profile?.whatsapp ?? '',
         vitrineActive: profile?.vitrineActive ?? false,
-        vitrineClicks: profile?.vitrineClicks ?? 0,
         profileImage: profile?.profileImage ?? '',
-        dailyGoal: Number(profile?.dailyGoal) || 0,
         slug: profile?.slug ?? '',
-        isMei: profile?.isMei ?? false,
+        // dados privados
+        vitrineClicks: Number(priv?.vitrineClicks) || 0,
+        dailyGoal: Number(priv?.dailyGoal) || 0,
+        isMei: priv?.isMei ?? false,
+        cnpj: priv?.cnpj ?? '',
         products,
         transactions,
       });
@@ -178,35 +184,65 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
   const updateConfig = async (partial: Partial<StoreConfig>) => {
     if (!user) return;
 
-    const dbUpdate: Record<string, unknown> = {};
+    const publicUpdate: Record<string, unknown> = {};
+    const privateUpdate: Record<string, unknown> = {};
     let logoUrl = partial.logo;
     let profileImageUrl = partial.profileImage;
 
+    // ── campos públicos (profiles) ──
     if (partial.storeName !== undefined) {
       const cleanName = sanitizeText(partial.storeName);
-      dbUpdate.storeName = cleanName;
-      dbUpdate.slug = `${slugify(cleanName)}-${user.uid.slice(0, 6).toLowerCase()}`;
+      publicUpdate.storeName = cleanName;
+      publicUpdate.slug = `${slugify(cleanName)}-${user.uid.slice(0, 6).toLowerCase()}`;
     }
     if (partial.logo !== undefined) {
       logoUrl = await uploadImageIfNeeded(partial.logo, `profiles/${user.uid}/logo.jpg`);
-      dbUpdate.logo = logoUrl;
+      publicUpdate.logo = logoUrl;
     }
-    if (partial.primaryColor !== undefined) dbUpdate.primaryColor = partial.primaryColor;
-    if (partial.whatsapp !== undefined) dbUpdate.whatsapp = partial.whatsapp;
-    if (partial.vitrineActive !== undefined) dbUpdate.vitrineActive = partial.vitrineActive;
+    if (partial.primaryColor !== undefined) publicUpdate.primaryColor = partial.primaryColor;
+    if (partial.whatsapp !== undefined) publicUpdate.whatsapp = partial.whatsapp;
+    if (partial.vitrineActive !== undefined) publicUpdate.vitrineActive = partial.vitrineActive;
     if (partial.profileImage !== undefined) {
       profileImageUrl = await uploadImageIfNeeded(partial.profileImage, `profiles/${user.uid}/profile.jpg`);
-      dbUpdate.profileImage = profileImageUrl;
+      publicUpdate.profileImage = profileImageUrl;
     }
-    if (partial.dailyGoal !== undefined) dbUpdate.dailyGoal = partial.dailyGoal;
-    if (partial.isMei !== undefined) dbUpdate.isMei = partial.isMei;
 
-    setConfig(prev => ({ ...prev, ...partial, logo: logoUrl ?? prev.logo, profileImage: profileImageUrl ?? prev.profileImage }));
+    // ── campos privados (privateProfiles) ──
+    if (partial.dailyGoal !== undefined) privateUpdate.dailyGoal = partial.dailyGoal;
+    if (partial.vitrineClicks !== undefined) privateUpdate.vitrineClicks = partial.vitrineClicks;
 
-    if (Object.keys(dbUpdate).length > 0) {
-      dbUpdate.updatedAt = serverTimestamp();
-      await setDoc(doc(db, 'profiles', user.uid), dbUpdate, { merge: true });
+    // isMei e cnpj: apenas via Cloud Function (bloqueado pelas rules no cliente)
+    // O MEI.tsx chama updateConfig({ isMei, cnpj }) após validar na Receita Federal —
+    // aqui ainda escrevemos, mas as rules agora bloqueiam escrita direta pelo cliente.
+    // Para fechar 100%, mova essa lógica pra uma Cloud Function futuramente.
+    let cnpjDigits = partial.cnpj;
+    if (partial.cnpj !== undefined) {
+      cnpjDigits = onlyDigits(partial.cnpj);
+      privateUpdate.cnpj = cnpjDigits;
     }
+    if (partial.isMei !== undefined) privateUpdate.isMei = partial.isMei;
+
+    // ── writes ──
+    const writes: Promise<void>[] = [];
+
+    if (Object.keys(publicUpdate).length > 0) {
+      publicUpdate.updatedAt = serverTimestamp();
+      writes.push(setDoc(doc(db, 'profiles', user.uid), publicUpdate, { merge: true }));
+    }
+    if (Object.keys(privateUpdate).length > 0) {
+      privateUpdate.updatedAt = serverTimestamp();
+      writes.push(setDoc(doc(db, 'privateProfiles', user.uid), privateUpdate, { merge: true }));
+    }
+
+    setConfig(prev => ({
+      ...prev,
+      ...partial,
+      logo: logoUrl ?? prev.logo,
+      profileImage: profileImageUrl ?? prev.profileImage,
+      cnpj: cnpjDigits ?? prev.cnpj,
+    }));
+
+    await Promise.all(writes);
   };
 
   const addProduct = async (product: Omit<Product, 'id'>) => {

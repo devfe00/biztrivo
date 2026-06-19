@@ -31,6 +31,7 @@ export const FUNCTIONS = {
   forecastCashflow:     'https://forecastcashflow-mfnr6ijotq-rj.a.run.app',
   getPublicStoreBySlug: 'https://getpublicstorebyslug-mfnr6ijotq-rj.a.run.app',
   postsIA:              'https://postsia-mfnr6ijotq-rj.a.run.app',
+  activateMei:          'https://southamerica-east1-biztrivo-491617.cloudfunctions.net/activateMei',
 };
 
 // Helper para chamar functions autenticadas
