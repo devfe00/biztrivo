@@ -59,7 +59,7 @@ const Configuracoes: React.FC = () => {
           });
         }
       }).catch(() => {
-  // Documento não existe ou sem permissão — comportamento esperado para não-assinantes
+  //doc não existe ou sem permissão, comportamento esperado para não assinantes da ajudae2
 });
     }
   }, [user]);
