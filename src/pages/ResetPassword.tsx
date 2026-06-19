@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, Eye, EyeOff, CheckCircle, AlertCircle } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { getAuth, confirmPasswordReset } from 'firebase/auth';
+import { auth } from '@/integrations/firebase/firebase';
 
 const ResetPassword: React.FC = () => {
   const navigate = useNavigate();
@@ -19,8 +20,16 @@ const ResetPassword: React.FC = () => {
     if (password !== confirmPassword) { setError('As senhas não conferem'); return; }
 
     setLoading(true);
-    const { error: updateError } = await supabase.auth.updateUser({ password });
-    if (updateError) { setError(updateError.message); } else { setSuccess(true); setTimeout(() => navigate('/login'), 3000); }
+    // Firebase exige o "oobCode" vindo da URL (?oobCode=...), enviado no e-mail de reset
+    const oobCode = new URLSearchParams(window.location.search).get('oobCode');
+    if (!oobCode) { setError('Link inválido ou expirado'); setLoading(false); return; }
+    try {
+      await confirmPasswordReset(auth, oobCode, password);
+      setSuccess(true);
+      setTimeout(() => navigate('/login'), 3000);
+    } catch (err: any) {
+      setError('Não foi possível redefinir a senha. Solicite um novo link.');
+    }
     setLoading(false);
   };
 

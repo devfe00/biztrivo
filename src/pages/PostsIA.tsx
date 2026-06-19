@@ -10,7 +10,7 @@ import {
   Star,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
+import { FUNCTIONS, callFunction } from '@/integrations/firebase/firebase';
 
 interface PostRecord {
   id: string;
@@ -224,21 +224,18 @@ export default function PostsIA() {
     }
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('generate-instagram-post', {
-        body: {
-          product: {
-            name: selectedProduct.name,
-            description: selectedProduct.description,
-            originalPrice: selectedProduct.originalPrice,
-            discountPrice: selectedProduct.discountPrice,
-            photo: selectedProduct.photo,
-          },
-          storeName: config.storeName,
-          whatsapp: config.whatsapp,
-          tone,
+      const data = await callFunction<{ imageUrl: string; caption: string; hashtags: string[]; error?: string }>(FUNCTIONS.generateInstagramPost, {
+        product: {
+          name: selectedProduct.name,
+          description: selectedProduct.description,
+          originalPrice: selectedProduct.originalPrice,
+          discountPrice: selectedProduct.discountPrice,
+          photo: selectedProduct.photo,
         },
+        storeName: config.storeName,
+        whatsapp: config.whatsapp,
+        tone,
       });
-      if (error) throw error;
       if (!data?.imageUrl) throw new Error(data?.error || 'Falha ao gerar imagem');
       const record: PostRecord = {
         id: crypto.randomUUID(),

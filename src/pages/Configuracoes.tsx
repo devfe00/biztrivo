@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { User, Lock, LogOut, Camera, Save, Eye, EyeOff, AlertCircle, CheckCircle, ArrowLeft, CreditCard, Tag } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useStore } from '@/contexts/StoreContext';
-import { supabase } from '@/integrations/supabase/client';
+import { auth, db, FUNCTIONS, callFunction } from '@/integrations/firebase/firebase';
+import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { updatePassword } from 'firebase/auth';
 
 const Configuracoes: React.FC = () => {
   const navigate = useNavigate();
@@ -30,31 +32,33 @@ const Configuracoes: React.FC = () => {
 
   useEffect(() => {
     if (!user) return;
-    supabase
-      .from('subscriptions')
-      .select('status, plan, current_period_end')
-      .eq('user_id', user.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (data) setSubscription(data);
-      });
+
+    getDoc(doc(db, 'subscriptions', user.uid)).then((snap) => {
+      if (snap.exists()) {
+        const data = snap.data();
+        setSubscription({
+          status: data.status,
+          plan: data.plan,
+          current_period_end: data.currentPeriodEnd?.toDate
+            ? data.currentPeriodEnd.toDate().toISOString()
+            : data.currentPeriodEnd ?? null,
+        });
+      }
+    });
 
     // Verifica se o email do usuário é assinante Ajudaê
     if (user.email) {
-      supabase
-        .from('ajudae_subscribers' as any)
-        .select('plan, active, coupon_redeemed_at')
-        .ilike('email', user.email)
-        .maybeSingle()
-        .then(({ data }: any) => {
-          if (data) {
-            setAjudaeStatus({
-              plan: data.plan,
-              active: data.active,
-              redeemed: !!data.coupon_redeemed_at,
-            });
-          }
-        });
+      const docId = user.email.toLowerCase().replace(/[.@]/g, '_');
+      getDoc(doc(db, 'ajudaeSubscribers', docId)).then((snap) => {
+        if (snap.exists()) {
+          const data = snap.data();
+          setAjudaeStatus({
+            plan: data.plan,
+            active: data.active,
+            redeemed: !!data.couponRedeemedAt,
+          });
+        }
+      });
     }
   }, [user]);
 
@@ -62,22 +66,19 @@ const Configuracoes: React.FC = () => {
     setApplyingCoupon(true);
     setMessage(null);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      if (!auth.currentUser) {
         setMessage({ type: 'error', text: 'Sessão expirada. Faça login novamente.' });
         return;
       }
-      const { data, error } = await supabase.functions.invoke('apply-ajudae-coupon', {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      });
-      if (error || (data && data.error)) {
-        setMessage({ type: 'error', text: data?.error || 'Erro ao aplicar cupom.' });
+      const data = await callFunction<{ error?: string; discountPct?: number }>(FUNCTIONS.applyAjudaeCoupon);
+      if (data?.error) {
+        setMessage({ type: 'error', text: data.error });
       } else {
         setMessage({ type: 'success', text: `Cupom aplicado! Você ganhou ${data.discountPct}% de desconto recorrente.` });
         setAjudaeStatus(prev => prev ? { ...prev, redeemed: true } : null);
       }
-    } catch {
-      setMessage({ type: 'error', text: 'Erro inesperado.' });
+    } catch (e: any) {
+      setMessage({ type: 'error', text: e?.message || 'Erro inesperado.' });
     } finally {
       setApplyingCoupon(false);
     }
@@ -115,13 +116,18 @@ const Configuracoes: React.FC = () => {
 
     setLoading(true);
     setMessage(null);
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
-    if (error) {
-      setMessage({ type: 'error', text: error.message });
-    } else {
+    try {
+      if (!auth.currentUser) throw new Error('Sessão expirada');
+      await updatePassword(auth.currentUser, newPassword);
       setMessage({ type: 'success', text: 'Senha alterada com sucesso!' });
       setNewPassword('');
       setConfirmPassword('');
+    } catch (err: any) {
+      if (err?.code === 'auth/requires-recent-login') {
+        setMessage({ type: 'error', text: 'Por segurança, saia e entre novamente antes de trocar a senha.' });
+      } else {
+        setMessage({ type: 'error', text: err?.message || 'Erro ao alterar senha.' });
+      }
     }
     setLoading(false);
   };
@@ -133,24 +139,17 @@ const Configuracoes: React.FC = () => {
     setMessage(null);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      if (!auth.currentUser) {
         setMessage({ type: 'error', text: 'Sessão expirada. Faça login novamente.' });
         return;
       }
 
-      const { data, error } = await supabase.functions.invoke('cancel-subscription', {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      });
+      const data = await callFunction<{ grace_period_end: string }>(FUNCTIONS.cancelSubscription);
 
-      if (error) {
-        setMessage({ type: 'error', text: 'Erro ao cancelar assinatura. Tente novamente.' });
-      } else {
-        setSubscription(prev => prev ? { ...prev, status: 'cancelled', current_period_end: data.grace_period_end } : null);
-        setMessage({ type: 'success', text: 'Assinatura cancelada. Você ainda tem acesso por 30 dias.' });
-      }
+      setSubscription(prev => prev ? { ...prev, status: 'cancelled', current_period_end: data.grace_period_end } : null);
+      setMessage({ type: 'success', text: 'Assinatura cancelada. Você ainda tem acesso por 30 dias.' });
     } catch {
-      setMessage({ type: 'error', text: 'Erro inesperado. Tente novamente.' });
+      setMessage({ type: 'error', text: 'Erro ao cancelar assinatura. Tente novamente.' });
     } finally {
       setCancellingSubscription(false);
     }

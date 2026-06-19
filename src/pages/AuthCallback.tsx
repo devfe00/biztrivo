@@ -1,34 +1,31 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '@/integrations/firebase/firebase';
+import { getCurrentSubscription } from '@/lib/billing';
 
 const AuthCallback = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!session) {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      unsubscribe();
+      if (!firebaseUser) {
         navigate('/login');
         return;
       }
 
-      // Check subscription status
-      const { data: sub } = await supabase
-        .from('subscriptions')
-        .select('status, plan, current_period_end')
-        .eq('user_id', session.user.id)
-        .maybeSingle();
+      const sub = await getCurrentSubscription(firebaseUser.uid);
 
-      // Allow active or cancelled-with-grace-period
       const isActive = sub?.plan === 'pro' && (
         sub?.status === 'active' ||
-        (sub?.status === 'cancelled' && sub?.current_period_end && new Date(sub.current_period_end) > new Date())
+        (sub?.status === 'cancelled' && sub?.currentPeriodEnd && new Date(sub.currentPeriodEnd.toDate ? sub.currentPeriodEnd.toDate() : sub.currentPeriodEnd) > new Date())
       );
 
       if (isActive) {
         navigate('/');
       } else {
-        const email = session.user.email || '';
+        const email = firebaseUser.email || '';
        const isBrazil = navigator.language?.startsWith('pt-BR') ||
   Intl.DateTimeFormat().resolvedOptions().timeZone === 'America/Sao_Paulo';
 const paymentLink = isBrazil

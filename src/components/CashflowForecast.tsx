@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Sparkles, RefreshCw, TrendingUp, AlertTriangle } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { FUNCTIONS, callFunction } from '@/integrations/firebase/firebase';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface Forecast {
@@ -17,7 +17,7 @@ const SIX_HOURS = 6 * 60 * 60 * 1000;
 
 const CashflowForecast = () => {
   const { user } = useAuth();
-  const cacheKey = user ? `biztrivo:forecast:${user.id}` : '';
+  const cacheKey = user ? `biztrivo:forecast:${user.uid}` : '';
   const [forecast, setForecast] = useState<Forecast | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,8 +41,7 @@ const CashflowForecast = () => {
     setError(null);
     setInsufficient(null);
     try {
-      const { data, error: fnErr } = await supabase.functions.invoke('forecast-cashflow', { body: {} });
-      if (fnErr) throw fnErr;
+      const data = await callFunction<Forecast & { insufficient_data?: boolean; message?: string; error?: string }>(FUNCTIONS.forecastCashflow, {});
       if (data?.insufficient_data) {
         setInsufficient(data.message);
       } else if (data?.error) {

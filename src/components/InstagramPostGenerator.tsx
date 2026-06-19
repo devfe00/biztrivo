@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Loader2, Download, Copy, Instagram, Sparkles, Check } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
+import { FUNCTIONS, callFunction } from '@/integrations/firebase/firebase';
 import type { Product } from '@/contexts/StoreContext';
 
 interface Props {
@@ -36,21 +36,18 @@ export default function InstagramPostGenerator({ product, storeName, whatsapp, o
     setLoading(true);
     setResult(null);
     try {
-      const { data, error } = await supabase.functions.invoke('generate-instagram-post', {
-        body: {
-          product: {
-            name: product.name,
-            description: product.description,
-            originalPrice: product.originalPrice,
-            discountPrice: product.discountPrice,
-            photo: product.photo,
-          },
-          storeName,
-          whatsapp,
-          tone,
+      const data = await callFunction<{ imageUrl: string; caption: string; hashtags: string[]; error?: string }>(FUNCTIONS.generateInstagramPost, {
+        product: {
+          name: product.name,
+          description: product.description,
+          originalPrice: product.originalPrice,
+          discountPrice: product.discountPrice,
+          photo: product.photo,
         },
+        storeName,
+        whatsapp,
+        tone,
       });
-      if (error) throw error;
       if (!data?.imageUrl) throw new Error(data?.error || 'Falha ao gerar imagem');
       setResult(data);
       localStorage.setItem(RATE_KEY, String(Date.now()));

@@ -1,7 +1,33 @@
+// src/contexts/StoreContext.tsx
+// Substitui a versão com Supabase — usa Firestore diretamente
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
+import {
+  doc, collection, getDoc, getDocs, addDoc, updateDoc, deleteDoc,
+  query, where, orderBy, serverTimestamp, setDoc,
+} from 'firebase/firestore';
+import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
+import { db, storage } from '@/integrations/firebase/firebase';
 import { sanitizeText } from '@/lib/sanitize';
+
+async function uploadImageIfNeeded(dataUrlOrUrl: string, path: string): Promise<string> {
+  if (!dataUrlOrUrl || !dataUrlOrUrl.startsWith('data:')) {
+    return dataUrlOrUrl ?? '';
+  }
+  const storageRef = ref(storage, path);
+  await uploadString(storageRef, dataUrlOrUrl, 'data_url');
+  return getDownloadURL(storageRef);
+}
+
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
+}
 
 export interface Product {
   id: string;
@@ -34,6 +60,7 @@ export interface StoreConfig {
   vitrineClicks: number;
   profileImage: string;
   dailyGoal: number;
+  slug: string;
 }
 
 interface StoreContextType {
@@ -59,6 +86,7 @@ const defaultConfig: StoreConfig = {
   vitrineClicks: 0,
   profileImage: '',
   dailyGoal: 0,
+  slug: '',
 };
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -78,42 +106,58 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
 
     setIsLoading(true);
     try {
-      // Fetch profile, products, and transactions in parallel
-      const [profileRes, productsRes, transactionsRes] = await Promise.all([
-        supabase.from('profiles').select('*').eq('user_id', user.id).maybeSingle(),
-        supabase.from('products').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
-        supabase.from('transactions').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
+      const [profileSnap, productsSnap, transactionsSnap] = await Promise.all([
+        getDoc(doc(db, 'profiles', user.uid)),
+        getDocs(query(
+          collection(db, 'products'),
+          where('userId', '==', user.uid),
+          orderBy('createdAt', 'desc')
+        )),
+        getDocs(query(
+          collection(db, 'transactions'),
+          where('userId', '==', user.uid),
+          orderBy('createdAt', 'desc')
+        )),
       ]);
 
-      const profile = profileRes.data;
-      const products: Product[] = (productsRes.data ?? []).map(p => ({
-        id: p.id,
-        name: p.name,
-        photo: p.photo ?? '',
-        originalPrice: Number(p.original_price) || 0,
-        discountPrice: Number(p.discount_price) || 0,
-        description: p.description ?? '',
-        stock: p.stock ?? 0,
-      }));
-      const transactions: Transaction[] = (transactionsRes.data ?? []).map(t => ({
-        id: t.id,
-        type: t.type as 'entrada' | 'saida',
-        value: Number(t.value),
-        description: t.description,
-        category: t.category,
-        isPersonal: t.is_personal ?? false,
-        date: t.date,
-      }));
+      const profile = profileSnap.exists() ? profileSnap.data() : null;
+
+      const products: Product[] = productsSnap.docs.map(d => {
+        const p = d.data();
+        return {
+          id: d.id,
+          name: p.name,
+          photo: p.photo ?? '',
+          originalPrice: Number(p.originalPrice) || 0,
+          discountPrice: Number(p.discountPrice) || 0,
+          description: p.description ?? '',
+          stock: p.stock ?? 0,
+        };
+      });
+
+      const transactions: Transaction[] = transactionsSnap.docs.map(d => {
+        const t = d.data();
+        return {
+          id: d.id,
+          type: t.type as 'entrada' | 'saida',
+          value: Number(t.value),
+          description: t.description,
+          category: t.category,
+          isPersonal: t.isPersonal ?? false,
+          date: t.date?.toDate ? t.date.toDate().toISOString() : t.date,
+        };
+      });
 
       setConfig({
-        storeName: profile?.store_name ?? 'Minha Loja',
+        storeName: profile?.storeName ?? 'Minha Loja',
         logo: profile?.logo ?? '',
-        primaryColor: profile?.primary_color ?? '#3b82f6',
+        primaryColor: profile?.primaryColor ?? '#3b82f6',
         whatsapp: profile?.whatsapp ?? '',
-        vitrineActive: profile?.vitrine_active ?? false,
-        vitrineClicks: profile?.vitrine_clicks ?? 0,
-        profileImage: profile?.profile_image ?? '',
-        dailyGoal: Number(profile?.daily_goal) || 0,
+        vitrineActive: profile?.vitrineActive ?? false,
+        vitrineClicks: profile?.vitrineClicks ?? 0,
+        profileImage: profile?.profileImage ?? '',
+        dailyGoal: Number(profile?.dailyGoal) || 0,
+        slug: profile?.slug ?? '',
         products,
         transactions,
       });
@@ -131,21 +175,33 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
   const updateConfig = async (partial: Partial<StoreConfig>) => {
     if (!user) return;
 
-    // Optimistic update
-    setConfig(prev => ({ ...prev, ...partial }));
-
-    // Map to DB columns
     const dbUpdate: Record<string, unknown> = {};
-    if (partial.storeName !== undefined) dbUpdate.store_name = sanitizeText(partial.storeName);
-    if (partial.logo !== undefined) dbUpdate.logo = partial.logo;
-    if (partial.primaryColor !== undefined) dbUpdate.primary_color = partial.primaryColor;
+    let logoUrl = partial.logo;
+    let profileImageUrl = partial.profileImage;
+
+    if (partial.storeName !== undefined) {
+      const cleanName = sanitizeText(partial.storeName);
+      dbUpdate.storeName = cleanName;
+      dbUpdate.slug = `${slugify(cleanName)}-${user.uid.slice(0, 6).toLowerCase()}`;
+    }
+    if (partial.logo !== undefined) {
+      logoUrl = await uploadImageIfNeeded(partial.logo, `profiles/${user.uid}/logo.jpg`);
+      dbUpdate.logo = logoUrl;
+    }
+    if (partial.primaryColor !== undefined) dbUpdate.primaryColor = partial.primaryColor;
     if (partial.whatsapp !== undefined) dbUpdate.whatsapp = partial.whatsapp;
-    if (partial.vitrineActive !== undefined) dbUpdate.vitrine_active = partial.vitrineActive;
-    if (partial.profileImage !== undefined) dbUpdate.profile_image = partial.profileImage;
-    if (partial.dailyGoal !== undefined) dbUpdate.daily_goal = partial.dailyGoal;
+    if (partial.vitrineActive !== undefined) dbUpdate.vitrineActive = partial.vitrineActive;
+    if (partial.profileImage !== undefined) {
+      profileImageUrl = await uploadImageIfNeeded(partial.profileImage, `profiles/${user.uid}/profile.jpg`);
+      dbUpdate.profileImage = profileImageUrl;
+    }
+    if (partial.dailyGoal !== undefined) dbUpdate.dailyGoal = partial.dailyGoal;
+
+    setConfig(prev => ({ ...prev, ...partial, logo: logoUrl ?? prev.logo, profileImage: profileImageUrl ?? prev.profileImage }));
 
     if (Object.keys(dbUpdate).length > 0) {
-      await supabase.from('profiles').update(dbUpdate).eq('user_id', user.id);
+      dbUpdate.updatedAt = serverTimestamp();
+      await setDoc(doc(db, 'profiles', user.uid), dbUpdate, { merge: true });
     }
   };
 
@@ -156,31 +212,33 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
     pendingOps.current.add(opKey);
 
     try {
-      const { data, error } = await supabase.from('products').insert({
-        user_id: user.id,
+      const tempId = crypto.randomUUID();
+      const photoUrl = await uploadImageIfNeeded(product.photo, `products/${user.uid}/${tempId}.jpg`);
+
+      const docRef = await addDoc(collection(db, 'products'), {
+        userId: user.uid,
         name: sanitizeText(product.name),
-        photo: product.photo,
-        original_price: Math.max(0, product.originalPrice),
-        discount_price: Math.max(0.01, product.discountPrice),
+        photo: photoUrl,
+        originalPrice: Math.max(0, product.originalPrice),
+        discountPrice: Math.max(0.01, product.discountPrice),
         description: sanitizeText(product.description),
         stock: Math.max(0, product.stock),
-      }).select().single();
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
 
-      if (error) throw error;
-      if (data) {
-        setConfig(prev => ({
-          ...prev,
-          products: [{
-            id: data.id,
-            name: data.name,
-            photo: data.photo ?? '',
-            originalPrice: Number(data.original_price) || 0,
-            discountPrice: Number(data.discount_price) || 0,
-            description: data.description ?? '',
-            stock: data.stock ?? 0,
-          }, ...prev.products],
-        }));
-      }
+      setConfig(prev => ({
+        ...prev,
+        products: [{
+          id: docRef.id,
+          name: product.name,
+          photo: photoUrl,
+          originalPrice: product.originalPrice,
+          discountPrice: product.discountPrice,
+          description: product.description,
+          stock: product.stock,
+        }, ...prev.products],
+      }));
     } finally {
       pendingOps.current.delete(opKey);
     }
@@ -194,7 +252,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       setConfig(prev => ({ ...prev, products: prev.products.filter(p => p.id !== id) }));
-      await supabase.from('products').delete().eq('id', id).eq('user_id', user.id);
+      await deleteDoc(doc(db, 'products', id));
     } finally {
       pendingOps.current.delete(opKey);
     }
@@ -207,19 +265,23 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
     pendingOps.current.add(opKey);
 
     try {
+      const photoUrl = await uploadImageIfNeeded(product.photo, `products/${user.uid}/${product.id}.jpg`);
+      const updatedProduct = { ...product, photo: photoUrl };
+
       setConfig(prev => ({
         ...prev,
-        products: prev.products.map(p => p.id === product.id ? product : p),
+        products: prev.products.map(p => p.id === product.id ? updatedProduct : p),
       }));
 
-      await supabase.from('products').update({
+      await updateDoc(doc(db, 'products', product.id), {
         name: sanitizeText(product.name),
-        photo: product.photo,
-        original_price: Math.max(0, product.originalPrice),
-        discount_price: Math.max(0.01, product.discountPrice),
+        photo: photoUrl,
+        originalPrice: Math.max(0, product.originalPrice),
+        discountPrice: Math.max(0.01, product.discountPrice),
         description: sanitizeText(product.description),
         stock: Math.max(0, product.stock),
-      }).eq('id', product.id).eq('user_id', user.id);
+        updatedAt: serverTimestamp(),
+      });
     } finally {
       pendingOps.current.delete(opKey);
     }
@@ -236,31 +298,29 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
     pendingOps.current.add(opKey);
 
     try {
-      const { data, error } = await supabase.from('transactions').insert({
-        user_id: user.id,
+      const docRef = await addDoc(collection(db, 'transactions'), {
+        userId: user.uid,
         type: transaction.type,
         value: transaction.value,
         description: sanitizeText(transaction.description),
         category: sanitizeText(transaction.category),
-        is_personal: transaction.isPersonal,
+        isPersonal: transaction.isPersonal,
         date: transaction.date,
-      }).select().single();
+        createdAt: serverTimestamp(),
+      });
 
-      if (error) throw error;
-      if (data) {
-        setConfig(prev => ({
-          ...prev,
-          transactions: [{
-            id: data.id,
-            type: data.type as 'entrada' | 'saida',
-            value: Number(data.value),
-            description: data.description,
-            category: data.category,
-            isPersonal: data.is_personal ?? false,
-            date: data.date,
-          }, ...prev.transactions],
-        }));
-      }
+      setConfig(prev => ({
+        ...prev,
+        transactions: [{
+          id: docRef.id,
+          type: transaction.type,
+          value: transaction.value,
+          description: transaction.description,
+          category: transaction.category,
+          isPersonal: transaction.isPersonal,
+          date: transaction.date,
+        }, ...prev.transactions],
+      }));
     } finally {
       pendingOps.current.delete(opKey);
     }
@@ -274,16 +334,17 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       setConfig(prev => ({ ...prev, transactions: prev.transactions.filter(t => t.id !== id) }));
-      await supabase.from('transactions').delete().eq('id', id).eq('user_id', user.id);
+      await deleteDoc(doc(db, 'transactions', id));
     } finally {
       pendingOps.current.delete(opKey);
     }
   };
 
   return (
-    <StoreContext.Provider
-      value={{ config, updateConfig, addProduct, removeProduct, updateProduct, addTransaction, removeTransaction, isLoading, refreshData: fetchData }}
-    >
+    <StoreContext.Provider value={{
+      config, updateConfig, addProduct, removeProduct, updateProduct,
+      addTransaction, removeTransaction, isLoading, refreshData: fetchData,
+    }}>
       {children}
     </StoreContext.Provider>
   );

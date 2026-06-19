@@ -24,7 +24,7 @@ const Vitrine = () => {
   const [copied, setCopied] = useState(false);
   const qrRef = useRef<HTMLDivElement>(null);
 
-  const slug = config.storeName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  const slug = config.slug || config.storeName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
   const publicUrl = `${window.location.origin}/loja/${slug}`;
 
   const handleDownloadQR = useCallback(() => {

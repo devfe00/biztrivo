@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, AlertCircle, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
 import { getCurrentSubscription, hasActiveSubscription, redirectToCheckout } from '@/lib/billing';
 
 const Login: React.FC = () => {
@@ -23,7 +22,7 @@ const homePath = `/dashboard${tokenSearch}`;
 
   React.useEffect(() => {
     if (!user) return;
-    getCurrentSubscription(user.id).then((sub) => {
+    getCurrentSubscription(user.uid).then((sub) => {
       if (hasActiveSubscription(sub)) navigate(homePath, { replace: true });
       else redirectToCheckout(user.email);
     });
@@ -34,14 +33,13 @@ const homePath = `/dashboard${tokenSearch}`;
   setError('');
   if (!email || !password) { setError('Preencha todos os campos'); return; }
   setLoading(true);
-  const { error: signInError } = await signIn(email, password);
+  const { error: signInError, user: signedInUser } = await signIn(email, password);
   if (signInError) {
     setError(signInError);
   } else {
-    const currentUser = (await supabase.auth.getUser()).data.user;
-    const sub = currentUser ? await getCurrentSubscription(currentUser.id) : null;
+    const sub = signedInUser ? await getCurrentSubscription(signedInUser.uid) : null;
     if (!hasActiveSubscription(sub)) {
-      redirectToCheckout(currentUser?.email ?? email);
+      redirectToCheckout(signedInUser?.email ?? email);
     } else {
       navigate(homePath);
     }

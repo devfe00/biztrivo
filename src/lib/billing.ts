@@ -1,4 +1,7 @@
-import { supabase } from '@/integrations/supabase/client';
+// src/lib/billing.ts
+// Substitui a versão com Supabase — usa Firestore diretamente
+import { doc, getDoc } from 'firebase/firestore';
+import { db, FUNCTIONS, callFunction } from '@/integrations/firebase/firebase';
 
 export const getStripeCheckoutUrl = (email?: string | null) => {
   const isBrazil = navigator.language?.startsWith('pt-BR') ||
@@ -13,18 +16,40 @@ export const redirectToCheckout = (email?: string | null) => {
   window.location.href = getStripeCheckoutUrl(email);
 };
 
-export const hasActiveSubscription = (sub?: { status?: string | null; plan?: string | null; current_period_end?: string | null } | null) => {
+export const hasActiveSubscription = (sub?: {
+  status?: string | null;
+  plan?: string | null;
+  currentPeriodEnd?: { toDate?: () => Date } | string | null;
+} | null) => {
   if (!sub || sub.plan !== 'pro') return false;
-  if (sub.status === 'active') return !sub.current_period_end || new Date(sub.current_period_end) > new Date();
-  if (sub.status === 'cancelled') return !!sub.current_period_end && new Date(sub.current_period_end) > new Date();
+
+  // Suporta tanto Firestore Timestamp quanto string ISO
+  const endDate = sub.currentPeriodEnd
+    ? (typeof sub.currentPeriodEnd === 'object' && sub.currentPeriodEnd.toDate
+        ? sub.currentPeriodEnd.toDate()
+        : new Date(sub.currentPeriodEnd as string))
+    : null;
+
+  if (sub.status === 'active') return !endDate || endDate > new Date();
+  if (sub.status === 'cancelled') return !!endDate && endDate > new Date();
   return false;
 };
 
 export const getCurrentSubscription = async (userId: string) => {
-  const { data } = await supabase
-    .from('subscriptions')
-    .select('status, plan, current_period_end')
-    .eq('user_id', userId)
-    .maybeSingle();
-  return data;
+  const snap = await getDoc(doc(db, 'subscriptions', userId));
+  if (!snap.exists()) return null;
+  const data = snap.data();
+  return {
+    status: data.status,
+    plan: data.plan,
+    currentPeriodEnd: data.currentPeriodEnd,
+  };
+};
+
+export const cancelSubscription = async () => {
+  return callFunction(FUNCTIONS.cancelSubscription);
+};
+
+export const applyAjudaeCoupon = async () => {
+  return callFunction(FUNCTIONS.applyAjudaeCoupon);
 };

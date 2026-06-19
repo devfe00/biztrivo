@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Loader2, Upload, FileText, CheckCircle2, AlertTriangle, Sparkles, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
+import { FUNCTIONS, callFunction } from '@/integrations/firebase/firebase';
 import type { Product } from '@/contexts/StoreContext';
 
 interface Props {
@@ -71,14 +71,11 @@ export default function InvoiceComparator({ products, open, onOpenChange }: Prop
     setLoading(true);
     try {
       const dataUrl = await fileToDataUrl(file);
-      const { data, error } = await supabase.functions.invoke('compare-invoice', {
-        body: {
-          fileBase64: dataUrl,
-          products: products.map(p => ({ id: p.id, name: p.name, discountPrice: p.discountPrice, stock: p.stock })),
-        },
-      });
-      if (error) throw error;
-      if (!data?.comparisons) throw new Error(data?.error || 'Falha ao processar');
+      const data = await callFunction<{ summary: Summary; comparisons: Comparison[]; error?: string }>(FUNCTIONS.compareInvoice, {
+  fileBase64: dataUrl,
+  products: products.map(p => ({ id: p.id, name: p.name, discountPrice: p.discountPrice, stock: p.stock })),
+});
+if (!data?.comparisons) throw new Error(data?.error || 'Falha ao processar');
       setSummary(data.summary);
       setComparisons(data.comparisons);
       toast.success(`${data.summary.totalItems} itens extraídos da nota.`);

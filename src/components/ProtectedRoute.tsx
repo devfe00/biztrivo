@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { hasActiveSubscription, redirectToCheckout } from '@/lib/billing';
+import { getCurrentSubscription, hasActiveSubscription, redirectToCheckout } from '@/lib/billing';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
@@ -18,19 +17,14 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     }
 
     if (!loading && user) {
-      supabase
-        .from('subscriptions')
-        .select('status, plan, current_period_end')
-        .eq('user_id', user.id)
-        .maybeSingle()
-        .then(({ data }) => {
-          if (hasActiveSubscription(data)) {
-            setHasSubscription(true);
-          } else {
-            redirectToCheckout(user.email);
-          }
-          setCheckingSubscription(false);
-        });
+      getCurrentSubscription(user.uid).then((sub) => {
+        if (hasActiveSubscription(sub)) {
+          setHasSubscription(true);
+        } else {
+          redirectToCheckout(user.email);
+        }
+        setCheckingSubscription(false);
+      });
     }
   }, [loading, user, navigate]);
 

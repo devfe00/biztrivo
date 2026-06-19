@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { MessageCircle, ShoppingBag, AlertCircle, Search, Phone, X, Loader2 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { FUNCTIONS, callFunction } from '@/integrations/firebase/firebase';
 
 interface StoreProduct {
   id: string;
@@ -51,38 +51,17 @@ const PublicStore = () => {
     if (!slug) { setLoading(false); return; }
 
     const fetchStore = async () => {
-      // Use security definer function to get store data by slug
-      // This avoids exposing email and other sensitive profile data
-      const { data: storeData, error } = await supabase.rpc('get_public_store_by_slug' as any, { _slug: slug });
-
-      if (error || !storeData || (storeData as any[]).length === 0) {
-        setLoading(false);
-        return;
+      try {
+        const data = await callFunction<StoreData & { error?: string }>(
+          `${FUNCTIONS.getPublicStoreBySlug}?slug=${encodeURIComponent(slug)}`,
+          undefined,
+          'GET'
+        );
+        if (!data || data.error) { setLoading(false); return; }
+        setStore(data);
+      } catch {
+        // vitrine não encontrada ou erro de rede — mantém tela de "não encontrada"
       }
-
-      const profile = (storeData as any[])[0];
-
-      // Fetch products for this user (allowed by public RLS policy)
-      const { data: products } = await supabase
-        .from('products')
-        .select('id, name, photo, original_price, discount_price, description, stock')
-        .eq('user_id', profile.user_id);
-
-      setStore({
-        storeName: profile.store_name,
-        logo: profile.logo ?? '',
-        primaryColor: profile.primary_color ?? '#3b82f6',
-        whatsapp: profile.whatsapp ?? '',
-        products: (products ?? []).map(p => ({
-          id: p.id,
-          name: p.name,
-          photo: p.photo ?? '',
-          originalPrice: Number(p.original_price) || 0,
-          discountPrice: Number(p.discount_price) || 0,
-          description: p.description ?? '',
-          stock: p.stock ?? 0,
-        })),
-      });
       setLoading(false);
     };
 

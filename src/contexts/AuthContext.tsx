@@ -1,14 +1,25 @@
+// src/contexts/AuthContext.tsx
+// Substitui a versão com Supabase
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { lovable } from '@/integrations/lovable';
-import type { User, Session } from '@supabase/supabase-js';
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut as firebaseSignOut,
+  onAuthStateChanged,
+  GoogleAuthProvider,
+  signInWithPopup,
+  sendPasswordResetEmail,
+  updateProfile,
+  type User,
+} from 'firebase/auth';
+import { auth, FUNCTIONS, callFunction } from '@/integrations/firebase/firebase';
 
 interface AuthContextType {
   user: User | null;
-  session: Session | null;
+  session: User | null; // mantém compatibilidade — aponta pro mesmo user
   loading: boolean;
   signUp: (email: string, password: string, storeName: string) => Promise<{ error: string | null }>;
-  signIn: (email: string, password: string) => Promise<{ error: string | null }>;
+  signIn: (email: string, password: string) => Promise<{ error: string | null; user: User | null }>;
   signInWithGoogle: () => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: string | null }>;
@@ -18,96 +29,101 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up listener FIRST (per Supabase best practices)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, newSession) => {
-        setSession(newSession);
-        setUser(newSession?.user ?? null);
-        setLoading(false);
-
-        // On first sign-in (signup or OAuth), ensure profile exists
-        if (event === 'SIGNED_IN' && newSession?.user) {
-          const u = newSession.user;
-          // Use setTimeout to avoid blocking the auth state change
-          setTimeout(async () => {
-            try {
-              await supabase.rpc('ensure_user_setup' as any, {
-                _user_id: u.id,
-                _email: u.email ?? '',
-                _store_name: u.user_metadata?.store_name ?? u.user_metadata?.full_name ?? 'Minha Loja',
-              });
-            } catch {
-              // Profile may already exist, that's fine
-            }
-          }, 0);
-        }
-      }
-    );
-
-    // Then get existing session
-    supabase.auth.getSession().then(({ data: { session: existingSession } }) => {
-      setSession(existingSession);
-      setUser(existingSession?.user ?? null);
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      setUser(firebaseUser);
       setLoading(false);
+
+      // Garante que profile + subscription existem no Firestore
+      if (firebaseUser) {
+        setTimeout(async () => {
+          try {
+            await callFunction(FUNCTIONS.setupUser, {
+              storeName: firebaseUser.displayName || 'Minha Loja',
+            });
+          } catch {
+            // Profile pode já existir, tudo bem
+          }
+        }, 0);
+      }
     });
 
-    return () => subscription.unsubscribe();
+    return () => unsubscribe();
   }, []);
 
   const signUp = async (email: string, password: string, storeName: string) => {
-    const { error } = await supabase.auth.signUp({
-      email: email.trim().toLowerCase(),
-      password,
-      options: { data: { store_name: storeName.trim() || 'Minha Loja' } },
-    });
-    if (error) {
-      if (error.message.includes('already registered')) return { error: 'Este email já está cadastrado' };
-      return { error: error.message };
+    try {
+      const { user: newUser } = await createUserWithEmailAndPassword(
+        auth,
+        email.trim().toLowerCase(),
+        password
+      );
+      // Salva o storeName no displayName do Firebase Auth
+      await updateProfile(newUser, { displayName: storeName.trim() || 'Minha Loja' });
+      return { error: null };
+    } catch (err: unknown) {
+      const code = (err as { code?: string })?.code;
+      if (code === 'auth/email-already-in-use') return { error: 'Este email já está cadastrado' };
+      if (code === 'auth/weak-password') return { error: 'Senha muito fraca. Use pelo menos 6 caracteres' };
+      return { error: (err as Error).message };
     }
-    return { error: null };
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email.trim().toLowerCase(),
-      password,
-    });
-    if (error) {
-      if (error.message.includes('Invalid login')) return { error: 'Email ou senha incorretos' };
-      return { error: error.message };
+    try {
+      const { user: signedInUser } = await signInWithEmailAndPassword(auth, email.trim().toLowerCase(), password);
+      return { error: null, user: signedInUser };
+    } catch (err: unknown) {
+      const code = (err as { code?: string })?.code;
+      if (code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found') {
+        return { error: 'Email ou senha incorretos', user: null };
+      }
+      return { error: (err as Error).message, user: null };
     }
-    return { error: null };
   };
 
-const signInWithGoogle = async () => {
-  const result = await lovable.auth.signInWithOAuth('google', {
-    redirect_uri: window.location.origin,
-    extraParams: { prompt: 'select_account' },
-  });
-  if (result.error) return { error: result.error.message };
-  return { error: null };
-};
+  const signInWithGoogle = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
+      await signInWithPopup(auth, provider);
+      return { error: null };
+    } catch (err: unknown) {
+      const code = (err as { code?: string })?.code;
+      if (code === 'auth/popup-closed-by-user') return { error: null }; // usuário fechou, não é erro
+      return { error: (err as Error).message };
+    }
+  };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    await firebaseSignOut(auth);
     setUser(null);
-    setSession(null);
   };
 
   const resetPassword = async (email: string) => {
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
-    if (error) return { error: error.message };
-    return { error: null };
+    try {
+      await sendPasswordResetEmail(auth, email.trim().toLowerCase(), {
+        url: `${window.location.origin}/login`,
+      });
+      return { error: null };
+    } catch (err: unknown) {
+      return { error: (err as Error).message };
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signInWithGoogle, signOut, resetPassword }}>
+    <AuthContext.Provider value={{
+      user,
+      session: user, // compatibilidade com código que usa session
+      loading,
+      signUp,
+      signIn,
+      signInWithGoogle,
+      signOut,
+      resetPassword,
+    }}>
       {children}
     </AuthContext.Provider>
   );
