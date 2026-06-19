@@ -84,7 +84,7 @@ const PoliticaPrivacidade: React.FC = () => {
 
               <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">3.3. Dados de Terceiros</h3>
               <p>
-                Podemos receber informações sobre você de processadores de pagamento (como Mercado Pago) quando você 
+                Podemos receber informações sobre você de processadores de pagamento (como Stripe, Inc.) quando você 
                 assina um plano pago, limitadas ao necessário para processar a transação.
               </p>
             </section>
@@ -142,7 +142,7 @@ const PoliticaPrivacidade: React.FC = () => {
               <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">5.1. Prestadores de Serviços</h3>
               <p>Compartilhamos dados com terceiros que nos auxiliam a fornecer nossos serviços:</p>
               <ul className="list-disc pl-6 space-y-2 mt-3">
-                <li><strong>Processadores de Pagamento:</strong> Mercado Pago (para processar transações)</li>
+                <li><strong>Processadores de Pagamento:</strong> Stripe, Inc. (para processar transações)</li>
                 <li><strong>Serviços de Hospedagem:</strong> Provedores de infraestrutura em nuvem</li>
                 <li><strong>Ferramentas de Análise:</strong> Google Analytics (dados anonimizados)</li>
                 <li><strong>Serviços de Email:</strong> Plataformas de envio de emails transacionais</li>
@@ -366,7 +366,7 @@ const PoliticaPrivacidade: React.FC = () => {
               </p>
               <ul className="list-none pl-0 space-y-2 mt-3">
                 <li><strong>Email:</strong> biztrivo@outlook.com</li>
-                <li><strong>Endereço:</strong> Av. Brigadeiro Luís Antônio, 5083 - Jardim Paulista, São Paulo - SP, 01402-002</li>
+                <li><strong>Endereço:</strong> Empresa 100% remota, sem sede física</li>
               </ul>
             </section>
 
@@ -392,7 +392,7 @@ const PoliticaPrivacidade: React.FC = () => {
                 <li><strong>Email Geral:</strong> biztrivo@outlook.com</li>
                 <li><strong>Email Privacidade:</strong> biztrivo@outlook.com.br</li>
                 <li><strong>Email DPO:</strong> biztrivo@outlook.com</li>
-                <li><strong>Endereço:</strong> Av. Brigadeiro Luís Antônio, 5083 - Jardim Paulista, São Paulo - SP, 01402-002 - Empresa Remota</li>
+                <li><strong>Endereço:</strong> Empresa 100% remota, sem sede física</li>
                 <li><strong>CNPJ:</strong> 63.526.345/0001-01</li>
               </ul>
             </section>

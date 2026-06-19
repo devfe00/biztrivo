@@ -111,7 +111,7 @@ const TermosDeUso: React.FC = () => {
                 um plano pago, você autoriza a cobrança recorrente no método de pagamento fornecido.
               </p>
               <p className="mt-3">
-                Os pagamentos são processados através de processadores terceirizados seguros (como Mercado Pago). Não 
+                Os pagamentos são processados através de processadores terceirizados seguros (como Stripe, Inc.). Não 
                 armazenamos informações completas de cartão de crédito em nossos servidores.
               </p>
               <p className="mt-3">
@@ -239,7 +239,7 @@ const TermosDeUso: React.FC = () => {
               </p>
               <p className="mt-3">
                 Qualquer disputa relacionada a estes termos será submetida exclusivamente à jurisdição dos tribunais 
-                brasileiros, com foro na comarca de [Sua Cidade/Estado], renunciando as partes a qualquer outro, por 
+                brasileiros, com foro na comarca de São Paulo, Estado de São Paulo, renunciando as partes a qualquer outro, por 
                 mais privilegiado que seja.
               </p>
             </section>
@@ -271,7 +271,7 @@ const TermosDeUso: React.FC = () => {
               </p>
               <ul className="list-none pl-0 space-y-2 mt-3">
                 <li><strong>Email:</strong> biztrivo@outlook.com.br</li>
-                <li><strong>Endereço:</strong> Empresa Remota</li>
+                <li><strong>Endereço:</strong> Empresa 100% remota, sem sede física</li>
                 <li><strong>CNPJ:</strong> 63.526.345/0001-01</li>
               </ul>
             </section>
