@@ -46,7 +46,7 @@ const Configuracoes: React.FC = () => {
       }
     });
 
-    // Verifica se o email do usuário é assinante Ajudaê
+    //verifica se o email do usuário é assinante Ajudaê
     if (user.email) {
       const docId = user.email.toLowerCase().replace(/[.@]/g, '_');
       getDoc(doc(db, 'ajudaeSubscribers', docId)).then((snap) => {
@@ -58,7 +58,9 @@ const Configuracoes: React.FC = () => {
             redeemed: !!data.couponRedeemedAt,
           });
         }
-      });
+      }).catch(() => {
+  // Documento não existe ou sem permissão — comportamento esperado para não-assinantes
+});
     }
   }, [user]);
 
@@ -355,7 +357,7 @@ const Configuracoes: React.FC = () => {
                   <button
                     onClick={() => {
                       const email = user?.email || '';
-                      window.location.href = `https://buy.stripe.com/test_aFadRa19XalV7n6fPab3q00?prefilled_email=${encodeURIComponent(email)}`;
+                      window.location.href = `https://buy.stripe.com/00w5kEbOLdj35OmfwpgEg00?prefilled_email=${encodeURIComponent(email)}`;
                     }}
                     className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg flex items-center justify-center gap-2"
                   >
