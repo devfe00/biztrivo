@@ -61,6 +61,7 @@ export interface StoreConfig {
   profileImage: string;
   dailyGoal: number;
   slug: string;
+  isMei: boolean;
 }
 
 interface StoreContextType {
@@ -87,6 +88,7 @@ const defaultConfig: StoreConfig = {
   profileImage: '',
   dailyGoal: 0,
   slug: '',
+  isMei: false,
 };
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -158,6 +160,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
         profileImage: profile?.profileImage ?? '',
         dailyGoal: Number(profile?.dailyGoal) || 0,
         slug: profile?.slug ?? '',
+        isMei: profile?.isMei ?? false,
         products,
         transactions,
       });
@@ -196,6 +199,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
       dbUpdate.profileImage = profileImageUrl;
     }
     if (partial.dailyGoal !== undefined) dbUpdate.dailyGoal = partial.dailyGoal;
+    if (partial.isMei !== undefined) dbUpdate.isMei = partial.isMei;
 
     setConfig(prev => ({ ...prev, ...partial, logo: logoUrl ?? prev.logo, profileImage: profileImageUrl ?? prev.profileImage }));
 

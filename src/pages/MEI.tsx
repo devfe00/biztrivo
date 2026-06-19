@@ -6,11 +6,11 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { toast } from 'sonner';
 
-// Limite oficial MEI 2026 — atualizar manualmente quando o governo alterar.
+//limite oficial MEI 2026 — atualizar manualmente quando o governo alterar.
 const LIMITE_MEI_ANUAL = 81000;
 
-// Categorias padrão classificadas como Comércio/Indústria vs Serviços.
-// Categorias não reconhecidas vão para "não classificadas" (alerta).
+//categorias padrão classificadas como Comércio/Indústria vs Serviços.
+//categorias não reconhecidas vão para "não classificadas" (alerta).
 const COMERCIO_INDUSTRIA = new Set([
   'vendas', 'venda', 'produtos', 'produto', 'mercadoria', 'comércio', 'comercio',
   'revenda', 'fabricação', 'fabricacao', 'indústria', 'industria',
@@ -28,7 +28,7 @@ const classify = (cat: string): 'comercio' | 'servicos' | 'desconhecido' => {
 };
 
 const MEI = () => {
-  const { config } = useStore();
+  const { config, updateConfig } = useStore();
   const [year, setYear] = useState(new Date().getFullYear());
 
   const report = useMemo(() => {
@@ -133,6 +133,32 @@ const MEI = () => {
     doc.save(`MEI_${year}_${config.storeName.replace(/\s+/g, '_')}.pdf`);
     toast.success('PDF gerado');
   };
+
+  if (!config.isMei) {
+    return (
+      <div className="space-y-8">
+        <div>
+          <h1 className="text-3xl font-bold font-heading">Declaração MEI</h1>
+          <p className="text-muted-foreground mt-1">Consolidação anual da sua receita bruta para a DASN-SIMEI.</p>
+        </div>
+        <Card className="p-10 border-none shadow-md flex flex-col items-center text-center gap-5">
+          <FileText className="w-14 h-14 text-muted-foreground/30" />
+          <div>
+            <p className="text-lg font-semibold font-heading">Esta área é para MEI</p>
+            <p className="text-sm text-muted-foreground mt-1 max-w-sm">
+              Você possui CNPJ MEI ativo? Ative para acessar o relatório anual e os campos prontos para a DASN-SIMEI.
+            </p>
+          </div>
+          <button
+            onClick={() => updateConfig({ isMei: true })}
+            className="px-6 py-2.5 rounded-xl gradient-primary text-primary-foreground font-medium text-sm shadow-glow hover:opacity-90 transition-opacity"
+          >
+            Sim, sou MEI — Ativar
+          </button>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -270,6 +296,12 @@ const MEI = () => {
           </div>
         </div>
       </Card>
+      <button
+        onClick={() => updateConfig({ isMei: false })}
+        className="text-xs text-muted-foreground hover:text-destructive transition-colors mx-auto block"
+      >
+        Não sou mais MEI — desativar esta área
+      </button>
     </div>
   );
 };
