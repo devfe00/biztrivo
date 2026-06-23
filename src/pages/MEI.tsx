@@ -134,6 +134,21 @@ const MEI = () => {
     toast.success('PDF gerado');
   };
 
+  if (config.paisBase !== 'BR') {
+  return (
+    <div className="space-y-8">
+      <h1 className="text-3xl font-bold font-heading">Declaração MEI</h1>
+      <Card className="p-10 border-none shadow-md flex flex-col items-center text-center gap-4">
+        <FileText className="w-14 h-14 text-muted-foreground/30" />
+        <p className="text-lg font-semibold font-heading">Módulo disponível apenas no Brasil</p>
+        <p className="text-sm text-muted-foreground max-w-sm">
+          O MEI é um regime exclusivo brasileiro. Se você opera no Brasil, altere seu país de operação em <strong>Configurações → Perfil</strong>.
+        </p>
+      </Card>
+    </div>
+  );
+}
+
   if (!config.isMei) {
     return (
       <div className="space-y-8">

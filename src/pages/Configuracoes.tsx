@@ -229,6 +229,21 @@ const Configuracoes: React.FC = () => {
                   <p className="text-xs text-muted-foreground mt-1">O email não pode ser alterado</p>
                 </div>
 
+                <div>
+  <label className="block text-sm font-medium text-foreground mb-2">País de operação</label>
+  <select
+    value={config.paisBase}
+    onChange={e => updateConfig({ paisBase: e.target.value as 'BR' | 'outros' })}
+    className="w-full px-4 py-3 border border-input rounded-lg bg-background text-foreground"
+  >
+    <option value="BR">🇧🇷 Brasil</option>
+    <option value="outros">🌍 Outro país</option>
+  </select>
+  <p className="text-xs text-muted-foreground mt-1">
+    Define quais módulos fiscais aparecem no menu (ex: MEI é exclusivo do Brasil)
+  </p>
+</div>
+
                 <button type="submit" disabled={loading}
                   className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg disabled:opacity-50 flex items-center justify-center gap-2">
                   {loading ? <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /><span>Salvando...</span></> : <><Save size={20} /><span>Salvar Alterações</span></>}

@@ -63,6 +63,7 @@ export interface StoreConfig {
   slug: string;
   isMei: boolean;
   cnpj: string;
+  paisBase: 'BR' | 'outros';
 }
 
 interface StoreContextType {
@@ -91,6 +92,7 @@ const defaultConfig: StoreConfig = {
   slug: '',
   isMei: false,
   cnpj: '',
+  paisBase: navigator.language?.startsWith('pt-BR') ? 'BR' : 'outros',
 };
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -167,6 +169,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
         dailyGoal: Number(priv?.dailyGoal) || 0,
         isMei: priv?.isMei ?? false,
         cnpj: priv?.cnpj ?? '',
+        paisBase: priv?.paisBase ?? (navigator.language?.startsWith('pt-BR') ? 'BR' : 'outros'),
         products,
         transactions,
       });
@@ -221,8 +224,9 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
       privateUpdate.cnpj = cnpjDigits;
     }
     if (partial.isMei !== undefined) privateUpdate.isMei = partial.isMei;
+if (partial.paisBase !== undefined) privateUpdate.paisBase = partial.paisBase;
 
-    // ── writes ──
+    //writes
     const writes: Promise<void>[] = [];
 
     if (Object.keys(publicUpdate).length > 0) {
