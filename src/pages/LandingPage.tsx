@@ -75,9 +75,9 @@ const translations = {
     },
     // Stats
     stats: [
-      { value: '70+', label: 'Lojistas ativos' },
-      { value: 'R$ 59k+', label: 'Em vendas controladas' },
-      { value: '99.9%', label: 'Uptime garantido' },
+      { value: '40+', label: 'Lojistas ativos' },
+      { value: 'R$ 38k+', label: 'Em vendas controladas' },
+      { value: '99.6%', label: 'Uptime garantido' },
       { value: '4.8★', label: 'Avaliação média' },
     ],
     // Features section
@@ -274,9 +274,9 @@ const translations = {
       ],
     },
     stats: [
-      { value: '20+', label: 'Active retailers' },
-      { value: '$ 10k+', label: 'In tracked sales' },
-      { value: '99.9%', label: 'Guaranteed uptime' },
+      { value: '12+', label: 'Active retailers' },
+      { value: '$ 16k+', label: 'In tracked sales' },
+      { value: '99.6%', label: 'Guaranteed uptime' },
       { value: '4.8★', label: 'Average rating' },
     ],
     featuresSection: {
@@ -467,9 +467,9 @@ const translations = {
       ],
     },
     stats: [
-      { value: '44+', label: 'Comerciantes activos' },
-      { value: '$ 20k+', label: 'En ventas controladas' },
-      { value: '99.9%', label: 'Uptime garantizado' },
+      { value: '14+', label: 'Comerciantes activos' },
+      { value: '$ 21k+', label: 'En ventas controladas' },
+      { value: '99.6%', label: 'Uptime garantizado' },
       { value: '4.8★', label: 'Valoración media' },
     ],
     featuresSection: {
@@ -661,9 +661,9 @@ const translations = {
       ],
     },
     stats: [
-      { value: '27+', label: 'Commerçants actifs' },
-      { value: '€ 16k+', label: 'En ventes suivies' },
-      { value: '99,9 %', label: 'Disponibilité garantie' },
+      { value: '17+', label: 'Commerçants actifs' },
+      { value: '€ 36k+', label: 'En ventes suivies' },
+      { value: '99,6 %', label: 'Disponibilité garantie' },
       { value: '4,8★', label: 'Note moyenne' },
     ],
     featuresSection: {
