@@ -40,14 +40,14 @@ const Offline = () => {
   useEffect(() => {
     if (!user) return;
     try {
-      const raw = localStorage.getItem(queueKey(user.id));
+      const raw = localStorage.getItem(queueKey(user.uid));
       setQueue(raw ? JSON.parse(raw) : []);
     } catch { setQueue([]); }
   }, [user]);
 
   const persist = (next: OfflineSale[]) => {
     setQueue(next);
-    if (user) localStorage.setItem(queueKey(user.id), JSON.stringify(next));
+    if (user) localStorage.setItem(queueKey(user.uid), JSON.stringify(next));
   };
 
   const addSale = (e: React.FormEvent) => {
