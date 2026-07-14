@@ -7,7 +7,7 @@ export const getStripeCheckoutUrl = (email?: string | null) => {
   const isBrazil = navigator.language?.startsWith('pt-BR') ||
     Intl.DateTimeFormat().resolvedOptions().timeZone === 'America/Sao_Paulo';
   const paymentLink = isBrazil
-    ? 'https://buy.stripe.com/00w5kEbOLdj35OmfwpgEg00'
+    ? 'https://buy.stripe.com/9B628sf0X4Mxb8G83XgEg02'
     : 'https://buy.stripe.com/5kQ8wQcSPa6Ra4CfwpgEg01';
   return `${paymentLink}?prefilled_email=${encodeURIComponent(email ?? '')}`;
 };

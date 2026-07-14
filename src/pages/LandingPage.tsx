@@ -198,7 +198,7 @@ const translations = {
       badge: 'ÚNICO PLANO',
       planName: 'Biztrivo Pro',
       planDesc: 'Acesso completo a tudo',
-      price: 'R$ 24,90',
+      price: 'R$ 19,90',
       period: '/mês',
       items: [
         'Caixa Diário',
