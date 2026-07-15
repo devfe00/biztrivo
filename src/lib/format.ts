@@ -1,5 +1,5 @@
 // src/lib/format.ts
-import type { Lang } from '@/i18n';
+import type { Lang } from '@/lib/useLang';
 
 /** Mapeamento idioma → locale BCP-47 + moeda padrão */
 const LOCALE_MAP: Record<Lang, { locale: string; currency: string }> = {
