@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useLang as useGlobalLang } from '@/lib/useLang';
 import { Link } from 'react-router-dom';
 import {
   ShoppingBag,
@@ -810,13 +811,7 @@ const translations = {
   },
 } as const;
 
-function detectLang(): Lang {
-  const lang = navigator.language || '';
-  if (lang.startsWith('pt')) return 'pt';
-  if (lang.startsWith('es')) return 'es';
-  if (lang.startsWith('fr')) return 'fr';
-  return 'en';
-}
+// idioma detectado/persistido globalmente via useGlobalLang (src/lib/useLang.ts)
 
 const featureIcons = [
   <Wallet size={28} />,
@@ -949,7 +944,7 @@ const LangSwitcher: React.FC<{ lang: Lang; setLang: (l: Lang) => void }> = ({ la
 };
 
 const LandingPage: React.FC = () => {
-  const [lang, setLang] = useState<Lang>(detectLang);
+  const { lang, setLang } = useGlobalLang();
   const t = translations[lang];
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
