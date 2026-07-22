@@ -29,6 +29,7 @@ import NotFound from "./pages/NotFound";
 import AuthCallback from "@/pages/AuthCallback";
 import LandingPage from '@/pages/LandingPage';
 import CookieBanner from "@/components/CookieBanner";
+import { I18nProvider } from "@/lib/i18n";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <I18nProvider>
         <AuthProvider>
           <StoreProvider>
             <Routes>
@@ -69,6 +71,7 @@ const App = () => (
             <CookieBanner />
           </StoreProvider>
         </AuthProvider>
+        </I18nProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
