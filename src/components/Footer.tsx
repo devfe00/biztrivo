@@ -1,6 +1,8 @@
 import { Instagram, Linkedin, Mail, FileText, Shield } from 'lucide-react';
+import { useT } from '@/lib/i18n';
 
 const Footer = () => {
+  const t = useT();
   const year = new Date().getFullYear();
 
   return (
@@ -50,7 +52,7 @@ const Footer = () => {
 
         {/* Bottom row */}
         <div className="flex items-center justify-between text-xs text-primary-foreground/60">
-          <p>© {year} Biztrivo<span className="hidden md:inline">. Todos os direitos reservados.</span></p>
+          <p>© {year} Biztrivo<span className="hidden md:inline">. {t('footer.rights')}</span></p>
 
           <div className="flex items-center gap-3 md:gap-4">
             <a
@@ -60,8 +62,7 @@ const Footer = () => {
               className="flex items-center gap-1 md:gap-1.5 hover:text-primary-foreground transition-colors"
             >
               <FileText className="w-3 h-3 md:w-3.5 md:h-3.5" />
-              <span className="hidden md:inline">Termos de Uso</span>
-              <span className="md:hidden">Termos</span>
+              <span>{t('footer.terms')}</span>
             </a>
             <a
               href="https://biztrivo.com/politica-privacidade"
@@ -70,8 +71,7 @@ const Footer = () => {
               className="flex items-center gap-1 md:gap-1.5 hover:text-primary-foreground transition-colors"
             >
               <Shield className="w-3 h-3 md:w-3.5 md:h-3.5" />
-              <span className="hidden md:inline">Política de Privacidade</span>
-              <span className="md:hidden">Privacidade</span>
+              <span>{t('footer.privacy')}</span>
             </a>
           </div>
         </div>
