@@ -7,7 +7,7 @@ import {
   Trash2, Clock, CheckCircle2, Circle, Info, Image as ImageIcon,
   Calendar, BarChart2, Lightbulb, Grid3x3, Hash, UserCircle2,
   Film, PenLine, TrendingUp, ChevronDown, ChevronUp, RefreshCw,
-  Star,
+  Star, Eye, Heart
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { FUNCTIONS, callFunction } from '@/integrations/firebase/firebase';
@@ -642,8 +642,8 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
                   <div key={r.id} className="rounded-lg bg-muted/60 p-3 space-y-1">
                     <p className="text-xs font-medium line-clamp-1">{r.productName}</p>
                     <div className="flex gap-3 text-xs text-muted-foreground">
-                      <span>👁️ {r.reach?.toLocaleString('pt-BR')}</span>
-                      <span>❤️ {r.likes?.toLocaleString('pt-BR')}</span>
+                      <span className="flex items-center gap-1"><Eye className="w-3 h-3" /> {r.reach?.toLocaleString('pt-BR')}</span>
+<span className="flex items-center gap-1"><Heart className="w-3 h-3" /> {r.likes?.toLocaleString('pt-BR')}</span>
                     </div>
                     <p className="text-xs capitalize text-muted-foreground">{r.tone}</p>
                   </div>
@@ -752,8 +752,8 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
                         </div>
                       ) : record.reach !== undefined ? (
                         <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                          <span>👁️ {record.reach.toLocaleString('pt-BR')} alcance</span>
-                          <span>❤️ {record.likes?.toLocaleString('pt-BR')} curtidas</span>
+                          <span className="flex items-center gap-1"><Eye className="w-3 h-3" /> {record.reach.toLocaleString('pt-BR')} alcance</span>
+<span className="flex items-center gap-1"><Heart className="w-3 h-3" /> {record.likes?.toLocaleString('pt-BR')} curtidas</span>
                           <button
                             onClick={() => { setEditingStats(record.id); setStatsInput({ reach: String(record.reach), likes: String(record.likes) }); }}
                             className="text-primary text-xs hover:underline ml-auto"
@@ -917,7 +917,7 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
                   {planoExpanded === item.day && (
                     <div className="px-4 pb-4 pt-0">
                       <div className="rounded-lg bg-muted p-3 text-xs text-muted-foreground leading-relaxed">
-                        💡 <strong>Ideia:</strong> {item.idea}
+                        <span className="flex items-start gap-1.5"><Lightbulb className="w-3 h-3 shrink-0 mt-0.5" /><span><strong>Ideia:</strong> {item.idea}</span></span>
                       </div>
                       <button
                         onClick={() => { setSelectedProductId(config.products.find(p => p.name === item.productName)?.id ?? ''); setTone(item.tone as Tone); setActiveTab('gerar'); }}
@@ -963,9 +963,9 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
             {hashtags && (
               <div className="space-y-3">
                 {[
-                  { key: 'large', label: '🔥 Grandes (+1M)', set: hashtags.large },
-                  { key: 'medium', label: '🎯 Médias (100k–500k)', set: hashtags.medium },
-                  { key: 'niche', label: '💎 Nichadas (-50k)', set: hashtags.niche },
+                  { key: 'large', label: 'Grandes (+1M)', set: hashtags.large },
+{ key: 'medium', label: 'Médias (100k–500k)', set: hashtags.medium },
+{ key: 'niche', label: 'Nichadas (-50k)', set: hashtags.niche },
                 ].map(({ key, label, set }) => (
                   <div key={key} className="rounded-lg bg-muted p-3 space-y-2">
                     <div className="flex items-center justify-between">
@@ -980,7 +980,7 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
                     <p className="text-xs text-primary leading-relaxed">{set.map(h => `#${h}`).join(' ')}</p>
                   </div>
                 ))}
-                <p className="text-xs text-muted-foreground">💡 Combine hashtags dos 3 sets em cada post para equilibrar alcance e relevância.</p>
+                <p className="text-xs text-muted-foreground flex items-start gap-1.5"><Lightbulb className="w-3 h-3 shrink-0 mt-0.5" /> Combine hashtags dos 3 sets em cada post para equilibrar alcance e relevância.</p>
               </div>
             )}
           </Card>

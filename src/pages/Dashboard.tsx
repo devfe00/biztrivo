@@ -1,6 +1,6 @@
 import { useStore } from '@/contexts/StoreContext';
 import { Card } from '@/components/ui/card';
-import { TrendingUp, TrendingDown, Store, ExternalLink, Wallet, ShoppingBag, AlertTriangle, Target } from 'lucide-react';
+import { TrendingUp, TrendingDown, Store, ExternalLink, Wallet, ShoppingBag, AlertTriangle, Trophy, Target } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useMemo, useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
@@ -71,12 +71,12 @@ const Dashboard = () => {
           {personalPercent > 30 ? (
             <div className="flex items-center gap-3">
               <AlertTriangle className="w-5 h-5 text-warning shrink-0" />
-              <p className="text-sm font-medium text-warning">⚠️ Atenção: Suas retiradas pessoais estão altas ({personalPercent.toFixed(0)}% das entradas).</p>
+              <p className="text-sm font-medium text-warning flex items-center gap-1.5"><AlertTriangle className="w-3.5 h-3.5" /> Atenção: Suas retiradas pessoais estão altas ({personalPercent.toFixed(0)}% das entradas).</p>
             </div>
           ) : todaySaldo >= 0 ? (
-            <p className="text-sm font-medium text-secondary">💰 Ótimo trabalho! Saldo positivo de {formatCurrency(todaySaldo)} hoje.</p>
+            <p className="text-sm font-medium text-secondary flex items-center gap-1.5"><TrendingUp className="w-3.5 h-3.5" /> Ótimo trabalho! Saldo positivo de {formatCurrency(todaySaldo)} hoje.</p>
           ) : (
-            <p className="text-sm font-medium text-destructive">📉 Atenção: Suas saídas superaram as entradas hoje.</p>
+            <p className="text-sm font-medium text-destructive flex items-center gap-1.5"><TrendingDown className="w-3.5 h-3.5" /> Atenção: Suas saídas superaram as entradas hoje.</p>
           )}
         </Card>
       )}
@@ -100,7 +100,7 @@ const Dashboard = () => {
               <div className="text-center">
                 <Target className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
                 <p className="text-xs text-muted-foreground">Defina uma meta para hoje!</p>
-                <button onClick={() => setIsEditingGoal(true)} className="mt-2 text-xs px-3 py-1 rounded-lg bg-primary text-primary-foreground hover:opacity-90">🎯 Definir Meta</button>
+                <button onClick={() => setIsEditingGoal(true)} className="mt-2 text-xs px-3 py-1 rounded-lg bg-primary text-primary-foreground hover:opacity-90"><Target className="w-3.5 h-3.5" /> Definir Meta</button>
               </div>
             ) : (
               <>
@@ -120,7 +120,7 @@ const Dashboard = () => {
                 <p className="text-xs text-muted-foreground mt-2">Meta: {formatCurrency(dailyGoal)}</p>
                 <p className="text-sm font-semibold text-secondary">{formatCurrency(todayEntradas)}</p>
                 {goalProgress >= 100 ? (
-                  <p className="text-xs text-secondary mt-1 font-medium">🏆 Meta batida!</p>
+                  <p className="text-xs text-secondary mt-1 font-medium flex items-center gap-1"><Trophy className="w-3 h-3" /> Meta batida!</p>
                 ) : (
                   <p className="text-xs text-muted-foreground mt-1">Faltam {formatCurrency(dailyGoal - todayEntradas)}</p>
                 )}

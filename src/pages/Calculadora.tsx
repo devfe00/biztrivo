@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Calculator, TrendingUp, DollarSign, Percent, Package, AlertCircle } from 'lucide-react';
+import { Calculator, TrendingUp, DollarSign, Percent, Package, AlertCircle, AlertTriangle, Lightbulb } from 'lucide-react';
 
 const Calculadora = () => {
   const [custo, setCusto] = useState('');
@@ -112,13 +112,13 @@ const Calculadora = () => {
             {hasErrors ? 'Corrija os campos acima' : 'Preencha os campos acima'}
           </p>
           <p className="text-sm text-muted-foreground mt-1">
-            {hasErrors ? 'Há valores inválidos que impedem o cálculo ⚠️' : 'O preço ideal aparecerá aqui automaticamente ✨'}
+            {hasErrors ? <span className="flex items-center gap-1.5"><AlertTriangle className="w-3.5 h-3.5" /> Há valores inválidos que impedem o cálculo</span> : 'O preço ideal aparecerá aqui automaticamente'}
           </p>
         </Card>
       )}
 
       <Card className="p-5 border-none shadow-md bg-muted/50">
-        <h3 className="font-semibold font-heading text-sm mb-2">💡 Dica de Precificação</h3>
+        <h3 className="font-semibold font-heading text-sm mb-2 flex items-center gap-1.5"><Lightbulb className="w-3.5 h-3.5 text-primary" /> Dica de Precificação</h3>
         <p className="text-sm text-muted-foreground">
           Margens entre <strong>40% e 60%</strong> são ideais para revenda. Abaixo de 30% pode não cobrir seus custos operacionais.
           Lembre-se de incluir embalagem, frete e tempo dedicado no custo!

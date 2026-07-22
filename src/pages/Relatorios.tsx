@@ -3,7 +3,7 @@ import { useStore } from '@/contexts/StoreContext';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
-import { TrendingUp, Wallet, Download, ArrowUpRight, ArrowDownRight, AlertTriangle } from 'lucide-react';
+import { TrendingUp, Wallet, Download, ArrowUpRight, ArrowDownRight, AlertTriangle, CheckCircle2 } from 'lucide-react';
 
 const CATEGORY_COLORS: Record<string, string> = {
   'Reposição': 'hsl(217, 91%, 60%)',
@@ -98,7 +98,7 @@ const Relatorios = () => {
       const color = t.type === 'entrada' ? '#22c55e' : t.isPersonal ? '#f59e0b' : '#ef4444';
       rows += `<tr><td style="padding:8px;border-bottom:1px solid #e5e7eb;">${new Date(t.date).toLocaleDateString('pt-BR')}</td><td style="padding:8px;border-bottom:1px solid #e5e7eb;color:${color};font-weight:600;">${t.type === 'entrada' ? 'Entrada' : 'Saída'}</td><td style="padding:8px;border-bottom:1px solid #e5e7eb;">${t.category}</td><td style="padding:8px;border-bottom:1px solid #e5e7eb;">${t.description}</td><td style="padding:8px;border-bottom:1px solid #e5e7eb;text-align:right;color:${color};">${formatCurrency(t.value)}</td></tr>`;
     });
-    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Relatório</title><style>body{font-family:system-ui;padding:40px;color:#1a1a2e;}table{width:100%;border-collapse:collapse;}th{text-align:left;padding:10px 8px;border-bottom:2px solid #3b82f6;color:#64748b;font-size:13px;}.footer{margin-top:40px;text-align:center;color:#94a3b8;font-size:12px;}</style></head><body><h1>📊 Relatório — ${periodLabel}</h1><p>Entradas: ${formatCurrency(totalE)} | Saídas: ${formatCurrency(totalS)} | Saldo: ${formatCurrency(totalE - totalS)} | Margem: ${margem.toFixed(1)}%</p><table><thead><tr><th>Data</th><th>Tipo</th><th>Categoria</th><th>Descrição</th><th style="text-align:right;">Valor</th></tr></thead><tbody>${rows}</tbody></table><div class="footer">Biztrivo</div></body></html>`;
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Relatório</title><style>body{font-family:system-ui;padding:40px;color:#1a1a2e;}table{width:100%;border-collapse:collapse;}th{text-align:left;padding:10px 8px;border-bottom:2px solid #3b82f6;color:#64748b;font-size:13px;}.footer{margin-top:40px;text-align:center;color:#94a3b8;font-size:12px;}</style></head><body><h1>Relatório — ${periodLabel}</h1><p>Entradas: ${formatCurrency(totalE)} | Saídas: ${formatCurrency(totalS)} | Saldo: ${formatCurrency(totalE - totalS)} | Margem: ${margem.toFixed(1)}%</p><table><thead><tr><th>Data</th><th>Tipo</th><th>Categoria</th><th>Descrição</th><th style="text-align:right;">Valor</th></tr></thead><tbody>${rows}</tbody></table><div class="footer">Biztrivo</div></body></html>`;
     const w = window.open('', '_blank');
     if (w) { w.document.write(html); w.document.close(); w.onload = () => w.print(); }
   };
@@ -213,7 +213,7 @@ const Relatorios = () => {
             </div>
           )}
           {personalPercent <= 30 && personalTotal > 0 && (
-            <p className="text-sm text-muted-foreground">✅ Retiradas em {personalPercent.toFixed(0)}% — saudável.</p>
+            <p className="text-sm text-muted-foreground flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-green-500" /> Retiradas em {personalPercent.toFixed(0)}% — saudável.</p>
           )}
         </Card>
       </div>

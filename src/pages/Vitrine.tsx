@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, Trash2, ExternalLink, Copy, Check, Image as ImageIcon, AlertCircle, Download, Rocket, Share2, Pencil, Instagram, FileText } from 'lucide-react';
+import { Plus, Trash2, ExternalLink, Copy, Check, Image as ImageIcon, AlertCircle, Download, Rocket, Share2, Pencil, Instagram, FileText, CheckCircle2, Camera } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { QRCodeCanvas } from 'qrcode.react';
@@ -245,7 +245,7 @@ const Vitrine = () => {
               <div>
                 <Label>Foto do Produto</Label>
                 <label className="mt-1 flex items-center justify-center h-10 px-4 rounded-md border border-input bg-background text-sm cursor-pointer hover:bg-muted transition-colors">
-                  {photo ? '✅ Foto selecionada' : '📷 Selecionar foto'}
+                  {photo ? <><CheckCircle2 className="w-3.5 h-3.5" /> Foto selecionada</> : <><Camera className="w-3.5 h-3.5" /> Selecionar foto</>}
                   <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
                 </label>
               </div>
@@ -296,8 +296,10 @@ const Vitrine = () => {
                 {p.photo ? (
                   <div className="aspect-square bg-muted"><img src={p.photo} alt={p.name} className="w-full h-full object-cover" /></div>
                 ) : (
-                  <div className="aspect-square bg-muted flex items-center justify-center"><ImageIcon className="w-12 h-12 text-muted-foreground/50" /></div>
-                )}
+  <div className="aspect-square bg-black">
+    <img src="/produtcs.png" alt="Produto sem foto" className="w-full h-full object-cover" />
+  </div>
+)}
                 <div className="p-4">
                   <h3 className="font-semibold text-sm">{p.name}</h3>
                   {p.description && <p className="text-xs text-muted-foreground mt-1">{p.description}</p>}
@@ -354,7 +356,7 @@ const Vitrine = () => {
               <div>
                 <Label>Foto</Label>
                 <label className="mt-1 flex items-center justify-center h-10 px-4 rounded-md border border-input bg-background text-sm cursor-pointer hover:bg-muted transition-colors">
-                  {editingProduct.photo ? '✅ Foto selecionada' : '📷 Selecionar foto'}
+                  {editingProduct.photo ? <><CheckCircle2 className="w-3.5 h-3.5" /> Foto selecionada</> : <><Camera className="w-3.5 h-3.5" /> Selecionar foto</>}
                   <input type="file" accept="image/*" className="hidden" onChange={handleEditPhotoUpload} />
                 </label>
                 {editingProduct.photo && (

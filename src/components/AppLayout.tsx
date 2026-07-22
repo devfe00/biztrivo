@@ -27,8 +27,10 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+const [profileOpen, setProfileOpen] = useState(false);
+const [langOpen, setLangOpen] = useState(false);
+const dropdownRef = useRef<HTMLDivElement>(null);
+const langDropdownRef = useRef<HTMLDivElement>(null);
 
   const { config } = useStore();
   const { signOut } = useAuth();
@@ -42,6 +44,9 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setProfileOpen(false);
+      }
+      if (langDropdownRef.current && !langDropdownRef.current.contains(event.target as Node)) {
+        setLangOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -162,20 +167,46 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
         </div>
       )}
 
-      {/* ── Área principal ── */}
+      {/*area principal */}
       <main className="flex-1 flex flex-col overflow-auto">
         {/* Header desktop */}
         <header className="hidden md:flex items-center justify-end px-8 py-4 border-b border-border bg-card gap-2">
-          <select
-            value={lang}
-            onChange={(e) => setLang(e.target.value as any)}
-            className="text-sm bg-transparent border border-border rounded-lg px-2 py-1 text-foreground cursor-pointer"
-            aria-label="Language"
-          >
-            {LANGUAGES.map(l => (
-              <option key={l.code} value={l.code}>{l.flag} {l.label}</option>
-            ))}
-          </select>
+          {/* Lang dropdown */}
+          <div className="relative" ref={langDropdownRef}>
+            <button
+              onClick={() => setLangOpen(!langOpen)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card hover:bg-muted transition-all text-sm font-medium text-foreground shadow-sm"
+            >
+              <span className="text-base leading-none">
+                {LANGUAGES.find(l => l.code === lang)?.flag}
+              </span>
+              <span className="text-xs">
+                {LANGUAGES.find(l => l.code === lang)?.label}
+              </span>
+              <ChevronDown size={12} className={cn('text-muted-foreground transition-transform', langOpen && 'rotate-180')} />
+            </button>
+
+            {langOpen && (
+              <div className="absolute right-0 mt-2 w-36 bg-card border border-border rounded-lg shadow-lg py-1 z-50 animate-fade-in">
+                {LANGUAGES.map(l => (
+                  <button
+                    key={l.code}
+                    onClick={() => { setLang(l.code as any); setLangOpen(false); }}
+                    className={cn(
+                      'w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted transition-colors',
+                      lang === l.code ? 'text-foreground font-semibold' : 'text-muted-foreground'
+                    )}
+                  >
+                    <span className="text-base">{l.flag}</span>
+                    <span>{l.label}</span>
+                    {lang === l.code && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary" />}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Profile dropdown */}
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setProfileOpen(!profileOpen)}

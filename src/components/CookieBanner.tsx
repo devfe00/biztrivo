@@ -65,8 +65,8 @@ export default function CookieBanner() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-gray-900 dark:text-white">
-              🍪
-            </p>
+  {t('cookies.title')}
+</p>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 leading-relaxed">
               {t('cookies.message')}{' '}
               <Link to="/politica-privacidade" className="underline">{t('cookies.policy')}</Link>.

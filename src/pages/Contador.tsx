@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useStore } from '@/contexts/StoreContext';
 import { Card } from '@/components/ui/card';
+import React from 'react'
 import {
   Calculator,
   TrendingUp,
@@ -10,6 +11,10 @@ import {
   Info,
   Download,
   Target,
+  Lightbulb,
+  Store,
+  Wrench,
+  GraduationCap,
   Activity,
   FileSpreadsheet,
 } from 'lucide-react';
@@ -155,7 +160,7 @@ const I18N: Record<Pais, {
     tabs: ['DRE', 'Saúde', 'Impostos'],
     dreTitle: (m, a) => `DRE — ${m}/${a}`,
     trendTitle: 'Tendência de receita — 6 meses',
-    dreNote: '💡 CMV = Reposição de estoque. Despesas operacionais = Embalagem, Frete, Outros. Pró-labore = lançamentos marcados como Pessoal. O DAS MEI é estimado pelo valor fixo, confirme no gov.br/mei.',
+    dreNote: 'CMV = Reposição de estoque. Despesas operacionais = Embalagem, Frete, Outros. Pró-labore = lançamentos marcados como Pessoal. O DAS MEI é estimado pelo valor fixo, confirme no gov.br/mei.',
     scoreNivel: ['Saudável', 'Atenção', 'Crítico'],
     scoreMsg: [
       'Seu negócio está financeiramente equilibrado. Continue monitorando.',
@@ -178,7 +183,7 @@ const I18N: Record<Pais, {
     tabs: ['Cuenta de Resultados', 'Salud', 'Impuestos'],
     dreTitle: (m, a) => `Cuenta de Resultados — ${m}/${a}`,
     trendTitle: 'Tendencia de ingresos — 6 meses',
-    dreNote: '💡 Coste de ventas = categoría Reposición. Gastos operativos = Embalaje, Flete, Otros. La cuota SS y el IRPF son estimaciones — consulta a tu gestor para tu tramo exacto.',
+    dreNote: 'Coste de ventas = categoría Reposición. Gastos operativos = Embalaje, Flete, Otros. La cuota SS y el IRPF son estimaciones — consulta a tu gestor para tu tramo exacto.',
     scoreNivel: ['Saludable', 'Atención', 'Crítico'],
     scoreMsg: [
       'Tu negocio está financieramente equilibrado. Sigue monitorizando.',
@@ -201,7 +206,7 @@ const I18N: Record<Pais, {
     tabs: ['Compte de résultat', 'Santé', 'Impôts'],
     dreTitle: (m, a) => `Compte de résultat — ${m}/${a}`,
     trendTitle: 'Tendance du chiffre d\'affaires — 6 mois',
-    dreNote: '💡 Coût des marchandises = catégorie Réapprovisionnement. Les cotisations sont calculées sur votre CA brut. La CFE est une estimation annuelle ÷ 12. Vérifiez sur autoentrepreneur.urssaf.fr.',
+    dreNote: 'Coût des marchandises = catégorie Réapprovisionnement. Les cotisations sont calculées sur votre CA brut. La CFE est une estimation annuelle ÷ 12. Vérifiez sur autoentrepreneur.urssaf.fr.',
     scoreNivel: ['En bonne santé', 'Attention', 'Critique'],
     scoreMsg: [
       'Votre activité est financièrement équilibrée. Continuez à surveiller.',
@@ -224,7 +229,7 @@ const I18N: Record<Pais, {
     tabs: ['P&L Statement', 'Health', 'Taxes'],
     dreTitle: (m, a) => `P&L Statement — ${m}/${a}`,
     trendTitle: 'Revenue trend — last 6 months',
-    dreNote: '💡 COGS = Restock category. Operating expenses = Packaging, Shipping, Others. SE Tax is 15.3% on 92.35% of net earnings. Federal Tax estimated using 2024 brackets. Consult a CPA for your actual liability.',
+    dreNote: 'COGS = Restock category. Operating expenses = Packaging, Shipping, Others. SE Tax is 15.3% on 92.35% of net earnings. Federal Tax estimated using 2024 brackets. Consult a CPA for your actual liability.',
     scoreNivel: ['Healthy', 'Warning', 'Critical'],
     scoreMsg: [
       'Your business is financially balanced. Keep monitoring.',
@@ -691,7 +696,7 @@ const Contador = () => {
 
               {/*linha de imposto — varia por país */}
               {pais === 'BR' && (
-                <DRERow label="(−) DAS MEI (estimado)" valor={BR_DAS_MEI_MENSAL} pctReceita={dre.receita > 0 ? (BR_DAS_MEI_MENSAL / dre.receita) * 100 : 0} cor="text-muted-foreground" sub="Valor fixo 2026 — confirme em gov.br/mei" pais={pais} />
+                <DRERow label="(−) DAS MEI (estimado)" valor={BR_DAS_MEI_MENSAL} pctReceita={dre.receita > 0 ? (BR_DAS_MEI_MENSAL / dre.receita) * 100 : 0} cor="text-muted-foreground" sub="Valor fixo 2026, confirme em gov.br/mei" pais={pais} />
               )}
               {pais === 'ES' && (<>
                 <DRERow label="(−) Cuota S. Social (est.)" valor={impostosMensais.es_cuotaSS ?? 0} pctReceita={dre.receita > 0 ? ((impostosMensais.es_cuotaSS ?? 0) / dre.receita) * 100 : 0} cor="text-destructive" sub="Estimativa pelo tramo de rendimento — ajuste com seu gestor" pais={pais} />
@@ -892,7 +897,11 @@ const Contador = () => {
                   <div className="mt-3">
                     <div className="flex justify-between text-xs text-muted-foreground mb-1">
                       <span>Receita atual</span>
-                      <span>{dre.receita >= impostoBR.pontoEquilibrio ? '✅ Acima' : '⚠️ Abaixo'}</span>
+                      <span className="flex items-center gap-1">
+  {dre.receita >= impostoBR.pontoEquilibrio
+    ? <><CheckCircle2 className="w-3.5 h-3.5 text-secondary" /> Acima</>
+    : <><AlertTriangle className="w-3.5 h-3.5 text-warning" /> Abaixo</>}
+</span>
                     </div>
                     <div className="h-2 bg-muted rounded-full overflow-hidden">
                       <div className={`h-full rounded-full ${dre.receita >= impostoBR.pontoEquilibrio ? 'bg-secondary' : 'bg-destructive'}`}
@@ -905,7 +914,9 @@ const Contador = () => {
             </div>
 
             <Card className="p-5 border-none shadow-md bg-muted/50">
-              <h3 className="font-semibold font-heading text-sm mb-2">📋 Checklist fiscal mensal</h3>
+              <h3 className="font-semibold font-heading text-sm mb-2 flex items-center gap-1.5">
+  <CheckCircle2 className="w-3.5 h-3.5 text-primary" /> Checklist fiscal mensal
+</h3>
               <ul className="text-sm text-muted-foreground space-y-2">
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-secondary shrink-0 mt-0.5" /> Pagar o DAS MEI até dia 20 do mês seguinte em gov.br/mei</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-secondary shrink-0 mt-0.5" /> Guardar notas fiscais e comprovantes de compra</li>
@@ -1006,12 +1017,21 @@ const Contador = () => {
             <Card className="p-5 border-none shadow-md">
               <h3 className="font-semibold font-heading mb-3">Mon activité principale</h3>
               <div className="flex gap-2 flex-wrap mb-3">
-                {([['comercio','🛍️ Commerce'],['servicos','🛠️ Services BIC'],['liberal','🎓 Libéral BNC']] as [FrAtividade, string][]).map(([val, label]) => (
-                  <button key={val} onClick={() => handleFrAtiv(val)}
-                    className={`px-3 py-1.5 rounded-lg text-sm transition-all ${frAtividade === val ? 'gradient-primary text-primary-foreground shadow-glow' : 'border border-border text-muted-foreground hover:bg-muted'}`}>
-                    {label}
-                  </button>
-                ))}
+                {(['comercio', 'servicos', 'liberal'] as FrAtividade[]).map((val) => {
+  const labels: Record<FrAtividade, string> = { comercio: 'Commerce', servicos: 'Services BIC', liberal: 'Libéral BNC' };
+  const icons: Record<FrAtividade, JSX.Element> = {
+    comercio: <Store className="w-3.5 h-3.5" />,
+    servicos: <Wrench className="w-3.5 h-3.5" />,
+    liberal:  <GraduationCap className="w-3.5 h-3.5" />,
+  };
+  return (
+    <button key={val} onClick={() => handleFrAtiv(val)}
+      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-all ${frAtividade === val ? 'gradient-primary text-primary-foreground shadow-glow' : 'border border-border text-muted-foreground hover:bg-muted'}`}>
+      {icons[val]}
+      {labels[val]}
+    </button>
+  );
+})}
               </div>
               <p className="text-sm text-muted-foreground">
                 Taux de cotisations : <strong className="text-foreground">
@@ -1162,8 +1182,8 @@ const Contador = () => {
                       </div> </div>
                   ); })}
               </div>
-              <p className="text-sm text-muted-foreground mt-3">
-                💡 Save <strong className="text-foreground">{fmtMoeda(((impostosMensais.seTaxAnual ?? 0) + (impostosMensais.fedTaxAnual ?? 0)) / 12, 'US')}/month</strong> to cover quarterly payments.
+              <p className="text-sm text-muted-foreground mt-3 flex items-start gap-1.5">
+  <Lightbulb className="w-3.5 h-3.5 shrink-0 mt-0.5 text-primary" /> Save <strong className="text-foreground">{fmtMoeda(((impostosMensais.seTaxAnual ?? 0) + (impostosMensais.fedTaxAnual ?? 0)) / 12, 'US')}/month</strong> to cover quarterly payments.
               </p>
             </Card>
             <Card className="p-6 border-none shadow-md">
@@ -1171,9 +1191,11 @@ const Contador = () => {
                 <FileSpreadsheet className="w-5 h-5 text-primary" /> Common Deductions — Schedule C
               </h2>
               <div className="grid grid-cols-2 gap-2">
-                {['📦 Cost of goods sold','🏠 Home office (proportional)','🚗 Business mileage ($.67/mi)','📱 Phone & internet (biz %)','💻 Equipment & software','🏥 Health insurance premiums','✈️ Business travel','📚 Education & training','📢 Advertising & marketing','🔧 Tools & supplies'].map(d => (
-                  <div key={d} className="text-xs p-2 rounded-lg bg-muted/40">{d}</div>
-                ))}
+                {['Cost of goods sold','Home office (proportional)','Business mileage ($.67/mi)','Phone & internet (biz %)','Equipment & software','Health insurance premiums','Business travel','Education & training','Advertising & marketing','Tools & supplies'].map(d => (
+  <div key={d} className="text-xs p-2 rounded-lg bg-muted/40 flex items-center gap-1.5">
+    <FileSpreadsheet className="w-3 h-3 text-muted-foreground shrink-0" />{d}
+  </div>
+))}
               </div>
               <p className="text-xs text-muted-foreground mt-3">Keep receipts for every deduction. Use IRS Free File or consult a CPA.</p>
             </Card>

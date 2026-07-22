@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Lock, LogOut, Camera, Save, Eye, EyeOff, AlertCircle, CheckCircle, ArrowLeft, CreditCard, Tag } from 'lucide-react';
+import { User, Lock, LogOut, Camera, Save, Eye, EyeOff, AlertCircle, CheckCircle, ArrowLeft, CheckCircle2, CreditCard, Globe, Tag } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useStore } from '@/contexts/StoreContext';
 import { auth, db, FUNCTIONS, callFunction } from '@/integrations/firebase/firebase';
@@ -171,7 +171,7 @@ const Configuracoes: React.FC = () => {
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
-          <button onClick={() => navigate('/')} className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-4 transition-colors">
+          <button onClick={() => navigate('/dashboard')} className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-4 transition-colors">
             <ArrowLeft size={20} /><span>Voltar ao Dashboard</span>
           </button>
           <h1 className="text-3xl md:text-4xl font-bold text-foreground">Configurações</h1>
@@ -231,14 +231,29 @@ const Configuracoes: React.FC = () => {
 
                 <div>
   <label className="block text-sm font-medium text-foreground mb-2">País de operação</label>
-  <select
-    value={config.paisBase}
-    onChange={e => updateConfig({ paisBase: e.target.value as 'BR' | 'outros' })}
-    className="w-full px-4 py-3 border border-input rounded-lg bg-background text-foreground"
-  >
-    <option value="BR">🇧🇷 Brasil</option>
-    <option value="outros">🌍 Outro país</option>
-  </select>
+  <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+  {([
+    { value: 'BR',     label: 'Brasil',  icon: '🇧🇷' },
+    { value: 'ES',     label: 'España',  icon: '🇪🇸' },
+    { value: 'FR',     label: 'France',  icon: '🇫🇷' },
+    { value: 'US',     label: 'USA',     icon: '🇺🇸' },
+    { value: 'outros', label: 'Outros',  icon: '🌍' },
+  ] as { value: string; label: string; icon: string }[]).map(({ value, label, icon }) => (
+    <button
+      key={value}
+      type="button"
+      onClick={() => updateConfig({ paisBase: value as any })}
+      className={`flex flex-col items-center gap-1.5 px-3 py-2.5 rounded-lg border-2 transition-all text-xs font-medium ${
+        config.paisBase === value
+          ? 'border-primary bg-primary/5 text-foreground'
+          : 'border-border bg-background text-muted-foreground hover:bg-muted'
+      }`}
+    >
+      <span className="text-xl">{icon}</span>
+      <span>{label}</span>
+    </button>
+  ))}
+</div>
   <p className="text-xs text-muted-foreground mt-1">
     Define quais módulos fiscais aparecem no menu (ex: MEI é exclusivo do Brasil)
   </p>
@@ -341,12 +356,12 @@ const Configuracoes: React.FC = () => {
                       <Tag size={22} className="text-green-500 flex-shrink-0 mt-0.5" />
                       <div>
                         <h4 className="font-semibold text-foreground">Cupom Ajudaê disponível</h4>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Identificamos que você é assinante <strong className="capitalize">{ajudaeStatus.plan}</strong> da Ajudaê.
-                          {ajudaeStatus.redeemed
-                            ? ' Cupom já aplicado nesta conta. ✅'
-                            : ` Aplique seu desconto recorrente de ${ajudaeStatus.plan === 'premium' ? '30%' : '15%'}.`}
-                        </p>
+                       <p className="text-sm text-muted-foreground mt-1">
+  Identificamos que você é assinante <strong className="capitalize">{ajudaeStatus.plan}</strong> da Ajudaê.
+  {ajudaeStatus.redeemed
+    ? <span className="inline-flex items-center gap-1 ml-1"><CheckCircle2 className="w-3.5 h-3.5 text-green-500 inline" /> Cupom já aplicado nesta conta.</span>
+    : ` Aplique seu desconto recorrente de ${ajudaeStatus.plan === 'premium' ? '30%' : '15%'}.`}
+</p>
                       </div>
                     </div>
                     {!ajudaeStatus.redeemed && (
