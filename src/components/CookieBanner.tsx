@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Cookie, X, Check, ChevronDown, ChevronUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useT } from '@/lib/i18n';
 
 const STORAGE_KEY = 'biztrivo_cookie_consent';
 
@@ -18,6 +19,7 @@ function updateGtagConsent(granted: boolean) {
 }
 
 export default function CookieBanner() {
+  const t = useT();
   const [state, setState] = useState<ConsentState>('pending');
   const [expanded, setExpanded] = useState(false);
   const [visible, setVisible] = useState(false);
@@ -54,7 +56,7 @@ export default function CookieBanner() {
     <div
       className="fixed bottom-0 left-0 right-0 z-50 p-3 sm:p-4"
       role="dialog"
-      aria-label="Aviso de cookies"
+      aria-label={t('cookies.accept')}
     >
       <div className="max-w-2xl mx-auto bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl overflow-hidden">
         <div className="flex items-start gap-3 p-4">
@@ -63,37 +65,14 @@ export default function CookieBanner() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-gray-900 dark:text-white">
-              Usamos cookies
+              🍪
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 leading-relaxed">
-              Para melhorar sua experiência e exibir conteúdo relevante, conforme a{' '}
-              <strong>LGPD</strong>. Você pode aceitar ou recusar.
+              {t('cookies.message')}{' '}
+              <Link to="/politica-privacidade" className="underline">{t('cookies.policy')}</Link>.
             </p>
           </div>
         </div>
-
-        <button
-          onClick={() => setExpanded(!expanded)}
-          className="w-full flex items-center justify-between px-4 pb-2 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
-        >
-          <span>Ver detalhes</span>
-          {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-        </button>
-
-        {expanded && (
-          <div className="px-4 pb-3 text-xs text-gray-500 dark:text-gray-400 space-y-1.5 border-t border-gray-100 dark:border-gray-800 pt-3">
-            <p><strong className="text-gray-700 dark:text-gray-300">Essenciais:</strong> Sempre ativos. Necessários para o funcionamento da plataforma (login, sessão, preferências).</p>
-            <p><strong className="text-gray-700 dark:text-gray-300">Analíticos:</strong> Nos ajudam a entender como você usa o Biztrivo (Google Analytics).</p>
-            <p><strong className="text-gray-700 dark:text-gray-300">Publicidade:</strong> Permitem exibir anúncios relevantes (Google Ads).</p>
-            <p className="pt-1">
-              Saiba mais na nossa{' '}
-              <Link to="/politica-privacidade" className="text-blue-600 dark:text-blue-400 underline">
-                Política de Privacidade
-              </Link>
-              .
-            </p>
-          </div>
-        )}
 
         <div className="flex gap-2 px-4 pb-4 pt-1">
           <button
@@ -101,14 +80,14 @@ export default function CookieBanner() {
             className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-xs font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
           >
             <X size={13} />
-            Recusar
+            {t('cookies.decline')}
           </button>
           <button
             onClick={accept}
             className="flex-[2] flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-xs font-semibold text-white transition-colors"
           >
             <Check size={13} />
-            Aceitar todos
+            {t('cookies.accept')}
           </button>
         </div>
       </div>
