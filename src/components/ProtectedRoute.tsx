@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { getCurrentSubscription, hasActiveSubscription, redirectToCheckout } from '@/lib/billing';
+import { useT } from '@/lib/i18n';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const t = useT();
   const [checkingSubscription, setCheckingSubscription] = useState(true);
   const [hasSubscription, setHasSubscription] = useState(false);
 
@@ -33,7 +35,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
           <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-muted-foreground text-sm">Carregando...</p>
+          <p className="text-muted-foreground text-sm">{t('common.loading')}</p>
         </div>
       </div>
     );
