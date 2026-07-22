@@ -3,75 +3,633 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Guia do Modo Contador</title>
+<title>Guia do Modo Contador — Biztrivo Academy</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Inter',sans-serif;background:#f8fafc;color:#1e293b;line-height:1.7}
-.page{max-width:750px;margin:0 auto;background:#fff;min-height:100vh;padding:60px 50px;page-break-after:always}
-.cover{background:linear-gradient(135deg,#10b981 0%,#059669 50%,#047857 100%);color:#fff;display:flex;flex-direction:column;justify-content:center;min-height:100vh;padding:60px 50px}
-.cover .tag{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);padding:6px 16px;border-radius:20px;font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:30px;align-self:flex-start}
-.cover h1{font-size:46px;font-weight:800;line-height:1.15;margin-bottom:20px;max-width:560px}
-.cover p{font-size:18px;opacity:.85;max-width:480px;line-height:1.6;margin-bottom:40px}
-h2{font-size:26px;font-weight:800;color:#047857;margin:40px 0 12px;padding-bottom:8px;border-bottom:3px solid #d1fae5}
-h2:first-of-type{margin-top:0}
-h3{font-size:17px;font-weight:700;color:#1e293b;margin:28px 0 8px}
-p{font-size:15px;color:#374151;margin-bottom:14px}
-ul,ol{margin:14px 0 14px 22px}
-li{font-size:15px;color:#374151;margin-bottom:8px}
-.highlight{background:#ecfdf5;border-left:4px solid #10b981;padding:16px 20px;border-radius:0 10px 10px 0;margin:20px 0}
-.highlight strong{color:#047857}
-.warning{background:#fef3c7;border-left:4px solid #f59e0b;padding:16px 20px;border-radius:0 10px 10px 0;margin:20px 0;font-size:14px;color:#92400e}
-.warning strong{color:#d97706}
-.box{background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:12px;padding:20px 24px;margin:20px 0}
-.box .label{font-size:11px;font-weight:700;letter-spacing:1.5px;color:#059669;text-transform:uppercase;margin-bottom:10px}
-.formula{background:#1e293b;color:#10b981;padding:16px 24px;border-radius:10px;font-family:monospace;font-size:15px;font-weight:700;margin:20px 0;text-align:center}
-.footer{margin-top:60px;padding-top:20px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;font-size:12px;color:#94a3b8}
-.footer .brand{font-weight:700;color:#10b981}
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+  :root {
+    --green:    #10b981;
+    --teal:     #0d9488;
+    --blue:     #0ea5e9;
+    --dark:     #0f172a;
+    --text:     #334155;
+    --muted:    #64748b;
+    --border:   #e2e8f0;
+    --bg:       #f8fafc;
+    --grad:     linear-gradient(135deg, #10b981 0%, #0d9488 45%, #0ea5e9 100%);
+    --grad-sub: linear-gradient(135deg, #f0fdf9 0%, #f0fdfa 50%, #f0f9ff 100%);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #fff;
+    color: var(--text);
+    line-height: 1.7;
+  }
+
+  .page {
+    max-width: 100%;
+    margin: 0;
+    background: #fff;
+    min-height: 100vh;
+    padding: 64px 8%;
+    page-break-after: always;
+  }
+
+  /* ── COVER ── */
+  .cover {
+    background: var(--grad);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: 100vh;
+    padding: 64px 8%;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover::before {
+    content: '';
+    position: absolute;
+    top: -100px; right: -80px;
+    width: 420px; height: 420px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    pointer-events: none;
+  }
+  .cover::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; left: 60px;
+    width: 260px; height: 260px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+    pointer-events: none;
+  }
+  .cover-tag {
+    display: inline-block;
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.32);
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+    width: fit-content;
+  }
+  .cover h1 {
+    font-size: 50px;
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -0.5px;
+    margin-bottom: 20px;
+    max-width: 620px;
+  }
+  .cover-sub {
+    font-size: 17px;
+    opacity: 0.85;
+    max-width: 500px;
+    line-height: 1.65;
+    margin-bottom: 44px;
+  }
+  .cover-pills {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 72px;
+  }
+  .cover-pills span {
+    background: rgba(255,255,255,0.14);
+    border: 1px solid rgba(255,255,255,0.25);
+    padding: 7px 16px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .cover-brand {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    opacity: 0.6;
+  }
+
+  /* ── TYPOGRAPHY ── */
+  h2 {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--dark);
+    letter-spacing: -0.3px;
+    line-height: 1.2;
+    margin-bottom: 6px;
+    margin-top: 48px;
+  }
+  h2:first-child { margin-top: 0; }
+  .h2-rule {
+    height: 3px;
+    width: 44px;
+    background: var(--grad);
+    border-radius: 2px;
+    margin-bottom: 20px;
+    margin-top: 8px;
+  }
+  p {
+    font-size: 15px;
+    color: var(--text);
+    margin-bottom: 16px;
+    line-height: 1.75;
+  }
+  ul, ol {
+    margin: 14px 0 20px 22px;
+  }
+  li {
+    font-size: 15px;
+    color: var(--text);
+    margin-bottom: 8px;
+    line-height: 1.7;
+  }
+
+  /* ── CALLOUTS ── */
+  .highlight {
+    background: var(--grad-sub);
+    border-left: 4px solid var(--green);
+    padding: 18px 24px;
+    border-radius: 0 10px 10px 0;
+    margin: 24px 0;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  .highlight strong { color: var(--teal); }
+
+  .warning {
+    background: #fffbeb;
+    border-left: 4px solid #f59e0b;
+    padding: 18px 24px;
+    border-radius: 0 8px 8px 0;
+    margin: 24px 0;
+    font-size: 14px;
+    color: #78350f;
+    line-height: 1.65;
+  }
+  .warning strong { color: #b45309; }
+
+  .formula {
+    background: var(--dark);
+    color: var(--green);
+    padding: 18px 24px;
+    border-radius: 10px;
+    font-family: monospace;
+    font-size: 14px;
+    font-weight: 700;
+    margin: 24px 0;
+    text-align: center;
+    border: 1px solid rgba(16,185,129,0.3);
+  }
+
+  /* ── PILLAR CARDS ── */
+  .pillar-card {
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 20px 0;
+    background: #fff;
+  }
+  .pillar-card .pillar-tag {
+    display: inline-block;
+    background: #d1fae5;
+    color: #065f46;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+  }
+  .pillar-card h4 {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--dark);
+    margin-bottom: 8px;
+  }
+  .pillar-card p {
+    margin-bottom: 10px;
+  }
+  .pillar-card .example {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-size: 14px;
+    color: var(--muted);
+    margin-top: 14px;
+    border: 1px solid var(--border);
+  }
+  .pillar-card .example + .example {
+    margin-top: 10px;
+  }
+  .pillar-card .example strong { color: var(--teal); }
+
+  /* ── DRE GROUPS ── */
+  .dre-group {
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 20px 0;
+    background: #fff;
+  }
+  .dre-group .dre-label {
+    display: inline-block;
+    background: var(--grad);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+  }
+  .dre-group h4 {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--dark);
+    margin-bottom: 8px;
+  }
+  .dre-group p { margin-bottom: 10px; }
+  .dre-group .example {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-size: 14px;
+    color: var(--muted);
+    margin-top: 10px;
+    border: 1px solid var(--border);
+  }
+  .dre-group .example strong { color: var(--teal); }
+
+  /* ── TABLE ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 24px 0;
+    font-size: 14px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  table th {
+    background: var(--dark);
+    color: white;
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+  table tr:nth-child(even) td { background: #f0fdf9; }
+  table tr:last-child td { border-bottom: none; }
+  .td-green { color: var(--teal); font-weight: 700; }
+  .td-red { color: #dc2626; font-weight: 700; }
+
+  /* ── CHECKLIST ── */
+  .checklist {
+    list-style: none;
+    margin: 16px 0;
+  }
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.65;
+  }
+  .checklist li::before {
+    content: "✓";
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--grad);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 900;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  /* ── FOOTER ── */
+  .page-footer {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .page-footer .brand {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    background: var(--grad);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .page-footer .pg { font-size: 12px; color: #94a3b8; }
 </style>
 </head>
 <body>
+
+<!-- CAPA -->
 <div class="page cover">
-  <div class="tag">📚 Biztrivo Academy</div>
+  <div class="cover-tag">Biztrivo Academy</div>
   <h1>Guia do Modo Contador</h1>
-  <p>Tenha DRE automática, Score Financeiro e estimativa de impostos prontos a partir do seu caixa.</p>
+  <p class="cover-sub">DRE automática, Score Financeiro e estimativa de impostos direto do seu caixa. Sem planilha, sem achismo.</p>
+  <div class="cover-pills">
+    <span>DRE automática</span>
+    <span>Score em 4 pilares</span>
+    <span>Controle de impostos MEI</span>
+    <span>Boas práticas</span>
+  </div>
+  <div class="cover-brand">Biztrivo Academy</div>
 </div>
+
+<!-- PÁGINA 1 -->
 <div class="page">
-<h2>O que é o Modo Contador</h2>
-<p>O Modo Contador transforma os lançamentos do seu Caixa Diário em relatórios contábeis prontos: DRE (Demonstração de Resultado), Score Financeiro e estimativa de impostos do MEI. Você fala a mesma língua do seu contador, com dados confiáveis.</p>
-<div class="highlight"><strong>Para quem é:</strong> qualquer lojista que queira entender de verdade quanto sua loja lucra, sem precisar montar planilha.</div>
 
-<h2>DRE Automática</h2>
-<p>A DRE separa as movimentações em quatro grupos:</p>
-<ul>
-<li><strong>Receita:</strong> tudo que entrou como Venda.</li>
-<li><strong>CMV:</strong> Reposição de produtos e matéria-prima.</li>
-<li><strong>Despesas Operacionais:</strong> Embalagem, Frete, Outros.</li>
-<li><strong>Pró-labore:</strong> retiradas marcadas como Pessoal.</li>
-</ul>
-<p>O sistema calcula automaticamente o Lucro Bruto, o EBITDA, o Lucro Líquido e a Margem Real do mês.</p>
+  <h2>O que é o Modo Contador</h2>
+  <div class="h2-rule"></div>
+  <p>O Modo Contador transforma os lançamentos do seu Caixa Diário em relatórios contábeis prontos: DRE (Demonstração de Resultado do Exercício), Score Financeiro e estimativa de impostos do MEI. Você passa a falar a mesma língua do seu contador, com dados confiáveis e organizados.</p>
+  <p>Em vez de descobrir no final do mês se a loja deu lucro ou prejuízo, você acompanha em tempo real como cada real que entra e sai impacta o resultado do negócio.</p>
 
-<h2>Score Financeiro</h2>
-<p>O Score (0 a 100) mostra a saúde da sua loja em 4 pilares:</p>
-<ol>
-<li><strong>Margem:</strong> percentual de lucro real sobre a receita.</li>
-<li><strong>Pró-labore controlado:</strong> retiradas pessoais abaixo de 30% da receita.</li>
-<li><strong>Diversificação:</strong> não depender de um único produto ou cliente.</li>
-<li><strong>Constância:</strong> faturamento estável mês a mês.</li>
-</ol>
+  <div class="highlight">
+    <strong>Para quem é:</strong> qualquer lojista que queira entender de verdade quanto sua loja lucra — seja uma confeitaria, brechó, loja de roupas, pet shop ou qualquer outro pequeno negócio — sem precisar montar planilha ou contratar um sistema caro.
+  </div>
 
-<h2>Impostos (MEI)</h2>
-<p>O Modo Contador estima seu DAS mensal fixo e te avisa caso a projeção anual ultrapasse o limite de R$ 81.000. Assim você não é pego de surpresa pela Receita Federal.</p>
+  <div class="warning">
+    <strong>Atencao:</strong> o Modo Contador funciona com base nos lancamentos que voce faz no Caixa Diario. Se voce nao lancar uma venda, ela nao aparece na DRE. Precisao nos lancamentos = precisao nos relatorios.
+  </div>
 
-<h2>Boas práticas</h2>
-<ul>
-<li>Lance toda movimentação no Caixa Diário, sem exceção.</li>
-<li>Use as categorias corretas para a DRE ficar precisa.</li>
-<li>Marque retiradas pessoais com a flag de Pessoal.</li>
-<li>Exporte o PDF mensalmente e envie ao seu contador.</li>
-</ul>
+  <h2>Como funciona a DRE Automatica</h2>
+  <div class="h2-rule"></div>
+  <p>A DRE (Demonstracao de Resultado) e o relatorio que mostra se a sua loja lucrou ou nao em determinado periodo. O Modo Contador monta essa DRE automaticamente a partir das categorias que voce usa ao lancar cada movimentacao no caixa.</p>
+  <p>Os lancamentos sao separados em quatro grandes grupos. Veja como cada um funciona na pratica:</p>
 
-<div class="footer"><span class="brand">Biztrivo Academy</span><span>Página 1</span></div>
+  <div class="dre-group">
+    <div class="dre-label">Grupo 1</div>
+    <h4>Receita (tudo que entra como Venda)</h4>
+    <p>Qualquer lancamento categorizado como Venda vai compor a linha de Receita Bruta da DRE. E o topo da demonstracao: o quanto a loja faturou antes de qualquer desconto ou custo.</p>
+    <div class="example">
+      <strong>Exemplo 1 — Confeitaria:</strong> Vendas do dia: 12 bolos (R$ 80 cada) + 30 brigadeiros (R$ 5 cada) = R$ 1.110 lancados como Venda. Esse e o valor que entra na linha Receita da DRE.
+    </div>
+    <div class="example">
+      <strong>Exemplo 2 — Brechó:</strong> Venda de 5 pecas no sabado por R$ 250 ao total. Lancado como Venda. Semana seguinte, mais R$ 180. A DRE acumula R$ 430 de Receita no periodo.
+    </div>
+    <div class="example">
+      <strong>Exemplo 3 — Loja de acessórios:</strong> Venda no balcao: R$ 120. Venda pelo Instagram (pago no Pix): R$ 340. Ambas lancadas como Venda. O sistema soma tudo: R$ 460 de Receita.
+    </div>
+  </div>
+
+  <div class="dre-group">
+    <div class="dre-label">Grupo 2</div>
+    <h4>CMV — Custo da Mercadoria Vendida (Reposicao e insumos)</h4>
+    <p>Tudo que voce comprou para revender ou usar na producao entra aqui. E o custo direto do que voce vendeu. A diferenca entre Receita e CMV e o seu Lucro Bruto.</p>
+    <div class="example">
+      <strong>Exemplo 1 — Confeitaria:</strong> Compra de farinha, ovos, manteiga e caixas de embalagem para producao da semana: R$ 380. Lancado como Reposicao/Insumo. Esse valor vai para o CMV.
+    </div>
+    <div class="example">
+      <strong>Exemplo 2 — Loja de roupas:</strong> Compra de 20 camisetas no atacado por R$ 600 para revenda. Lancado como Reposicao. O sistema abate do Lucro Bruto: Receita R$ 1.200 - CMV R$ 600 = Lucro Bruto R$ 600.
+    </div>
+    <div class="example">
+      <strong>Exemplo 3 — Pet shop:</strong> Compra de racoes, areia e produtos de banho para revender: R$ 920. E insumo direto do que sera vendido. Entra no CMV e reduz o lucro bruto do mes.
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span class="brand">Biztrivo Academy</span>
+    <span class="pg">Pagina 1</span>
+  </div>
 </div>
+
+<!-- PÁGINA 2 -->
+<div class="page">
+
+  <div class="dre-group">
+    <div class="dre-label">Grupo 3</div>
+    <h4>Despesas Operacionais (Embalagem, Frete, Outros)</h4>
+    <p>Sao os custos que nao estao diretamente ligados ao produto, mas sao necessarios para a operacao da loja. Incluem tudo que voce gasta para manter o negocio funcionando.</p>
+    <div class="example">
+      <strong>Exemplo 1 — Loja de cosmeticos:</strong> Sacos personalizados, fita adesiva e papel de seda para embalagem de presentes: R$ 140. Lancado como Embalagem. Vai para Despesas Operacionais.
+    </div>
+    <div class="example">
+      <strong>Exemplo 2 — Loja virtual:</strong> Frete dos Correios para entregar pedidos da semana: R$ 210. Taxa da plataforma de pagamento: R$ 55. Ambos lancados como Frete e Taxas em Outros. Reduzem o EBITDA.
+    </div>
+    <div class="example">
+      <strong>Exemplo 3 — Confeitaria:</strong> Gas do forno (R$ 130), energia eletrica rateada do mes (R$ 90), material de limpeza (R$ 45). Tudo em Outros/Operacional. O Modo Contador totaliza automaticamente nessa linha.
+    </div>
+    <div class="example">
+      <strong>Exemplo 4 — Loja de roupas:</strong> Aluguel da sala: R$ 800, internet: R$ 99, sistema de gestao: R$ 49. Sao despesas fixas operacionais que entram mensalmente nesse grupo.
+    </div>
+  </div>
+
+  <div class="dre-group">
+    <div class="dre-label">Grupo 4</div>
+    <h4>Pro-labore (retiradas marcadas como Pessoal)</h4>
+    <p>E o seu proprio salario como dono. Quando voce retira dinheiro do caixa para pagar contas pessoais, isso precisa ser registrado com a flag Pessoal. O sistema separa da operacao e mostra no pro-labore da DRE.</p>
+    <div class="example">
+      <strong>Exemplo 1 — Confeitaria:</strong> Toda sexta-feira a dona retira R$ 500 para despesas da casa. Ao lancar, marca como Pessoal. No fim do mes, a DRE mostra R$ 2.000 de pro-labore, separado do custo do negocio.
+    </div>
+    <div class="example">
+      <strong>Exemplo 2 — Brechó:</strong> Pagamento do cartao pessoal feito com dinheiro do caixa: R$ 350. Marcado como Pessoal. O Modo Contador nao confunde com despesa operacional — fica no grupo pro-labore.
+    </div>
+    <div class="example">
+      <strong>Exemplo 3 — Loja de acessórios:</strong> Dois socios retiram R$ 800 cada no 15 e no 30. Ambas as retiradas marcadas como Pessoal. A DRE mostra pro-labore total de R$ 1.600 no mes.
+    </div>
+  </div>
+
+  <h2>O que a DRE calcula automaticamente</h2>
+  <div class="h2-rule"></div>
+  <p>Com os lancamentos nas categorias certas, o sistema gera os indicadores mais importantes do seu resultado:</p>
+
+  <table>
+    <tr>
+      <th>Indicador</th>
+      <th>Formula</th>
+      <th>O que revela</th>
+    </tr>
+    <tr>
+      <td><strong>Lucro Bruto</strong></td>
+      <td>Receita - CMV</td>
+      <td>Quanto sobra antes das despesas operacionais</td>
+    </tr>
+    <tr>
+      <td><strong>EBITDA</strong></td>
+      <td>Lucro Bruto - Desp. Operacionais</td>
+      <td>Resultado operacional real da loja</td>
+    </tr>
+    <tr>
+      <td><strong>Lucro Liquido</strong></td>
+      <td>EBITDA - Pro-labore - Impostos</td>
+      <td>O que de fato ficou no negocio</td>
+    </tr>
+    <tr>
+      <td><strong>Margem Real</strong></td>
+      <td>Lucro Liquido / Receita x 100</td>
+      <td>Percentual de lucro sobre o faturamento</td>
+    </tr>
+  </table>
+
+  <div class="highlight">
+    <strong>Exemplo pratico completo — Loja de roupas, mes de outubro:</strong> Receita R$ 8.400 | CMV R$ 3.200 | Lucro Bruto R$ 5.200 | Despesas Operacionais R$ 1.650 | EBITDA R$ 3.550 | Pro-labore R$ 2.000 | Imposto MEI R$ 71,60 | Lucro Liquido R$ 1.478,40 | Margem Real 17,6%. Sem o Modo Contador, esse dono nao saberia que sua margem real e 17,6% — nao os "40% de lucro" que achava estar ganhando.
+  </div>
+
+  <div class="page-footer">
+    <span class="brand">Biztrivo Academy</span>
+    <span class="pg">Pagina 2</span>
+  </div>
+</div>
+
+<!-- PÁGINA 3 -->
+<div class="page">
+
+  <h2>Score Financeiro: os 4 pilares da saude da loja</h2>
+  <div class="h2-rule"></div>
+  <p>O Score (de 0 a 100) avalia a saude financeira da sua loja em quatro dimensoes. Ele nao mede so o lucro — mede a solidez do negocio como um todo. Um negocio com score alto e previsivel, sustentavel e preparado para crescer.</p>
+
+  <div class="pillar-card">
+    <div class="pillar-tag">Pilar 1</div>
+    <h4>Margem — lucro real sobre a receita</h4>
+    <p>Avalia o percentual de lucro liquido em relacao ao que foi faturado. Negócios com margem abaixo de 10% estao na zona de risco: qualquer imprevisto vira prejuizo.</p>
+    <div class="example">
+      <strong>Pontuacao alta:</strong> Confeitaria com Receita R$ 6.000 e Lucro Liquido R$ 1.500 = Margem 25%. Score alto nesse pilar.
+    </div>
+    <div class="example">
+      <strong>Pontuacao baixa:</strong> Loja de roupas com Receita R$ 10.000 e Lucro Liquido R$ 400 = Margem 4%. O score alerta que a operacao esta consumindo quase todo o faturamento.
+    </div>
+    <div class="example">
+      <strong>Como melhorar:</strong> Revise o preco de venda dos produtos mais saidos. Muitas vezes uma pequena reposicao de preco (+R$ 5 ou +R$ 10) aumenta a margem sem afastar clientes.
+    </div>
+  </div>
+
+  <div class="pillar-card">
+    <div class="pillar-tag">Pilar 2</div>
+    <h4>Pro-labore controlado — retiradas pessoais abaixo de 30% da receita</h4>
+    <p>Retirar mais do que o negocio pode pagar e um dos principais motivos de quebra de pequenos negócios. O sistema calcula automaticamente se o seu pro-labore esta dentro de um limite saudavel.</p>
+    <div class="example">
+      <strong>Pontuacao alta:</strong> Pet shop com Receita R$ 5.000 e pro-labore de R$ 1.200 (24% da receita). Dentro do limite. Score alto.
+    </div>
+    <div class="example">
+      <strong>Pontuacao baixa:</strong> Brechó com Receita R$ 3.200 e pro-labore de R$ 1.600 (50% da receita). O dono esta retirando mais do que o negocio comporta. Score baixo e alerta de risco.
+    </div>
+    <div class="example">
+      <strong>Como melhorar:</strong> Defina um pro-labore fixo mensal, como um salario. Nao retire conforme a necessidade do momento — isso descontrola o caixa e a DRE.
+    </div>
+  </div>
+
+  <div class="pillar-card">
+    <div class="pillar-tag">Pilar 3</div>
+    <h4>Diversificacao — nao depender de um unico produto ou cliente</h4>
+    <p>Se 70% do seu faturamento vem de um unico produto ou de um cliente so, qualquer mudanca nessa fonte pode derrubara receita inteira. O score penaliza essa dependencia.</p>
+    <div class="example">
+      <strong>Pontuacao alta:</strong> Loja de cosmeticos que vende hidratantes, perfumes, maquiagem e cabelos. Nenhum produto representa mais de 30% da receita. Diversificada e resiliente.
+    </div>
+    <div class="example">
+      <strong>Pontuacao baixa:</strong> Confeitaria em que 80% da receita vem de um unico bolo personalizado. Se a demanda por esse produto cair, a loja vai junto.
+    </div>
+    <div class="example">
+      <strong>Como melhorar:</strong> Introduza produtos complementares de ticket menor para diversificar. Combos e kits ajudam a distribuir a receita entre mais itens sem grandes investimentos.
+    </div>
+  </div>
+
+  <div class="pillar-card">
+    <div class="pillar-tag">Pilar 4</div>
+    <h4>Constancia — faturamento estavei mes a mes</h4>
+    <p>Um negocio que fatura R$ 5.000 todo mes e mais saudavel do que um que fatura R$ 12.000 em dezembro e R$ 800 em janeiro. O score avalia a previsibilidade da receita ao longo do tempo.</p>
+    <div class="example">
+      <strong>Pontuacao alta:</strong> Barbearia com faturamento mensal entre R$ 4.800 e R$ 5.400 nos ultimos seis meses. Variacao pequena, score alto em constancia.
+    </div>
+    <div class="example">
+      <strong>Pontuacao baixa:</strong> Loja de fantasias com 90% da receita concentrada em outubro. Alta sazonalidade, score baixo nesse pilar — o que nao significa um negocio ruim, mas exige planejamento de caixa.
+    </div>
+    <div class="example">
+      <strong>Como melhorar:</strong> Crie fontes de receita recorrente: assinaturas, pacotes mensais, planos de manutencao. Quanto mais previsivel o faturamento, mais saudavel o negocio.
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span class="brand">Biztrivo Academy</span>
+    <span class="pg">Pagina 3</span>
+  </div>
+</div>
+
+<!-- PÁGINA 4 -->
+<div class="page">
+
+  <h2>Impostos: controle do MEI sem susto</h2>
+  <div class="h2-rule"></div>
+  <p>O Modo Contador inclui uma estimativa automatica do DAS (Documento de Arrecadacao do Simples Nacional), o imposto fixo mensal do MEI, e monitora a projecao anual de faturamento para alertar quando voce se aproxima do limite legal.</p>
+
+  <div class="formula">
+    Limite MEI 2024: R$ 81.000 por ano = media de R$ 6.750 por mes
+  </div>
+
+  <div class="dre-group">
+    <div class="dre-label">Como funciona</div>
+    <h4>Estimativa do DAS mensal</h4>
+    <p>O sistema exibe o valor fixo do DAS conforme a atividade do MEI (comercio, servico ou ambos) e projeta o faturamento anual com base na media dos meses lancados.</p>
+    <div class="example">
+      <strong>Exemplo 1 — MEI Comercio:</strong> DAS fixo de R$ 71,60/mes (tabela 2024). A loja faturou R$ 4.200 em janeiro e R$ 5.100 em fevereiro. Projecao anual: R$ 55.800. Dentro do limite. Nenhum alerta.
+    </div>
+    <div class="example">
+      <strong>Exemplo 2 — Faturamento crescente:</strong> Nos primeiros 8 meses, media de R$ 7.500/mes. Projecao anual: R$ 90.000. O Modo Contador aciona o alerta de estouro do limite do MEI antes que a Receita Federal seja acionada — tempo de voce planejar a transicao para ME.
+    </div>
+    <div class="example">
+      <strong>Exemplo 3 — Loja sazonal:</strong> Loja de festas com pico em novembro e dezembro. O sistema considera a media ponderada e avisa se os meses de alta vao empurrar o acumulado anual alem dos R$ 81.000.
+    </div>
+  </div>
+
+  <div class="warning">
+    <strong>Atencao:</strong> o Modo Contador faz uma estimativa com base nos lancamentos. Para declaracoes oficiais, consulte sempre seu contador. O objetivo aqui e dar previsibilidade, nao substituir a orientacao profissional.
+  </div>
+
+  <h2>Boas praticas para resultados precisos</h2>
+  <div class="h2-rule"></div>
+  <p>O Modo Contador e tao bom quanto os dados que voce alimenta. Siga essas praticas e seus relatorios vao refletir a realidade do negocio — sem distorcoes.</p>
+
+  <ul class="checklist">
+    <li>Lance toda movimentacao no Caixa Diario, sem excecao — inclusive trocas, devolucos, cortesias e vendas pelo Pix.</li>
+    <li>Use as categorias corretas: Venda para o que entra de receita, Reposicao para mercadoria comprada, Embalagem/Frete/Outros para despesas operacionais.</li>
+    <li>Marque retiradas pessoais com a flag Pessoal — nunca lance pro-labore como "despesa com fornecedor".</li>
+    <li>Lance as compras no dia em que o pagamento sai do caixa, nao na data da entrega da mercadoria.</li>
+    <li>Se fez uma venda parcelada no cartao, lance pelo valor total no dia da venda e registre a taxa da maquina separadamente em Outros.</li>
+    <li>Exporte o PDF da DRE mensalmente e envie ao seu contador — ele vai agradecer os dados organizados.</li>
+    <li>Acompanhe o Score Financeiro todo mes e anote o que mudou: uma queda no pilar Margem ja e um sinal para revisao de precos.</li>
+  </ul>
+
+  <div class="highlight">
+    <strong>Resumo final:</strong> O Modo Contador nao e so um relatorio — e um termometro. Com a DRE automatica voce sabe onde o dinheiro vai, o Score mostra a saude real do negocio e o monitor de impostos garante que voce nao seja pego de surpresa. O lojista que conhece seus numeros toma decisoes melhores, cobra precos certos e cresce com seguranca.
+  </div>
+
+  <div class="page-footer">
+    <span class="brand">Biztrivo Academy</span>
+    <span class="pg">Pagina 4</span>
+  </div>
+</div>
+
 </body>
 </html>

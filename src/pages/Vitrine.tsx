@@ -304,9 +304,13 @@ const Vitrine = () => {
                   <h3 className="font-semibold text-sm">{p.name}</h3>
                   {p.description && <p className="text-xs text-muted-foreground mt-1">{p.description}</p>}
                   <div className="flex items-center gap-2 mt-2">
-                    {p.originalPrice > p.discountPrice && <span className="text-xs text-muted-foreground line-through">R$ {p.originalPrice.toFixed(2).replace('.', ',')}</span>}
-                    <span className="text-sm font-bold text-secondary">R$ {p.discountPrice.toFixed(2).replace('.', ',')}</span>
-                  </div>
+  {p.discountPrice > 0 && p.originalPrice > p.discountPrice && (
+    <span className="text-xs text-muted-foreground line-through">R$ {p.originalPrice.toFixed(2).replace('.', ',')}</span>
+  )}
+  <span className="text-sm font-bold text-secondary">
+    R$ {(p.discountPrice > 0 ? p.discountPrice : p.originalPrice).toFixed(2).replace('.', ',')}
+  </span>
+</div>
                   <p className="text-xs text-muted-foreground mt-1">Estoque: {p.stock ?? 0}</p>
                   <div className="mt-3 flex items-center gap-3">
                     <button onClick={() => setEditingProduct({ ...p })} className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1 transition-colors">

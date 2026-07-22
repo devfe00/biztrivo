@@ -3,104 +3,510 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>How to Price Your Products</title>
+<title>How to Price Your Products — Biztrivo Academy</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+  :root {
+    --green:   #10b981;
+    --teal:    #0d9488;
+    --blue:    #0ea5e9;
+    --dark:    #0f172a;
+    --text:    #334155;
+    --muted:   #64748b;
+    --border:  #e2e8f0;
+    --bg:      #f8fafc;
+    --grad:    linear-gradient(135deg, #10b981 0%, #0d9488 45%, #0ea5e9 100%);
+    --grad-sub: linear-gradient(135deg, #f0fdf9 0%, #f0fdfa 50%, #f0f9ff 100%);
+  }
+
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #1e293b; line-height: 1.7; }
 
-  .page { max-width: 750px; margin: 0 auto; background: white; min-height: 100vh; padding: 60px 50px; page-break-after: always; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #fff;
+    color: var(--text);
+    line-height: 1.7;
+  }
 
-  .cover { background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%); color: white; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; min-height: 100vh; padding: 60px 50px; }
-  .cover .tag { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 30px; }
-  .cover h1 { font-size: 46px; font-weight: 800; line-height: 1.15; margin-bottom: 20px; max-width: 500px; }
-  .cover p { font-size: 18px; opacity: 0.85; max-width: 420px; line-height: 1.6; margin-bottom: 40px; }
-  .cover-deco { display: flex; gap: 16px; flex-wrap: wrap; }
-  .cover-deco span { background: rgba(255,255,255,0.15); padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; }
+  /* ─── PAGE ─── */
+  .page {
+    max-width: 100%;
+    margin: 0;
+    background: #fff;
+    min-height: 100vh;
+    padding: 64px 56px;
+    page-break-after: always;
+  }
 
-  h2 { font-size: 26px; font-weight: 800; color: #047857; margin-bottom: 12px; margin-top: 40px; padding-bottom: 8px; border-bottom: 3px solid #d1fae5; }
-  h2:first-of-type { margin-top: 0; }
-  h3 { font-size: 17px; font-weight: 700; color: #1e293b; margin-top: 28px; margin-bottom: 8px; }
-  p { font-size: 15px; color: #374151; margin-bottom: 14px; }
+  .cover {
+    background: var(--grad);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: 100vh;
+    padding: 64px 56px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover::before {
+    content: '';
+    position: absolute;
+    top: -100px; right: -80px;
+    width: 420px; height: 420px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    pointer-events: none;
+  }
+  .cover::after {
+    content: '';
+    position: absolute;
+    bottom: 80px; right: 80px;
+    width: 180px; height: 180px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+    pointer-events: none;
+  }
+  .cover-tag {
+    display: inline-block;
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.32);
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+    width: fit-content;
+  }
+  .cover h1 {
+    font-size: 50px;
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -0.5px;
+    margin-bottom: 20px;
+    max-width: 520px;
+  }
+  .cover-sub {
+    font-size: 17px;
+    opacity: 0.85;
+    max-width: 400px;
+    line-height: 1.65;
+    margin-bottom: 44px;
+  }
+  .cover-pills {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 72px;
+  }
+  .cover-pills span {
+    background: rgba(255,255,255,0.14);
+    border: 1px solid rgba(255,255,255,0.25);
+    padding: 7px 16px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+  .cover-brand {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    opacity: 0.6;
+  }
 
-  .highlight { background: #ecfdf5; border-left: 4px solid #10b981; padding: 16px 20px; border-radius: 0 10px 10px 0; margin: 20px 0; }
-  .highlight strong { color: #047857; }
+  .step-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    margin-top: 44px;
+  }
+  .step-row:first-child { margin-top: 0; }
+  .step-badge {
+    background: var(--grad);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+  .step-title {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+  }
 
-  .example-box { background: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 12px; padding: 20px 24px; margin: 20px 0; }
-  .example-box .label { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; color: #059669; text-transform: uppercase; margin-bottom: 10px; }
+  h2 {
+    font-size: 23px;
+    font-weight: 800;
+    color: var(--dark);
+    letter-spacing: -0.3px;
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+  .h2-rule {
+    height: 3px;
+    width: 44px;
+    background: var(--grad);
+    border-radius: 2px;
+    margin-bottom: 16px;
+    margin-top: 8px;
+  }
+  h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--dark);
+    margin: 22px 0 8px;
+  }
+  p {
+    font-size: 14.5px;
+    color: var(--text);
+    margin-bottom: 14px;
+    line-height: 1.75;
+  }
 
-  .formula { background: #1e293b; color: #10b981; padding: 16px 24px; border-radius: 10px; font-family: monospace; font-size: 16px; font-weight: 700; margin: 20px 0; text-align: center; letter-spacing: 0.5px; }
+  .highlight {
+    background: var(--grad-sub);
+    border-left: 3px solid var(--teal);
+    padding: 15px 20px;
+    border-radius: 0 10px 10px 0;
+    margin: 22px 0;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  .highlight strong { color: var(--teal); }
 
-  .checklist { list-style: none; margin: 16px 0; }
-  .checklist li { padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 15px; color: #374151; display: flex; align-items: flex-start; gap: 12px; }
-  .checklist li::before { content: "✓"; color: #10b981; font-weight: 800; font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .checklist { list-style: none; margin: 14px 0; }
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 14.5px;
+    color: var(--text);
+    line-height: 1.65;
+  }
+  .checklist li::before {
+    content: "✓";
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--grad);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 900;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
 
-  .warning { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px 20px; border-radius: 0 10px 10px 0; margin: 20px 0; font-size: 14px; color: #92400e; }
-  .warning strong { color: #d97706; }
+  .formula {
+    background: var(--dark);
+    color: #6ee7b7;
+    padding: 18px 24px;
+    border-radius: 10px;
+    font-family: 'Courier New', monospace;
+    font-size: 14.5px;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: 0.3px;
+    margin: 22px 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .formula::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2.5px;
+    background: var(--grad);
+  }
 
-  .number-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
-  .number-card { background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 20px; text-align: center; }
-  .number-card .big { font-size: 36px; font-weight: 800; color: #10b981; }
-  .number-card .desc { font-size: 13px; color: #64748b; margin-top: 4px; }
+  .warning {
+    background: #fffbeb;
+    border-left: 3px solid #f59e0b;
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    margin: 20px 0;
+    font-size: 13.5px;
+    color: #78350f;
+    line-height: 1.65;
+  }
+  .warning strong { color: #b45309; }
 
-  table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
-  table th { background: #047857; color: white; padding: 12px 16px; text-align: left; font-weight: 700; }
-  table td { padding: 10px 16px; border-bottom: 1px solid #e2e8f0; color: #374151; }
-  table tr:nth-child(even) td { background: #f8fafc; }
+  .example-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin: 18px 0;
+  }
+  .ex {
+    background: #fff;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .ex::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2.5px;
+    background: var(--grad);
+  }
+  .ex .biz {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 9px;
+  }
+  .ex p {
+    font-size: 13px;
+    color: var(--text);
+    margin-bottom: 0;
+    line-height: 1.6;
+  }
+  .ex .res {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--dark);
+    border-top: 1px solid var(--border);
+    padding-top: 9px;
+    margin-top: 9px;
+  }
+  .ex .calc {
+    font-size: 11.5px;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-top: 4px;
+  }
 
-  .page-footer { margin-top: 60px; padding-top: 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
-  .page-footer .brand { font-size: 13px; font-weight: 700; color: #10b981; }
-  .page-footer .pg { font-size: 12px; color: #94a3b8; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 13.5px;
+  }
+  table thead tr { background: var(--grad); }
+  table th {
+    color: #fff;
+    padding: 11px 16px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.4px;
+  }
+  table td {
+    padding: 10px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  table tr:nth-child(even) td { background: var(--bg); }
+
+  .ex-full {
+    background: var(--grad-sub);
+    border: 1.5px solid #cbd5e1;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin: 18px 0;
+  }
+  .ex-full .ex-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .ex-full .ex-label::before {
+    content: '';
+    display: inline-block;
+    width: 16px; height: 2px;
+    background: var(--grad);
+    border-radius: 1px;
+  }
+  .ex-full p { font-size: 13.5px; }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+    margin: 22px 0;
+  }
+  .stat {
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 14px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--grad);
+  }
+  .stat .big {
+    font-size: 30px;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 5px;
+    background: var(--grad);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .stat .desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.45;
+  }
+
+  .page-footer {
+    margin-top: 56px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .page-footer .brand {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    background: var(--grad);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .page-footer .pg { font-size: 11px; color: #94a3b8; }
+
+  @media print {
+    body { background: #fff; }
+    .page { page-break-after: always; box-shadow: none; }
+  }
 </style>
 </head>
 <body>
 
+<!-- COVER -->
 <div class="page cover">
-  <div class="tag">📚 Biztrivo Academy</div>
+  <div class="cover-tag">Biztrivo Academy</div>
   <h1>How to Price Your Products</h1>
-  <p>Stop guessing. Learn how to calculate the right price, make real profit, and never sell at a loss again.</p>
-  <div class="cover-deco">
-    <span>✅ Full checklist</span>
-    <span>📊 Real examples</span>
-    <span>💰 Ready formula</span>
+  <p class="cover-sub">Stop guessing. Learn how to calculate the right price, make real profit, and never sell at a loss again.</p>
+  <div class="cover-pills">
+    <span>Full checklist</span>
+    <span>Real examples</span>
+    <span>Ready formula</span>
   </div>
-  <div style="margin-top: auto; padding-top: 60px; font-size: 13px; opacity: 0.7; font-weight: 600;">Biztrivo Academy</div>
+  <div class="cover-brand">Biztrivo Academy</div>
 </div>
 
+<!-- PAGE 2 -->
 <div class="page">
+
   <h2>The mistake that kills most businesses</h2>
-  <p>Most people price their products like this: they look at what competitors charge, go a bit lower, and hope there is money left over. <strong>That is guesswork pricing and it destroys businesses.</strong></p>
+  <div class="h2-rule"></div>
+  <p>Most people price their products like this: look at what competitors charge, go a bit lower, and hope money is left over. <strong>That is guesswork pricing and it destroys businesses.</strong></p>
   <p>Charging too much pushes customers away. Charging too little means you work for nothing. The right price covers every cost you have, adds your fair profit, and still leaves room for surprises.</p>
 
   <div class="highlight">
     <strong>Golden rule:</strong> Price is not what the market charges. Price is what makes you profitable after paying for everything.
   </div>
 
-  <h2>Step 1 — Cost of Goods (COGS)</h2>
-  <p>COGS is everything you spent to have that product ready to sell.</p>
+  <div class="step-row">
+    <span class="step-badge">Step 1</span>
+    <span class="step-title">Cost of Goods</span>
+  </div>
+  <h2>Cost of Goods Sold (COGS)</h2>
+  <div class="h2-rule"></div>
+  <p>COGS is everything you spent to have that product ready to sell: raw materials, inbound shipping, packaging, and losses.</p>
 
   <ul class="checklist">
-    <li>How much you paid for the product or raw materials</li>
-    <li>Inbound shipping (what you paid to receive it)</li>
-    <li>Packaging (bags, boxes, labels, tape)</li>
-    <li>Losses and damage (usually 2% to 5% of stock)</li>
+    <li>What you paid for the product or raw materials</li>
+    <li>Inbound shipping: what you paid to receive your inventory</li>
+    <li>Packaging: bags, boxes, labels, tape</li>
+    <li>Losses and damage: typically 2% to 5% of stock</li>
   </ul>
 
-  <div class="example-box">
-    <div class="label">Practical example</div>
-    <p>You sell handmade bags. Each bag uses $18 in materials, $3 in packaging, and you factor in $1 average loss. <strong>Product cost = $22.</strong></p>
+  <div class="example-grid">
+    <div class="ex">
+      <div class="biz">Handmade bags (Etsy)</div>
+      <p>Materials: $18.00<br>Packaging: $3.00<br>Estimated loss: $1.00</p>
+      <div class="res">COGS = $22.00 per unit</div>
+    </div>
+    <div class="ex">
+      <div class="biz">Clothing resale</div>
+      <p>Product: $45.00<br>Inbound shipping: $3.00<br>Packaging: $1.50</p>
+      <div class="res">COGS = $49.50 per item</div>
+    </div>
+    <div class="ex">
+      <div class="biz">Home bakery (jar cakes)</div>
+      <p>Ingredients: $3.80<br>Jar and packaging: $1.20<br>Estimated loss: $0.30</p>
+      <div class="res">COGS = $5.30 per unit</div>
+    </div>
+    <div class="ex">
+      <div class="biz">Cosmetics (resale)</div>
+      <p>Product: $22.00<br>Inbound shipping: $2.50<br>Packaging/label: $1.50</p>
+      <div class="res">COGS = $26.00 per item</div>
+    </div>
   </div>
 
-  <h2>Step 2 — Fixed Costs Per Unit</h2>
-  <p>Fixed costs are what you pay every month regardless of sales: rent, electricity, phone, internet, software. You need to spread these costs across every product you sell.</p>
+  <div class="step-row">
+    <span class="step-badge">Step 2</span>
+    <span class="step-title">Fixed Costs Per Unit</span>
+  </div>
+  <h2>Spreading your fixed costs</h2>
+  <div class="h2-rule"></div>
+  <p>Fixed costs are what you pay every month regardless of sales: rent, electricity, phone, internet, software. You need to divide those costs across every product you sell that month.</p>
 
   <div class="formula">
     Fixed cost per product = Total monthly fixed costs ÷ Units sold per month
   </div>
 
-  <div class="example-box">
-    <div class="label">Practical example</div>
-    <p>You have $800/month in fixed costs and sell 80 bags per month. <strong>Fixed cost per bag = $800 ÷ 80 = $10.</strong></p>
+  <div class="example-grid">
+    <div class="ex">
+      <div class="biz">Small retail store</div>
+      <p>Monthly fixed costs: $2,000<br>Units sold: 200/month</p>
+      <div class="res">$10.00 fixed cost per unit</div>
+    </div>
+    <div class="ex">
+      <div class="biz">Online seller (home-based)</div>
+      <p>Monthly fixed costs: $400<br>Products sold: 50/month</p>
+      <div class="res">$8.00 fixed cost per product</div>
+    </div>
+    <div class="ex">
+      <div class="biz">Handmade bags</div>
+      <p>Monthly fixed costs: $800<br>Bags sold: 80/month</p>
+      <div class="res">$10.00 fixed cost per bag</div>
+    </div>
+    <div class="ex">
+      <div class="biz">Home bakery (jar cakes)</div>
+      <p>Monthly fixed costs: $1,200<br>Units sold: 300/month</p>
+      <div class="res">$4.00 fixed cost per unit</div>
+    </div>
   </div>
 
   <div class="page-footer">
@@ -109,30 +515,54 @@
   </div>
 </div>
 
+<!-- PAGE 3 -->
 <div class="page">
-  <h2>Step 3 — Variable Costs</h2>
-  <p>These costs only exist when you make a sale. Most people forget them and then wonder where the profit went.</p>
 
-  <ul class="checklist">
-    <li>Marketplace or card fees (Amazon, Etsy, Shopify payments): usually 12% to 20%</li>
-    <li>Outbound shipping (when the customer does not pay it)</li>
-    <li>Sales commissions if you have a team</li>
-    <li>Taxes on revenue: varies by country and business type</li>
-  </ul>
+  <div class="step-row" style="margin-top:0;">
+    <span class="step-badge">Step 3</span>
+    <span class="step-title">Variable Costs</span>
+  </div>
+  <h2>What you pay only when you sell</h2>
+  <div class="h2-rule"></div>
+  <p>These costs only appear when a sale happens. Most people forget them entirely, and that is exactly where the profit disappears.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Variable cost</th>
+        <th>Typical rate</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Amazon FBA referral fee</td><td>8% to 15%</td><td>Varies by product category</td></tr>
+      <tr><td>Etsy transaction fee</td><td>6.5%</td><td>Plus 3% + $0.25 payment processing</td></tr>
+      <tr><td>Shopify Payments</td><td>2.9% + $0.30</td><td>Per transaction</td></tr>
+      <tr><td>Square / card reader</td><td>2.6% + $0.10</td><td>Swiped transactions</td></tr>
+      <tr><td>Sales tax (varies by state)</td><td>0% to 10%+</td><td>Check your nexus obligations</td></tr>
+      <tr><td>Outbound shipping (absorbed)</td><td>Variable</td><td>What the customer does not pay</td></tr>
+      <tr><td>Sales commissions</td><td>5% to 15%</td><td>If you have a sales team</td></tr>
+    </tbody>
+  </table>
 
   <div class="warning">
-    <strong>Watch out:</strong> Many sellers list on marketplaces and forget the platform keeps up to 16% of every sale. Add shipping. Add taxes. Price with all of that already included.
+    <strong>Watch out:</strong> Many sellers list on Amazon and forget the platform keeps 8% to 15% of every sale before fees for fulfillment, storage, or advertising. Price with all of that already factored in, or the profit you see on the listing will not exist in your bank account.
   </div>
 
-  <h2>Step 4 — The Final Price Formula</h2>
-  <p>With all costs in hand, apply this formula:</p>
+  <div class="step-row">
+    <span class="step-badge">Step 4</span>
+    <span class="step-title">Final Price</span>
+  </div>
+  <h2>The correct pricing formula</h2>
+  <div class="h2-rule"></div>
+  <p>With all costs in hand, apply this formula. It ensures the final price already absorbs platform fees, taxes, and still delivers the profit margin you defined.</p>
 
   <div class="formula">
-    Price = (COGS + Fixed cost per unit) ÷ (1 – % Variable costs – % Desired profit)
+    Price = (COGS + Fixed cost per unit) ÷ (1 &minus; % Variable costs &minus; % Desired profit)
   </div>
 
-  <div class="example-box">
-    <div class="label">Building the bag price</div>
+  <div class="ex-full">
+    <div class="ex-label">Full example: Handmade bag</div>
     <table>
       <tr><th>Item</th><th>Value</th></tr>
       <tr><td>Product cost (COGS)</td><td>$22.00</td></tr>
@@ -141,39 +571,83 @@
       <tr><td>Tax (6%)</td><td>included in formula</td></tr>
       <tr><td>Desired profit (20%)</td><td>included in formula</td></tr>
     </table>
-    <p style="margin-top:12px;"><strong>Calculation:</strong> (22 + 10) ÷ (1 – 0.15 – 0.06 – 0.20) = $32 ÷ 0.59 = <strong>$54.23</strong></p>
-    <p>Charging $55 is the honest price that covers everything and still gives you 20% real profit.</p>
+    <p style="margin-top:12px;"><strong>Calculation:</strong> (22 + 10) ÷ (1 - 0.15 - 0.06 - 0.20) = $32 ÷ 0.59 = <strong>$54.23</strong></p>
+    <p>Charging $55 covers everything and still delivers 20% real profit on the sale price.</p>
   </div>
 
-  <h2>Checklist before setting your price</h2>
-  <ul class="checklist">
-    <li>Did I calculate the cost of each product individually?</li>
-    <li>Did I include inbound shipping and packaging?</li>
-    <li>Did I divide my fixed costs by monthly sales volume?</li>
-    <li>Did I include platform or card processing fees?</li>
-    <li>Did I include applicable taxes?</li>
-    <li>Did I define a profit percentage before calculating?</li>
-    <li>Did I check whether the final price is competitive?</li>
-  </ul>
-
-  <div class="number-grid">
-    <div class="number-card">
-      <div class="big">20%</div>
-      <div class="desc">Minimum healthy profit for physical products</div>
+  <div class="example-grid">
+    <div class="ex">
+      <div class="biz">Jar cake (home bakery)</div>
+      <p>COGS $5.30 + Fixed $4.00<br>Card fee 3% + Tax 4%<br>Desired profit: 30%</p>
+      <div class="calc">9.30 ÷ (1 - 0.03 - 0.04 - 0.30) = 9.30 ÷ 0.63</div>
+      <div class="res">Suggested price: $14.76</div>
     </div>
-    <div class="number-card">
-      <div class="big">3x</div>
-      <div class="desc">Quick rule: many segments charge 3x the cost</div>
+    <div class="ex">
+      <div class="biz">T-shirt (clothing resale)</div>
+      <p>COGS $49.50 + Fixed $10.00<br>Marketplace 15% + Tax 5%<br>Desired profit: 25%</p>
+      <div class="calc">59.50 ÷ (1 - 0.15 - 0.05 - 0.25) = 59.50 ÷ 0.55</div>
+      <div class="res">Suggested price: $108.18</div>
     </div>
-  </div>
-
-  <div class="highlight">
-    <strong>Final tip:</strong> Run this calculation for every product in your catalog. You will find out which ones are making you money and which ones are draining you without you knowing.
+    <div class="ex">
+      <div class="biz">Cosmetic (resale)</div>
+      <p>COGS $26.00 + Fixed $8.00<br>Card 3% + Tax 4%<br>Desired profit: 35%</p>
+      <div class="calc">34.00 ÷ (1 - 0.03 - 0.04 - 0.35) = 34.00 ÷ 0.58</div>
+      <div class="res">Suggested price: $58.62</div>
+    </div>
+    <div class="ex">
+      <div class="biz">The 3x shortcut</div>
+      <p>Many retail segments use 3x COGS as a quick starting point for validation.</p>
+      <div class="calc">COGS $22.00 x 3 = $66.00</div>
+      <div class="res">Useful for a sanity check, not a substitute for the full calculation.</div>
+    </div>
   </div>
 
   <div class="page-footer">
     <span class="brand">Biztrivo Academy</span>
     <span class="pg">Page 3</span>
+  </div>
+</div>
+
+<!-- PAGE 4 -->
+<div class="page">
+
+  <h2>Checklist before setting your price</h2>
+  <div class="h2-rule"></div>
+  <p>Before publishing any product, go through each item below. If anything is missing, your price may be wrong without you realizing it.</p>
+
+  <ul class="checklist">
+    <li>Did I calculate the cost of each product individually?</li>
+    <li>Did I include inbound shipping and packaging in COGS?</li>
+    <li>Did I estimate losses and damage from my inventory?</li>
+    <li>Did I divide my fixed costs by my monthly sales volume?</li>
+    <li>Did I include platform fees or card processing fees?</li>
+    <li>Did I account for applicable taxes?</li>
+    <li>Did I define a profit percentage before calculating the price?</li>
+    <li>Did I check whether the final price is competitive in my market?</li>
+  </ul>
+
+  <div class="stat-grid">
+    <div class="stat">
+      <div class="big">20%</div>
+      <div class="desc">Minimum healthy margin for physical products</div>
+    </div>
+    <div class="stat">
+      <div class="big">3x</div>
+      <div class="desc">Quick rule: many segments charge 3x the COGS</div>
+    </div>
+    <div class="stat">
+      <div class="big">40%</div>
+      <div class="desc">Ideal margin for resale with high operating costs</div>
+    </div>
+  </div>
+
+  <div class="highlight">
+    <strong>Final tip:</strong> Run this calculation for every product in your catalog. You will find out which ones are making you money and which ones are quietly draining you without you knowing.
+  </div>
+
+  <div class="page-footer">
+    <span class="brand">Biztrivo Academy</span>
+    <span class="pg">Page 4</span>
   </div>
 </div>
 

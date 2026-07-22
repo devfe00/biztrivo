@@ -3,121 +3,474 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>How to Handle Complaints and Win Back Unhappy Customers</title>
+<title>How to Handle Complaints and Win Back Unhappy Customers — Biztrivo Academy</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+  :root {
+    --green:   #10b981;
+    --teal:    #0d9488;
+    --blue:    #0ea5e9;
+    --dark:    #0f172a;
+    --text:    #334155;
+    --muted:   #64748b;
+    --border:  #e2e8f0;
+    --bg:      #f8fafc;
+    --grad:    linear-gradient(135deg, #10b981 0%, #0d9488 45%, #0ea5e9 100%);
+    --grad-sub: linear-gradient(135deg, #f0fdf9 0%, #f0fdfa 50%, #f0f9ff 100%);
+  }
+
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #1e293b; line-height: 1.7; }
 
-  .page { max-width: 750px; margin: 0 auto; background: white; min-height: 100vh; padding: 60px 50px; page-break-after: always; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #fff;
+    color: var(--text);
+    line-height: 1.7;
+  }
 
-  .cover { background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #c2410c 100%); color: white; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; min-height: 100vh; padding: 60px 50px; }
-  .cover .tag { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 30px; }
-  .cover h1 { font-size: 40px; font-weight: 800; line-height: 1.15; margin-bottom: 20px; max-width: 500px; }
-  .cover p { font-size: 18px; opacity: 0.85; max-width: 420px; line-height: 1.6; margin-bottom: 40px; }
-  .cover-deco { display: flex; gap: 16px; flex-wrap: wrap; }
-  .cover-deco span { background: rgba(255,255,255,0.15); padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; }
+  .page {
+    max-width: 100%;
+    margin: 0;
+    background: #fff;
+    min-height: 100vh;
+    padding: 64px 8%;
+    page-break-after: always;
+  }
 
-  h2 { font-size: 26px; font-weight: 800; color: #ea580c; margin-bottom: 12px; margin-top: 40px; padding-bottom: 8px; border-bottom: 3px solid #ffedd5; }
-  h2:first-of-type { margin-top: 0; }
-  h3 { font-size: 17px; font-weight: 700; color: #1e293b; margin-top: 28px; margin-bottom: 8px; }
-  p { font-size: 15px; color: #374151; margin-bottom: 14px; }
+  .cover {
+    background: var(--grad);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: 100vh;
+    padding: 64px 8%;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover::before {
+    content: '';
+    position: absolute;
+    top: -100px; right: -80px;
+    width: 420px; height: 420px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    pointer-events: none;
+  }
+  .cover-tag {
+    display: inline-block;
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.32);
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+    width: fit-content;
+  }
+  .cover h1 {
+    font-size: 50px;
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -0.5px;
+    margin-bottom: 20px;
+    max-width: 620px;
+  }
+  .cover-sub {
+    font-size: 17px;
+    opacity: 0.85;
+    max-width: 500px;
+    line-height: 1.65;
+    margin-bottom: 44px;
+  }
+  .cover-pills {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 72px;
+  }
+  .cover-pills span {
+    background: rgba(255,255,255,0.14);
+    border: 1px solid rgba(255,255,255,0.25);
+    padding: 7px 16px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .cover-brand {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    opacity: 0.6;
+  }
 
-  .highlight { background: #fff7ed; border-left: 4px solid #f97316; padding: 16px 20px; border-radius: 0 10px 10px 0; margin: 20px 0; }
-  .highlight strong { color: #ea580c; }
+  h2 {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--dark);
+    letter-spacing: -0.3px;
+    line-height: 1.2;
+    margin-bottom: 6px;
+    margin-top: 48px;
+  }
+  h2:first-child { margin-top: 0; }
+  .h2-rule {
+    height: 3px;
+    width: 44px;
+    background: var(--grad);
+    border-radius: 2px;
+    margin-bottom: 20px;
+    margin-top: 8px;
+  }
+  p {
+    font-size: 15px;
+    color: var(--text);
+    margin-bottom: 16px;
+    line-height: 1.75;
+  }
 
-  .warning { background: #fef2f2; border-left: 4px solid #f87171; padding: 16px 20px; border-radius: 0 10px 10px 0; margin: 20px 0; font-size: 14px; color: #991b1b; }
-  .warning strong { color: #dc2626; }
+  .highlight {
+    background: var(--grad-sub);
+    border-left: 4px solid var(--teal);
+    padding: 18px 24px;
+    border-radius: 0 10px 10px 0;
+    margin: 24px 0;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  .highlight strong { color: var(--teal); }
 
-  .success { background: #f0fdf4; border-left: 4px solid #4ade80; padding: 16px 20px; border-radius: 0 10px 10px 0; margin: 20px 0; font-size: 14px; color: #166534; }
+  .warning {
+    background: #fffbeb;
+    border-left: 4px solid #f59e0b;
+    padding: 18px 24px;
+    border-radius: 0 8px 8px 0;
+    margin: 24px 0;
+    font-size: 14px;
+    color: #78350f;
+    line-height: 1.65;
+  }
+  .warning strong { color: #b45309; }
+
+  .success {
+    background: #f0fdf4;
+    border-left: 4px solid #4ade80;
+    padding: 18px 24px;
+    border-radius: 0 8px 8px 0;
+    margin: 24px 0;
+    font-size: 14px;
+    color: #166534;
+    line-height: 1.65;
+  }
   .success strong { color: #16a34a; }
 
-  .checklist { list-style: none; margin: 16px 0; }
-  .checklist li { padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 15px; color: #374151; display: flex; align-items: flex-start; gap: 12px; }
-  .checklist li::before { content: "✓"; color: #f97316; font-weight: 800; font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .step-card {
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 20px 0;
+    background: #fff;
+  }
+  .step-card .step-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 12px;
+  }
+  .step-card .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--grad);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+  .step-card .step-title {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--dark);
+  }
+  .step-card p {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+  .step-card .example {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-size: 14px;
+    color: var(--muted);
+    margin-top: 14px;
+    border: 1px solid var(--border);
+  }
+  .step-card .example strong { color: var(--teal); }
 
-  .step { border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 20px 24px; margin: 14px 0; }
-  .step-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
-  .step-num { background: #ea580c; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; flex-shrink: 0; }
-  .step-title { font-weight: 700; font-size: 16px; }
+  .scenario-card {
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 20px 0;
+    background: #fff;
+  }
+  .scenario-card .sc-label {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .scenario-card h4 {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--dark);
+    margin-bottom: 10px;
+  }
+  .scenario-card p {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
 
-  .msg-bubble { background: #ffedd5; border-radius: 18px 18px 18px 4px; padding: 14px 18px; margin: 10px 0; font-size: 14px; color: #7c2d12; max-width: 92%; border: 1.5px solid #fed7aa; }
-  .msg-bubble .msg-label { font-size: 11px; font-weight: 700; color: #ea580c; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+  .msg-good {
+    background: var(--grad-sub);
+    border-radius: 18px 18px 18px 4px;
+    padding: 14px 18px;
+    margin: 10px 0;
+    font-size: 14px;
+    color: #0f5132;
+    max-width: 96%;
+    border: 1.5px solid #86efac;
+  }
+  .msg-good .msg-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--teal);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
 
-  .msg-bad { background: #fee2e2; border-radius: 18px 18px 18px 4px; padding: 14px 18px; margin: 10px 0; font-size: 14px; color: #991b1b; max-width: 92%; border: 1.5px solid #fca5a5; }
-  .msg-bad .msg-label { font-size: 11px; font-weight: 700; color: #dc2626; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+  .msg-bad {
+    background: #fee2e2;
+    border-radius: 18px 18px 18px 4px;
+    padding: 14px 18px;
+    margin: 10px 0;
+    font-size: 14px;
+    color: #991b1b;
+    max-width: 96%;
+    border: 1.5px solid #fca5a5;
+  }
+  .msg-bad .msg-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #dc2626;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
 
-  .scenario { background: #f8fafc; border-radius: 12px; padding: 20px; margin: 16px 0; border: 1.5px solid #e2e8f0; }
-  .scenario .sc-label { font-size: 13px; font-weight: 700; color: #ea580c; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 24px 0;
+    font-size: 14px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  table th {
+    background: var(--dark);
+    color: white;
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+  table tr:nth-child(even) td { background: var(--bg); }
+  table tr:last-child td { border-bottom: none; }
 
-  .page-footer { margin-top: 60px; padding-top: 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
-  .page-footer .brand { font-size: 13px; font-weight: 700; color: #ea580c; }
+  .checklist {
+    list-style: none;
+    margin: 16px 0;
+  }
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.65;
+  }
+  .checklist li::before {
+    content: "✓";
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--grad);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 900;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .page-footer {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .page-footer .brand {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    background: var(--grad);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
   .page-footer .pg { font-size: 12px; color: #94a3b8; }
 </style>
 </head>
 <body>
 
+<!-- COVER -->
 <div class="page cover">
-  <div class="tag">📚 Biztrivo Academy</div>
+  <div class="cover-tag">Biztrivo Academy</div>
   <h1>How to Handle Complaints and Win Back Unhappy Customers</h1>
-  <p>An angry customer is not the end. It is a chance to create your most loyal fan.</p>
-  <div class="cover-deco">
-    <span>🔥 Real situations</span>
-    <span>💬 Ready responses</span>
-    <span>🔄 Turn it around</span>
+  <p class="cover-sub">An angry customer is not the end. It is a chance to create your most loyal fan.</p>
+  <div class="cover-pills">
+    <span>4-step protocol</span>
+    <span>Ready responses</span>
+    <span>How to turn it around</span>
   </div>
-  <div style="margin-top: auto; padding-top: 60px; font-size: 13px; opacity: 0.7; font-weight: 600;">Biztrivo Academy</div>
+  <div class="cover-brand">Biztrivo Academy</div>
 </div>
 
+<!-- PAGE 2 -->
 <div class="page">
+
   <h2>A complaint is a disguised opportunity</h2>
-  <p>It sounds like a stretch, but it is not. Research from Harvard Business Review found that customers who had a problem that was resolved well end up more loyal than customers who never had a problem at all.</p>
+  <div class="h2-rule"></div>
+  <p>It sounds contradictory, but research shows that customers who had a problem resolved well end up more loyal than customers who never had a problem at all. The reason is simple: when everything goes right, the customer never saw you being tested. When something went wrong and you handled it with excellence, they saw your character. That is what creates real trust.</p>
   <p>The customer who complains still believes you can fix it. The dangerous one is the customer who says nothing, simply disappears, and then tells ten people about it.</p>
 
   <div class="highlight">
-    <strong>Golden rule:</strong> It is not about being right. It is about resolving. The customer wants to feel heard, respected, and taken care of. They do not want to win an argument.
+    <strong>A number that changes your perspective:</strong> For every customer who complains, an estimated 26 had the same problem and said nothing. They left in silence. The one who complains is giving you a real chance to make things right.
+  </div>
+
+  <h2>What you should NEVER do when a customer complains</h2>
+  <div class="h2-rule"></div>
+
+  <div class="msg-bad">
+    <div class="msg-label">Never respond like this</div>
+    "But I mentioned in the listing that delivery takes 10 days. You did not read the terms. Unfortunately there is nothing I can do."
+  </div>
+  <p>Even if you are technically correct, this response ends any chance of recovery. The customer leaves furious and tells their friends.</p>
+
+  <div class="msg-bad">
+    <div class="msg-label">Also wrong: going silent</div>
+    Leaving the message on read, not responding, or taking more than 24 hours without any update.
+  </div>
+  <p>Silence is the worst possible response. It makes the customer feel abandoned, and they go straight to a review site or post about it publicly.</p>
+
+  <div class="warning">
+    <strong>Other common mistakes:</strong> Arguing about who is right before solving the problem. Using a robotic or copy-paste tone with no personalization. Promising a solution and missing the deadline. Telling the customer to "read the description more carefully." Each of these behaviors costs more than the original problem.
   </div>
 
   <h2>The structure that turns any complaint around</h2>
+  <div class="h2-rule"></div>
   <p>Every complaint response follows the same logic: <strong>acknowledge, understand, resolve, retain.</strong> In that order. Skipping a step breaks the whole thing.</p>
 
-  <div class="step">
-    <div class="step-header"><div class="step-num">1</div><div class="step-title">Acknowledge: before anything else</div></div>
-    <p style="font-size:14px; color:#64748b; margin-bottom:10px;">The customer is frustrated. Before you explain, defend, or solve anything, recognize how they feel. This brings the temperature down.</p>
+  <div class="step-card">
+    <div class="step-header">
+      <div class="step-num">1</div>
+      <div class="step-title">Acknowledge: before anything else</div>
+    </div>
+    <p>The customer is frustrated. Before you explain, defend yourself, or solve anything, recognize what they are feeling. This alone brings the temperature down by half.</p>
     <div class="msg-bad">
-      <div class="msg-label">❌ Wrong, defensive</div>
+      <div class="msg-label">Wrong — defensive</div>
       "But did you read the description? It clearly states that the product is like this."
     </div>
-    <div class="msg-bubble">
-      <div class="msg-label">✅ Right, acknowledges first</div>
+    <div class="msg-good">
+      <div class="msg-label">Right — acknowledges first</div>
       "Hi [Name], I completely understand your frustration and I am really sorry about the experience you had. This is not what I want for any of my customers. Can you tell me more about what happened?"
     </div>
+    <div class="example">
+      <strong>Other opening lines that work:</strong> "That sounds really frustrating, [Name]. You are right to be upset." | "This should not have happened. Tell me what went on and I will fix it right now."
+    </div>
   </div>
 
-  <div class="step">
-    <div class="step-header"><div class="step-num">2</div><div class="step-title">Understand: ask the right question</div></div>
-    <p style="font-size:14px; color:#64748b; margin-bottom:10px;">Before proposing a solution, make sure you understood the actual problem. One question is enough.</p>
-    <div class="msg-bubble">
-      <div class="msg-label">✅ Clarifying question</div>
+  <div class="step-card">
+    <div class="step-header">
+      <div class="step-num">2</div>
+      <div class="step-title">Understand: ask the right question</div>
+    </div>
+    <p>Before proposing a solution, make sure you actually understand the problem. One targeted question is enough to get there.</p>
+    <div class="msg-good">
+      <div class="msg-label">Clarifying question</div>
       "Just so I can resolve this the right way: did the product arrive with a physical defect, or did the color or size come different from what you ordered?"
     </div>
-  </div>
-
-  <div class="step">
-    <div class="step-header"><div class="step-num">3</div><div class="step-title">Resolve: be clear and fast</div></div>
-    <p style="font-size:14px; color:#64748b; margin-bottom:10px;">Offer a concrete solution with a clear timeline. Do not leave the customer waiting in limbo. The faster you act, the better.</p>
-    <div class="msg-bubble">
-      <div class="msg-label">✅ Solution proposal</div>
-      "Got it. I will send you a replacement this week at no extra cost. Could you send me a photo of the defect so I can log it on my end?"
+    <div class="example">
+      <strong>Other examples:</strong> "The tracking shows delivered but you did not receive it, or the package arrived but the contents were wrong?" | "Is the issue with the product quality or the delivery timeline?" — Understanding the real problem prevents you from offering the wrong solution.
     </div>
   </div>
 
-  <div class="step">
-    <div class="step-header"><div class="step-num">4</div><div class="step-title">Retain: surprise them at the end</div></div>
-    <p style="font-size:14px; color:#64748b; margin-bottom:10px;">After resolving, add an unexpected gesture. This is the step that turns a dissatisfied customer into a loyal one.</p>
-    <div class="msg-bubble">
-      <div class="msg-label">✅ The gesture that sticks</div>
-      "Package sent! 📦 I asked them to include a small gift too. Sorry again for the trouble. I hope this one arrives perfect. Anything you need, just reach out. 🧡"
+  <div class="step-card">
+    <div class="step-header">
+      <div class="step-num">3</div>
+      <div class="step-title">Resolve: be clear and fast</div>
+    </div>
+    <p>Offer a concrete solution with a specific deadline. Do not leave the customer waiting in limbo with a vague reply. The faster you act, the better the outcome.</p>
+    <div class="msg-good">
+      <div class="msg-label">Solution proposal</div>
+      "Got it. I will send you a replacement this week at no extra cost. Could you send me a photo of the defect so I can log it on my end?"
+    </div>
+    <div class="example">
+      <strong>Other examples of clear solutions:</strong> "I will refund the full amount by tomorrow." | "I can send you the correct product today, or if you prefer, I will do a full refund. You decide." | "I just opened a case with the carrier. I will have an update within 48 hours and I will pass it along immediately."
+    </div>
+  </div>
+
+  <div class="step-card">
+    <div class="step-header">
+      <div class="step-num">4</div>
+      <div class="step-title">Retain: surprise them at the end</div>
+    </div>
+    <p>After resolving, add an unexpected gesture. This is the step that turns a dissatisfied customer into a loyal one. The bad experience becomes a good story.</p>
+    <div class="msg-good">
+      <div class="msg-label">The gesture that sticks</div>
+      "Package sent! I asked them to include a small gift too. Sorry again for the trouble. I hope this one arrives perfect. Anything you need, just reach out."
+    </div>
+    <div class="example">
+      <strong>Other gestures that work:</strong> A discount code for the next purchase. A handwritten note tucked inside the replacement. A product upgrade at no extra charge. A follow-up message two days later asking if everything arrived okay.
     </div>
   </div>
 
@@ -127,58 +480,104 @@
   </div>
 </div>
 
+<!-- PAGE 3 -->
 <div class="page">
-  <h2>Common situations and how to respond</h2>
 
-  <div class="scenario">
-    <div class="sc-label">📦 Situation 1: Product arrived damaged</div>
-    <div class="msg-bubble">
-      <div class="msg-label">✅ Response</div>
-      "Hi [Name], that is such an unfortunate situation. I am really sorry! Can you send me a photo of the damage? I will check it out and get a replacement to you as fast as possible. No back-and-forth needed on your end."
+  <h2>Common situations and how to respond</h2>
+  <div class="h2-rule"></div>
+
+  <div class="scenario-card">
+    <div class="sc-label">Situation 1 — Product arrived damaged or different from the photo</div>
+    <h4>The customer opened the package and it was not what they expected.</h4>
+    <p>Do not ask them to "prove it" or imply they may have used it incorrectly. Ask for a photo for your internal records, but communicate the solution from the very first message.</p>
+    <div class="msg-good">
+      <div class="msg-label">How to respond</div>
+      "Hi [Name], that is such an unfortunate situation. I am really sorry! Can you send me a photo of the damage? I will check it out and send a replacement as fast as possible. No back-and-forth needed on your end."
+    </div>
+    <div class="example">
+      <strong>Variation for a manufacturing defect:</strong> "[Name], send me a photo of the defect when you can. It helps me resolve this faster and flag it with my supplier. I will ship a new one out to you this week."
     </div>
   </div>
 
-  <div class="scenario">
-    <div class="sc-label">🚚 Situation 2: Order is late</div>
-    <div class="msg-bubble">
-      <div class="msg-label">✅ Response</div>
+  <div class="scenario-card">
+    <div class="sc-label">Situation 2 — Order is late or has not arrived</div>
+    <h4>The deadline passed and the customer is without their product.</h4>
+    <p>Check the tracking before responding. Do not blame the carrier in front of the customer — that is your problem to handle, not theirs.</p>
+    <div class="msg-good">
+      <div class="msg-label">How to respond</div>
       "Hi [Name], I completely understand the frustration! I just checked the tracking: the order is [status]. Estimated delivery: [date]. If it does not arrive by then, contact me right away and I will sort it out immediately."
     </div>
+    <div class="example">
+      <strong>If the order was lost in transit:</strong> "It looks like the package may have been lost by the carrier. I am opening a claim right now and will start the replacement process at the same time. You do not need to do anything on your end."
+    </div>
   </div>
 
-  <div class="scenario">
-    <div class="sc-label">🎨 Situation 3: Wrong color or size was sent</div>
-    <div class="msg-bubble">
-      <div class="msg-label">✅ Response</div>
+  <div class="scenario-card">
+    <div class="sc-label">Situation 3 — Wrong color or size was sent</div>
+    <h4>The mistake was yours — the order was picked or packed incorrectly.</h4>
+    <p>Own the mistake without hedging. The customer already knows it was an error. The faster you acknowledge it, the faster they relax.</p>
+    <div class="msg-good">
+      <div class="msg-label">How to respond</div>
       "That was my mistake, I am sorry! Would you prefer I send the correct one and you return this, or would you rather keep it and receive a credit toward your next purchase? Tell me what works best for you."
     </div>
+    <div class="example">
+      <strong>Practical tip:</strong> If the incorrectly sent item has low value compared to the return shipping cost, it often makes sense to tell the customer to keep it and immediately send the correct one. It delights the customer and frequently costs less than the return logistics.
+    </div>
   </div>
 
-  <div class="scenario">
-    <div class="sc-label">😡 Situation 4: Rude or aggressive customer</div>
-    <div class="msg-bubble">
-      <div class="msg-label">✅ Response: firm and respectful</div>
+  <div class="scenario-card">
+    <div class="sc-label">Situation 4 — Response took too long</div>
+    <h4>The customer was left waiting and is annoyed by the delay.</h4>
+    <p>Do not justify the delay with "we had a lot of orders." That is your problem, not the customer's. Acknowledge it, refocus on them, and resolve.</p>
+    <div class="msg-good">
+      <div class="msg-label">How to respond</div>
+      "You are right, [Name], and I apologize for the wait. I am here now with my full attention on you. How can I help?"
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="sc-label">Situation 5 — Rude or aggressive customer</div>
+    <h4>The frustration has turned into hostility. You can still guide this intelligently.</h4>
+    <p>Do not engage emotionally. Do not respond in kind. A calm, firm reply is more disarming than reactivity.</p>
+    <div class="msg-good">
+      <div class="msg-label">How to respond — firm and respectful</div>
       "I understand you are frustrated, and I genuinely want to fix this for you. To help you properly, I need us both to keep the conversation respectful. What exactly happened?"
     </div>
-    <p style="font-size:13px; color:#64748b; margin-top:8px;">If they continue after this, you can close the conversation politely and let them know you will resume it when the tone changes. You are entitled to basic respect.</p>
+    <div class="example">
+      <strong>If the customer remains aggressive after 2 attempts:</strong> You can and should close the conversation politely. "I am here to help whenever you would like to talk more calmly. Feel free to reach out anytime." Resolving a problem does not mean accepting disrespect.
+    </div>
   </div>
 
   <div class="warning">
-    <strong>Never do this when handling a complaint:</strong> Ignoring it or taking more than 2 hours to respond. Arguing about who is right before solving the problem. Telling the customer to "read the description more carefully." Using a cold or robotic tone. Promising a solution and then missing the deadline.
+    <strong>When a customer threatens to post about it publicly:</strong> Do not panic and do not give in to pressure. Resolve the problem the right way — out of commitment, not fear. If the solution is good, the customer will not want to post anything. And if they do anyway, a public response showing you handled it well becomes positive marketing.
   </div>
 
+  <h2>A repeated complaint is a broken process</h2>
+  <div class="h2-rule"></div>
+  <p>An isolated complaint is an incident. A recurring complaint is a signal of a systemic failure. Use every problem as an input to improve your process.</p>
+
+  <table>
+    <tr><th>Frequent complaint</th><th>Likely cause</th><th>Corrective action</th></tr>
+    <tr><td>Wrong product sent more than twice</td><td>No double-check during picking</td><td>Add a verification step before packing</td></tr>
+    <tr><td>Recurring delivery delays</td><td>Wrong carrier or inaccurate stated deadline</td><td>Revise listing deadlines and evaluate switching carriers</td></tr>
+    <tr><td>Product different from the photo</td><td>Outdated images or mixed stock</td><td>Update photos and sync catalog with real inventory</td></tr>
+    <tr><td>Hard to reach customer service</td><td>Single channel or unclear hours</td><td>Define a clear response window and state it in your listing</td></tr>
+  </table>
+
   <h2>Complaint handling checklist</h2>
+  <div class="h2-rule"></div>
   <ul class="checklist">
-    <li>Did I respond within 2 hours?</li>
-    <li>Did I acknowledge the customer's feelings before explaining anything?</li>
+    <li>Did I respond within 2 hours, even without a solution yet?</li>
+    <li>Did I acknowledge the customer's feelings before defending anything?</li>
     <li>Did I ask a clarifying question before proposing a solution?</li>
     <li>Did I offer a concrete solution with a clear deadline?</li>
     <li>Did I add an extra gesture to create a positive surprise?</li>
-    <li>Did I follow up to confirm the solution was delivered as promised?</li>
+    <li>Did I follow up to confirm the issue was fully resolved?</li>
+    <li>Did I log the problem to investigate and prevent it from happening again?</li>
   </ul>
 
   <div class="success">
-    <strong>Remember:</strong> A customer whose problem was resolved well tells the story to other people. "I had an issue but the service was incredible" is the most powerful word-of-mouth you can get, and it costs nothing.
+    <strong>Remember:</strong> A customer whose problem was resolved with excellence tells the story to other people. "I had an issue but the service was incredible" is the most powerful word-of-mouth you can get, and it costs nothing.
   </div>
 
   <div class="page-footer">

@@ -3,130 +3,132 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Como Fidelizar Clientes e Gerar Recompra</title>
+<title>Guia Avançado: Fidelização e Recompra — Biztrivo Academy</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+  :root {
+    --green:   #10b981;
+    --teal:    #0d9488;
+    --blue:    #0ea5e9;
+    --dark:    #0f172a;
+    --text:    #334155;
+    --muted:   #64748b;
+    --border:  #e2e8f0;
+    --bg:      #f8fafc;
+    --grad:    linear-gradient(135deg, #10b981 0%, #0d9488 45%, #0ea5e9 100%);
+    --grad-sub: linear-gradient(135deg, #f0fdf9 0%, #f0fdfa 50%, #f0f9ff 100%);
+  }
+
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #1e293b; line-height: 1.7; }
 
-  .page { max-width: 750px; margin: 0 auto; background: white; min-height: 100vh; padding: 60px 50px; page-break-after: always; }
+  body { font-family: 'Inter', sans-serif; background: #fff; color: var(--text); line-height: 1.7; }
 
-  .cover { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 50%, #6d28d9 100%); color: white; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; min-height: 100vh; padding: 60px 50px; }
-  .cover .tag { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 30px; }
-  .cover h1 { font-size: 44px; font-weight: 800; line-height: 1.15; margin-bottom: 20px; max-width: 500px; }
-  .cover p { font-size: 18px; opacity: 0.85; max-width: 420px; line-height: 1.6; margin-bottom: 40px; }
-  .cover-deco { display: flex; gap: 16px; flex-wrap: wrap; }
-  .cover-deco span { background: rgba(255,255,255,0.15); padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; }
+  .page { max-width: 100%; margin: 0; background: #fff; min-height: 100vh; padding: 64px 8%; page-break-after: always; }
 
-  h2 { font-size: 26px; font-weight: 800; color: #7c3aed; margin-bottom: 12px; margin-top: 40px; padding-bottom: 8px; border-bottom: 3px solid #ede9fe; }
-  h2:first-of-type { margin-top: 0; }
-  h3 { font-size: 17px; font-weight: 700; color: #1e293b; margin-top: 28px; margin-bottom: 8px; }
-  p { font-size: 15px; color: #374151; margin-bottom: 14px; }
+  .cover { background: var(--grad); color: #fff; display: flex; flex-direction: column; justify-content: flex-end; min-height: 100vh; padding: 64px 8%; position: relative; overflow: hidden; }
+  .cover::before { content: ''; position: absolute; top: -100px; right: -80px; width: 420px; height: 420px; border-radius: 50%; background: rgba(255,255,255,0.06); pointer-events: none; }
+  .cover-tag { display: inline-block; background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.32); padding: 5px 14px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 1.8px; text-transform: uppercase; margin-bottom: 32px; width: fit-content; }
+  .cover h1 { font-size: 50px; font-weight: 800; line-height: 1.08; letter-spacing: -0.5px; margin-bottom: 20px; max-width: 650px; }
+  .cover-sub { font-size: 17px; opacity: 0.85; max-width: 500px; line-height: 1.65; margin-bottom: 44px; }
+  .cover-pills { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 72px; }
+  .cover-pills span { background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.25); padding: 7px 16px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+  .cover-brand { font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; opacity: 0.6; }
 
-  .highlight { background: #f5f3ff; border-left: 4px solid #8b5cf6; padding: 16px 20px; border-radius: 0 10px 10px 0; margin: 20px 0; }
-  .highlight strong { color: #7c3aed; }
-
-  .warning { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px 20px; border-radius: 0 10px 10px 0; margin: 20px 0; font-size: 14px; color: #92400e; }
-  .warning strong { color: #d97706; }
-
-  .checklist { list-style: none; margin: 16px 0; }
-  .checklist li { padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 15px; color: #374151; display: flex; align-items: flex-start; gap: 12px; }
-  .checklist li::before { content: "✓"; color: #8b5cf6; font-weight: 800; font-size: 16px; flex-shrink: 0; margin-top: 1px; }
-
-  .example-box { background: #faf5ff; border: 1.5px solid #d8b4fe; border-radius: 12px; padding: 20px 24px; margin: 20px 0; }
-  .example-box .label { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; color: #7c3aed; text-transform: uppercase; margin-bottom: 10px; }
+  h2 { font-size: 26px; font-weight: 800; color: var(--dark); letter-spacing: -0.3px; line-height: 1.2; margin-bottom: 6px; margin-top: 48px; }
+  h2:first-child { margin-top: 0; }
+  .h2-rule { height: 3px; width: 44px; background: var(--grad); border-radius: 2px; margin-bottom: 20px; margin-top: 8px; }
+  p { font-size: 15px; color: var(--text); margin-bottom: 16px; line-height: 1.75; }
 
   .stat-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin: 24px 0; }
-  .stat-card { background: #f5f3ff; border: 1.5px solid #ddd6fe; border-radius: 12px; padding: 20px; text-align: center; }
-  .stat-card .big { font-size: 34px; font-weight: 800; color: #7c3aed; }
-  .stat-card .desc { font-size: 12px; color: #6b7280; margin-top: 4px; line-height: 1.4; }
+  .stat-card { background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; padding: 20px; text-align: center; }
+  .stat-card .big { font-size: 34px; font-weight: 800; color: var(--teal); }
+  .stat-card .desc { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
 
-  .action-card { border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 20px 24px; margin: 14px 0; display: flex; gap: 16px; align-items: flex-start; }
-  .action-icon { font-size: 28px; flex-shrink: 0; }
-  .action-card h4 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
-  .action-card p { font-size: 14px; color: #64748b; margin: 0; }
+  .highlight { background: var(--grad-sub); border-left: 4px solid var(--teal); padding: 18px 24px; border-radius: 0 10px 10px 0; margin: 24px 0; font-size: 15px; line-height: 1.7; }
+  .highlight strong { color: var(--teal); }
 
-  .msg-bubble { background: #ede9fe; border-radius: 18px 18px 18px 4px; padding: 14px 18px; margin: 10px 0; font-size: 14px; color: #4c1d95; max-width: 92%; border: 1.5px solid #c4b5fd; }
-  .msg-bubble .msg-label { font-size: 11px; font-weight: 700; color: #7c3aed; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+  .warning { background: #fffbeb; border-left: 4px solid #f59e0b; padding: 18px 24px; border-radius: 0 8px 8px 0; margin: 24px 0; font-size: 14px; color: #78350f; line-height: 1.65; }
+  .warning strong { color: #b45309; }
 
-  .page-footer { margin-top: 60px; padding-top: 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
-  .page-footer .brand { font-size: 13px; font-weight: 700; color: #7c3aed; }
-  .page-footer .pg { font-size: 12px; color: #94a3b8; }
+  .promo-card { border: 1.5px solid var(--border); border-radius: 12px; padding: 24px; margin: 20px 0; background: #fff; }
+  .promo-card .promo-tag { display: inline-block; background: var(--bg); color: var(--teal); font-size: 11px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; padding: 4px 12px; border-radius: 20px; margin-bottom: 12px; border: 1px solid var(--border); }
+  .promo-card h4 { font-size: 17px; font-weight: 800; color: var(--dark); margin-bottom: 8px; }
+  .promo-card .example { background: var(--bg); border-radius: 8px; padding: 14px 18px; font-size: 14px; color: var(--text); margin-top: 14px; border: 1px solid var(--border); }
+  .promo-card .example strong { color: var(--teal); }
+
+  table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 14px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+  table th { background: var(--teal); color: white; padding: 12px 16px; text-align: left; font-weight: 700; font-size: 12px; letter-spacing: 0.5px; text-transform: uppercase; }
+  table td { padding: 12px 16px; border-bottom: 1px solid var(--border); color: var(--text); }
+  table tr:nth-child(even) td { background: var(--bg); }
+  table tr:last-child td { border-bottom: none; }
+
+  .checklist { list-style: none; margin: 16px 0; }
+  .checklist li { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 15px; color: var(--text); line-height: 1.65; }
+  .checklist li::before { content: "✓"; display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 22px; border-radius: 50%; background: var(--grad); color: #fff; font-size: 11px; font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .page-footer { margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .page-footer .brand { font-size: 13px; font-weight: 800; letter-spacing: 0.5px; background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .page-footer .pg { font-size: 12px; color: var(--muted); }
 </style>
 </head>
 <body>
 
-<!-- CAPA -->
 <div class="page cover">
-  <div class="tag">📚 Biztrivo Academy</div>
-  <h1>Como Fidelizar Clientes e Gerar Recompra</h1>
-  <p>Custa 5x mais caro conquistar um cliente novo do que vender de novo pra quem já comprou. Use isso a seu favor.</p>
-  <div class="cover-deco">
-    <span>🔁 Recompra sistemática</span>
-    <span>💜 Relacionamento real</span>
-    <span>📈 Faturamento recorrente</span>
+  <div class="cover-tag">Biztrivo Academy</div>
+  <h1>Como Fidelizar Clientes e Gerar Recompra Sistemática</h1>
+  <p class="cover-sub">Custa cinco vezes mais caro conquistar um cliente novo do que vender novamente para quem já comprou. Use isso a seu favor e construa previsibilidade financeira.</p>
+  <div class="cover-pills">
+    <span>Estratégia de pós-venda</span>
+    <span>Aumento de LTV</span>
+    <span>Comunicação contextual</span>
   </div>
-  <div style="margin-top: auto; padding-top: 60px; font-size: 13px; opacity: 0.7; font-weight: 600;">
-    Biztrivo Academy — Para quem vende com propósito
-  </div>
+  <div class="cover-brand">Biztrivo Academy</div>
 </div>
 
-<!-- PÁGINA 2 -->
 <div class="page">
   <h2>O cliente que volta vale ouro</h2>
-  <p>A maioria dos negócios gasta quase toda a energia tentando encontrar clientes novos anúncio, post, promoção. Mas ignora a mina de ouro que já existe: quem já comprou uma vez.</p>
-  <p>Esse cliente já te conhece, já confiou no seu produto, já passou pelo maior obstáculo da venda. Vender de novo pra ele é infinitamente mais fácil e mais barato.</p>
+  <div class="h2-rule"></div>
+  <p>A maioria dos negócios gasta quase toda a energia tentando encontrar clientes novos por meio de anúncios e postagens, mas ignora a mina de ouro que já existe: quem já comprou uma vez. Esse cliente já conhece a empresa, já confiou no produto e já superou a maior barreira de objeção comercial. Por isso, vender de novo para ele é infinitamente mais fácil e barato.</p>
 
   <div class="stat-row">
     <div class="stat-card">
       <div class="big">5x</div>
-      <div class="desc">mais caro conquistar cliente novo vs. vender para quem já comprou</div>
+      <div class="desc">mais caro adquirir um cliente novo do que reter um atual</div>
     </div>
     <div class="stat-card">
       <div class="big">60%</div>
-      <div class="desc">mais chances de vender para um cliente antigo vs. um novo contato</div>
+      <div class="desc">maior chance de conversão ao vender para um contato antigo</div>
     </div>
     <div class="stat-card">
       <div class="big">80%</div>
-      <div class="desc">do faturamento de negócios maduros vem de 20% dos clientes fiéis</div>
+      <div class="desc">do lucro em negócios estáveis tem origem em apenas 20% dos clientes</div>
     </div>
   </div>
 
   <div class="highlight">
-    <strong>Regra de ouro:</strong> Antes de investir em atrair cliente novo, garanta que quem já comprou vai comprar de novo. Isso é o que separa negócio que cresce de negócio que só sobrevive.
+    <strong>Regra de ouro:</strong> Antes de investir capital e energia atraindo novos curiosos, garanta a estruturação de um modelo de negócio onde quem já comprou, compra novamente.
   </div>
 
-  <h2>Os 4 pilares da fidelização</h2>
+  <h2>Pilar 1: Pós-venda que antecipa e surpreende</h2>
+  <div class="h2-rule"></div>
+  <p>O mercado tradicional costuma encerrar a interação após a confirmação do pagamento. Empresas que crescem adotam postura proativa: confirmam o recebimento, validam expectativas e abrem canais de comunicação humanizados de forma imediata.</p>
 
-  <div class="action-card">
-    <div class="action-icon">🤝</div>
-    <div>
-      <h4>1. Pós-venda que surpreende</h4>
-      <p>A maioria para no pagamento confirmado. Você vai além: confirme o recebimento, pergunte se chegou bem, se gostou. Uma mensagem de 20 segundos cria uma lembrança que dura meses.</p>
+  <div class="promo-card">
+    <div class="promo-tag">Exemplo Prático: Delivery de Alimentos</div>
+    <h4>Gestão Preventiva de Crises</h4>
+    <p>A percepção de valor do cliente pode ser completamente moldada nos minutos finais de um consumo gastronômico.</p>
+    <div class="example">
+      <strong>Aplicação:</strong> Uma hamburgueria artesanal envia uma mensagem automática via WhatsApp exatos 45 minutos após a saída do entregador: "Ola João, o aplicativo atualizou que seu pedido foi entregue. O hambúrguer estava na temperatura ideal? A batata chegou crocante?". Qualquer insatisfação é contida e recompensada de forma particular antes de se tornar uma crítica pública.
     </div>
   </div>
 
-  <div class="action-card">
-    <div class="action-icon">📋</div>
-    <div>
-      <h4>2. Lista organizada de clientes</h4>
-      <p>Salve o nome, o que comprou e quando. Pode ser uma planilha simples. Com isso você sabe exatamente quando falar de novo e com o quê.</p>
-    </div>
-  </div>
-
-  <div class="action-card">
-    <div class="action-icon">🎯</div>
-    <div>
-      <h4>3. Comunicação com contexto</h4>
-      <p>Não mande a mesma mensagem para todo mundo. "Oi Ana, chegou uma bolsa parecida com a que você levou em março" converte muito mais que um disparo genérico.</p>
-    </div>
-  </div>
-
-  <div class="action-card">
-    <div class="action-icon">🎁</div>
-    <div>
-      <h4>4. Recompensa para quem volta</h4>
-      <p>Ofereça algo especial para a segunda compra: frete grátis, desconto exclusivo, brinde surpresa. O cliente precisa sentir que ser fiel tem vantagem concreta.</p>
+  <div class="promo-card">
+    <div class="promo-tag">Exemplo Prático: Varejo de Moda</div>
+    <h4>Extensão da Vida Útil do Produto</h4>
+    <p>O zelo demonstrado pela durabilidade da mercadoria que já foi paga eleva a autoridade da marca.</p>
+    <div class="example">
+      <strong>Aplicação:</strong> Uma loja de vestuário programa o envio de um arquivo em PDF três dias após a venda de uma peça sensível: "Separamos um guia rápido sobre como lavar sua nova saia de linho para que o tecido permaneça intacto por anos". O cliente sente cuidado, não percepção de venda.
     </div>
   </div>
 
@@ -136,73 +138,99 @@
   </div>
 </div>
 
-<!-- PÁGINA 3 -->
 <div class="page">
-  <h2>O fluxo de recompra na prática</h2>
-  <p>Você não precisa esperar o cliente lembrar de você. Com um fluxo simples, você reaparece no momento certo — sem ser chato.</p>
+  <h2>Pilar 2: Comunicação municiada de contexto</h2>
+  <div class="h2-rule"></div>
+  <p>Evite enviar disparos massivos e mensagens genéricas para toda a sua base de contatos. Uma abordagem direta, que mencione histórico de consumo e particularidades individuais, supera enormemente as taxas de abertura tradicionais.</p>
 
-  <div class="example-box">
-    <div class="label">Sequência de mensagens após a compra</div>
-
-    <div class="msg-bubble">
-      <div class="msg-label">📦 Logo após o envio</div>
-      "Oi [Nome]! Seu pedido saiu hoje. Rastreio: [código]. Qualquer coisa, é só chamar. 😊"
-    </div>
-
-    <div class="msg-bubble">
-      <div class="msg-label">✅ 3 dias após a entrega</div>
-      "Oi [Nome], chegou tudo certinho? Ficou feliz com a [bolsa/produto]? Qualquer dúvida ou problema, pode me chamar sem cerimônia!"
-    </div>
-
-    <div class="msg-bubble">
-      <div class="msg-label">🌟 30 dias depois — reativação</div>
-      "Oi [Nome]! Chegou coisa nova por aqui que tem tudo a ver com o que você levou. Posso te mostrar?"
-    </div>
-
-    <div class="msg-bubble">
-      <div class="msg-label">🎂 Em datas especiais (aniversário, Natal, etc.)</div>
-      "Feliz aniversário, [Nome]! 🎉 Preparei um cupom exclusivo pra você: ANIVERSÁRIO10 — 10% off em qualquer produto. Válido por 7 dias. 💜"
+  <div class="promo-card">
+    <div class="promo-tag">Exemplo Prático: Petshops e Mercados</div>
+    <h4>O Ciclo de Consumo Previsível</h4>
+    <p>Se o produto oferecido é perecível ou de uso contínuo, a própria rotina do cliente dita quando você deve contatá-lo.</p>
+    <div class="example">
+      <strong>Aplicação:</strong> Se um dono de cachorro adquiriu um saco de ração de 15kg que historicamente dura cerca de 45 dias, a loja agenda um contato para o quadragésimo dia: "Ola Marcos, pelas nossas contas a ração do seu cão deve estar nas últimas porções. Deseja que eu já separe um novo saco idêntico para entrega gratuita amanhã cedo?".
     </div>
   </div>
 
-  <div class="warning">
-    <strong>⚠️ Não exagere na frequência.</strong> Contato toda semana vira spam. O ideal é: pós-venda imediato + follow-up em 3 dias + reativação em 30 dias + comunicação mensal para novidades. Mais que isso cansa.
+  <div class="promo-card">
+    <div class="promo-tag">Exemplo Prático: Clínicas de Estética e Serviços</div>
+    <h4>Agendamento Focado em Manutenção</h4>
+    <p>Serviços pontuais devem sempre abrir portas para rituais de manutenção do benefício adquirido.</p>
+    <div class="example">
+      <strong>Aplicação:</strong> Uma clínica de estética filtra pacientes que realizaram limpeza de pele há exatamente 60 dias. A mensagem enviada contém contexto técnico: "Ola Clara. Completamos dois meses da sua última limpeza. Como a derme acumula novas impurezas naturalmente nesse período, nossa especialista abriu um bloco de horários focados apenas em manutenção rápida para antigas clientes".
+    </div>
   </div>
 
-  <h2>Como montar sua lista de clientes fiéis</h2>
-  <p>Crie uma planilha simples com essas colunas e preencha a cada venda:</p>
+  <h2>Pilar 3: Recompensa tangível para retorno</h2>
+  <div class="h2-rule"></div>
+  <p>Ações de retenção precisam carregar benefícios palpáveis para o bolso do consumidor. É imperativo que a fidelidade construída apresente, como gratidão, vantagens que um cliente novato não teria.</p>
 
-  <ul class="checklist">
-    <li><strong>Nome</strong> do cliente e contato no WhatsApp</li>
-    <li><strong>O que comprou</strong> — produto específico, cor, tamanho</li>
-    <li><strong>Data da última compra</strong> — para saber quando reativar</li>
-    <li><strong>Observações</strong> — preferências, tamanho, estilo, o que comentou</li>
-    <li><strong>Próximo contato</strong> — data que você se programou para falar de novo</li>
-  </ul>
-
-  <div class="example-box">
-    <div class="label">Exemplo de linha na planilha</div>
-    <p style="font-size:13px;">Ana Silva | (11) 99999-0000 | Bolsa marrom P | 15/02 | "Prefere couro, adora cor neutra" | Reativar em 15/03</p>
-    <p style="font-size:13px; margin-top:8px;">Com isso, em março você sabe exatamente o que oferecer para a Ana — e ela vai se sentir lembrada, não abordada.</p>
-  </div>
-
-  <h2>Checklist de fidelização</h2>
-  <ul class="checklist">
-    <li>Mando mensagem de confirmação de envio para todo pedido?</li>
-    <li>Faço follow-up 3 dias após a entrega?</li>
-    <li>Registro os dados e preferências de todo cliente que compra?</li>
-    <li>Reativo clientes inativos há mais de 30 dias com novidade ou oferta?</li>
-    <li>Tenho alguma vantagem concreta para quem volta comprar?</li>
-    <li>Mando mensagem em datas especiais (aniversário, Natal)?</li>
-  </ul>
-
-  <div class="highlight">
-    <strong>Dica final:</strong> Fidelização não é programa de pontos complicado. É só consistência + atenção + personalização. Cliente que se sente lembrado volta — e ainda indica pra todo mundo ao redor.
+  <div class="promo-card">
+    <div class="promo-tag">Exemplo Prático: Confeitarias e Artesanato</div>
+    <h4>Benefícios que Reduzem Seus Próprios Custos</h4>
+    <p>Descontos de recompra podem ser desenhados em formato de economia mútua.</p>
+    <div class="example">
+      <strong>Aplicação:</strong> Uma doceria de alto padrão implementa o retorno de materiais: "Devolvendo cinco dos nossos potes de vidro originais na próxima visita, você leva qualquer sobremesa individual de forma gratuita". A loja não apenas retém o consumidor, como minimiza as recorrentes despesas logísticas com embalagens novas.
+    </div>
   </div>
 
   <div class="page-footer">
     <span class="brand">Biztrivo Academy</span>
     <span class="pg">Página 3</span>
+  </div>
+</div>
+
+<div class="page">
+  <h2>Estruturação e organização de dados</h2>
+  <div class="h2-rule"></div>
+  <p>Para aplicar contatos pautados em contexto, o negócio exige um banco de dados elementar. A criação de uma planilha unificada, atualizada rigorosamente a cada nova venda, é o verdadeiro alicerce dessa estratégia:</p>
+
+  <ul class="checklist">
+    <li><strong>Registro Nominal e Contato:</strong> Informações centrais para garantir uma abordagem direta e pessoal.</li>
+    <li><strong>Histórico de Aquisição:</strong> O apontamento exato do modelo, especificações, tamanho e cor levados.</li>
+    <li><strong>Data de Efetivação:</strong> Parâmetro métrico fundamental para saber quando disparar gatilhos de reativação.</li>
+    <li><strong>Notas Comportamentais:</strong> Um bloco dedicado a objeções vencidas, preferências de estilo e falas informais da negociação.</li>
+    <li><strong>Agendamento do Próximo Contato:</strong> A definição cronológica da próxima abordagem estratégica desenhada para este perfil.</li>
+  </ul>
+
+  <div class="warning">
+    <strong>Atenção com a sobrecarga de mensagens:</strong> Não confunda persistência com invasão de privacidade. Contatar consumidores de forma semanal e agressiva converte intenção de compra em bloqueio por spam. O ideal, em um modelo de negócio comum, é respeitar o fluxo progressivo e só focar em novidades reais, evitando ruído comercial.
+  </div>
+
+  <h2>Fluxo cronológico de recompra em ação</h2>
+  <div class="h2-rule"></div>
+  
+  <table>
+    <tr><th>Marco Temporal</th><th>Objetivo Operacional</th><th>Roteiro de Exemplo Prático</th></tr>
+    <tr>
+      <td><strong>Status Imediato</strong></td>
+      <td>Segurança e Transparência</td>
+      <td>"Seu pedido foi faturado e despachado. Aqui consta o link para rastreamento detalhado."</td>
+    </tr>
+    <tr>
+      <td><strong>3 a 5 Dias Úteis</strong></td>
+      <td>Auditoria de Qualidade</td>
+      <td>"A entrega foi concluída com sucesso? O material e a funcionalidade atenderam suas expectativas iniciais?"</td>
+    </tr>
+    <tr>
+      <td><strong>Ciclo de 30 a 60 Dias</strong></td>
+      <td>Reativação Comercial</td>
+      <td>"Temos novas atualizações de estoque que dialogam diretamente com o estilo que você costuma preferir."</td>
+    </tr>
+    <tr>
+      <td><strong>Sazonalidade e Eventos</strong></td>
+      <td>Vínculo Emocional</td>
+      <td>"Em comemoração ao seu aniversário, liberamos um acesso de descontos válidos e exclusivos pelos próximos sete dias."</td>
+    </tr>
+  </table>
+
+  <div class="highlight">
+    <strong>Consideração Estratégica:</strong> Retenção não se trata da implementação de maquinários difíceis ou complexos sistemas de pontos acumulativos. O sucesso mora na manutenção artesanal e sistemática de um bom relacionamento. Clientes que se sentem únicos, retornam voluntariamente e defendem o seu negócio.
+  </div>
+
+  <div class="page-footer">
+    <span class="brand">Biztrivo Academy</span>
+    <span class="pg">Página 4</span>
   </div>
 </div>
 

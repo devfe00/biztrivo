@@ -3,80 +3,423 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Guia PostsAI para Instagram</title>
+<title>Guia PostsAI para Instagram - Biztrivo Academy</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Inter',sans-serif;background:#f8fafc;color:#1e293b;line-height:1.7}
-.page{max-width:750px;margin:0 auto;background:#fff;min-height:100vh;padding:60px 50px;page-break-after:always}
-.cover{background:linear-gradient(135deg,#10b981 0%,#059669 50%,#047857 100%);color:#fff;display:flex;flex-direction:column;justify-content:center;min-height:100vh;padding:60px 50px}
-.cover .tag{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);padding:6px 16px;border-radius:20px;font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:30px;align-self:flex-start}
-.cover h1{font-size:46px;font-weight:800;line-height:1.15;margin-bottom:20px;max-width:560px}
-.cover p{font-size:18px;opacity:.85;max-width:480px;line-height:1.6;margin-bottom:40px}
-h2{font-size:26px;font-weight:800;color:#047857;margin:40px 0 12px;padding-bottom:8px;border-bottom:3px solid #d1fae5}
-h2:first-of-type{margin-top:0}
-h3{font-size:17px;font-weight:700;color:#1e293b;margin:28px 0 8px}
-p{font-size:15px;color:#374151;margin-bottom:14px}
-ul,ol{margin:14px 0 14px 22px}
-li{font-size:15px;color:#374151;margin-bottom:8px}
-.highlight{background:#ecfdf5;border-left:4px solid #10b981;padding:16px 20px;border-radius:0 10px 10px 0;margin:20px 0}
-.highlight strong{color:#047857}
-.warning{background:#fef3c7;border-left:4px solid #f59e0b;padding:16px 20px;border-radius:0 10px 10px 0;margin:20px 0;font-size:14px;color:#92400e}
-.warning strong{color:#d97706}
-.box{background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:12px;padding:20px 24px;margin:20px 0}
-.box .label{font-size:11px;font-weight:700;letter-spacing:1.5px;color:#059669;text-transform:uppercase;margin-bottom:10px}
-.formula{background:#1e293b;color:#10b981;padding:16px 24px;border-radius:10px;font-family:monospace;font-size:15px;font-weight:700;margin:20px 0;text-align:center}
-.footer{margin-top:60px;padding-top:20px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;font-size:12px;color:#94a3b8}
-.footer .brand{font-weight:700;color:#10b981}
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+  :root {
+    --green:    #10b981;
+    --teal:     #0d9488;
+    --blue:     #0ea5e9;
+    --dark:     #0f172a;
+    --text:     #334155;
+    --muted:    #64748b;
+    --border:   #e2e8f0;
+    --bg:       #f8fafc;
+    --grad:     linear-gradient(135deg, #10b981 0%, #0d9488 45%, #0ea5e9 100%);
+    --grad-sub: linear-gradient(135deg, #f0fdf9 0%, #f0fdfa 50%, #f0f9ff 100%);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #fff;
+    color: var(--text);
+    line-height: 1.7;
+  }
+
+  .page {
+    max-width: 100%;
+    margin: 0;
+    background: #fff;
+    min-height: 100vh;
+    padding: 64px 8%;
+    page-break-after: always;
+  }
+
+  .cover {
+    background: var(--grad);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: 100vh;
+    padding: 64px 8%;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover::before {
+    content: '';
+    position: absolute;
+    top: -100px; right: -80px;
+    width: 420px; height: 420px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    pointer-events: none;
+  }
+  .cover-tag {
+    display: inline-block;
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.32);
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+    width: fit-content;
+  }
+  .cover h1 {
+    font-size: 50px;
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -0.5px;
+    margin-bottom: 20px;
+    max-width: 600px;
+  }
+  .cover-sub {
+    font-size: 17px;
+    opacity: 0.85;
+    max-width: 500px;
+    line-height: 1.65;
+    margin-bottom: 44px;
+  }
+  .cover-pills {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 72px;
+  }
+  .cover-pills span {
+    background: rgba(255,255,255,0.14);
+    border: 1px solid rgba(255,255,255,0.25);
+    padding: 7px 16px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .cover-brand {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    opacity: 0.6;
+  }
+
+  h2 {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--dark);
+    letter-spacing: -0.3px;
+    line-height: 1.2;
+    margin-bottom: 6px;
+    margin-top: 48px;
+  }
+  h2:first-child { margin-top: 0; }
+  .h2-rule {
+    height: 3px;
+    width: 44px;
+    background: var(--grad);
+    border-radius: 2px;
+    margin-bottom: 20px;
+    margin-top: 8px;
+  }
+  p {
+    font-size: 15px;
+    color: var(--text);
+    margin-bottom: 16px;
+    line-height: 1.75;
+  }
+  ul, ol {
+    margin: 14px 0 14px 22px;
+  }
+  li {
+    font-size: 15px;
+    color: var(--text);
+    margin-bottom: 8px;
+    line-height: 1.7;
+  }
+
+  .highlight {
+    background: var(--grad-sub);
+    border-left: 4px solid var(--green);
+    padding: 18px 24px;
+    border-radius: 0 10px 10px 0;
+    margin: 24px 0;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  .highlight strong { color: var(--teal); }
+
+  .warning {
+    background: #fffbeb;
+    border-left: 4px solid #f59e0b;
+    padding: 18px 24px;
+    border-radius: 0 8px 8px 0;
+    margin: 24px 0;
+    font-size: 14px;
+    color: #78350f;
+    line-height: 1.65;
+  }
+  .warning strong { color: #b45309; }
+
+  .tone-card {
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 20px 0;
+    background: #fff;
+  }
+  .tone-card .tone-tag {
+    display: inline-block;
+    background: #d1fae5;
+    color: var(--teal);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+  }
+  .tone-card h4 {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--dark);
+    margin-bottom: 8px;
+  }
+  .tone-card p {
+    margin-bottom: 0;
+  }
+  .tone-card .example {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-size: 14px;
+    color: var(--muted);
+    margin-top: 14px;
+    border: 1px solid var(--border);
+  }
+  .tone-card .example strong { color: var(--teal); }
+
+  .step-list {
+    list-style: none;
+    margin: 16px 0;
+    counter-reset: steps;
+  }
+  .step-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.65;
+    counter-increment: steps;
+  }
+  .step-list li::before {
+    content: counter(steps);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--grad);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 800;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .checklist {
+    list-style: none;
+    margin: 16px 0;
+  }
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.65;
+  }
+  .checklist li::before {
+    content: "V";
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--grad);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 900;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .page-footer {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .page-footer .brand {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    background: var(--grad);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .page-footer .pg { font-size: 12px; color: #94a3b8; }
 </style>
 </head>
 <body>
+
 <div class="page cover">
-  <div class="tag">📚 Biztrivo Academy</div>
+  <div class="cover-tag">Biztrivo Academy</div>
   <h1>Guia PostsAI para Instagram</h1>
-  <p>Gere posts profissionais para o Instagram dos seus produtos usando inteligência artificial.</p>
+  <p class="cover-sub">Gere posts profissionais para o Instagram dos seus produtos usando inteligencia artificial. Foto boa entra, post incrivel sai.</p>
+  <div class="cover-pills">
+    <span>3 tons de voz</span>
+    <span>Passo a passo</span>
+    <span>Boas praticas</span>
+  </div>
+  <div class="cover-brand">Biztrivo Academy</div>
 </div>
+
 <div class="page">
-<h2>O que é o PostsAI</h2>
-<p>O PostsAI usa inteligência artificial (Google Gemini) para gerar, em segundos, um post de Instagram completo do seu produto: imagem 1:1 estilo feed, legenda persuasiva e hashtags otimizadas.</p>
+  <h2>O que e o PostsAI</h2>
+  <div class="h2-rule"></div>
+  <p>O PostsAI usa inteligencia artificial (Google Gemini) para gerar, em segundos, um post de Instagram completo para o seu produto: imagem 1:1 estilo feed, legenda persuasiva e hashtags otimizadas.</p>
+  <p>Voce nao precisa saber design, nao precisa de Canva, nao precisa contratar ninguem. Escolhe o produto, escolhe o tom, clica em gerar. Pronto.</p>
 
-<h2>Quando usar</h2>
-<ul>
-<li>Lançamento de produto novo.</li>
-<li>Promoção relâmpago ou desconto.</li>
-<li>Reativação de produto que estava parado.</li>
-<li>Quando você simplesmente não tem ideia do que postar.</li>
-</ul>
+  <h2>Quando usar</h2>
+  <div class="h2-rule"></div>
+  <ul>
+    <li>Lancamento de produto novo.</li>
+    <li>Promocao relampago ou desconto pontual.</li>
+    <li>Reativacao de produto que estava parado na vitrine.</li>
+    <li>Quando voce simplesmente nao tem ideia do que postar.</li>
+  </ul>
 
-<h2>Como gerar um post</h2>
-<ol>
-<li>Vá para Vitrine e escolha o produto.</li>
-<li>Clique no botão "Post IA".</li>
-<li>Escolha o tom: Promocional, Elegante ou Divertido.</li>
-<li>Clique em "Gerar post" e aguarde alguns segundos.</li>
-<li>Baixe a imagem e copie a legenda.</li>
-</ol>
+  <h2>Como gerar um post</h2>
+  <div class="h2-rule"></div>
+  <ol class="step-list">
+    <li>Va para Vitrine e escolha o produto que deseja promover.</li>
+    <li>Toque no botao "Post IA" que aparece no card do produto.</li>
+    <li>Escolha o tom: Promocional, Elegante ou Divertido.</li>
+    <li>Toque em "Gerar post" e aguarde alguns segundos.</li>
+    <li>Baixe a imagem e copie a legenda pronta para publicar.</li>
+  </ol>
 
-<div class="highlight"><strong>Dica:</strong> capriche na foto original do produto. A IA usa ela como referência. Foto boa entra, post incrível sai.</div>
+  <div class="highlight">
+    <strong>Dica:</strong> capriche na foto original do produto. A IA usa ela como referencia para compor a imagem gerada. Foto boa entra, post incrivel sai.
+  </div>
 
-<h2>Tons disponíveis</h2>
-<ul>
-<li><strong>Promocional:</strong> destaca preço, desconto e urgência.</li>
-<li><strong>Elegante:</strong> tom sofisticado, foco em diferenciais e qualidade.</li>
-<li><strong>Divertido:</strong> linguagem leve, emojis e CTA descontraído.</li>
-</ul>
-
-<h2>Limites e boas práticas</h2>
-<ul>
-<li>1 post por minuto para evitar custo abusivo.</li>
-<li>Sempre revise a legenda antes de publicar.</li>
-<li>Ajuste o WhatsApp e nome da loja nas Configurações para o CTA sair certo.</li>
-<li>Combine com Stories e Reels para multiplicar alcance.</li>
-</ul>
-
-<div class="warning"><strong>Importante:</strong> a IA gera conteúdo a partir do que você cadastrou. Quanto melhor o nome, descrição e foto do produto, melhor o resultado.</div>
-
-<div class="footer"><span class="brand">Biztrivo Academy</span><span>Página 1</span></div>
+  <div class="page-footer">
+    <span class="brand">Biztrivo Academy</span>
+    <span class="pg">Pagina 1</span>
+  </div>
 </div>
+
+<div class="page">
+  <h2>Tons disponiveis</h2>
+  <div class="h2-rule"></div>
+
+  <div class="tone-card">
+    <div class="tone-tag">Tom 1</div>
+    <h4>Promocional</h4>
+    <p>Destaca preco, desconto e urgencia. Ideal para liquidacoes, ofertas relampago e lancamentos com condicao especial.</p>
+    <div class="example">
+      <strong>Exemplo de legenda gerada:</strong> "So hoje! Calcado feminino com 20% OFF. Corra para garantir o seu antes que acabe. Chama no WhatsApp e garante agora."
+    </div>
+  </div>
+
+  <div class="tone-card">
+    <div class="tone-tag">Tom 2</div>
+    <h4>Elegante</h4>
+    <p>Tom sofisticado com foco em diferenciais e qualidade. Funciona melhor para produtos premium, moda, acessorios e itens de maior valor agregado.</p>
+    <div class="example">
+      <strong>Exemplo de legenda gerada:</strong> "Feito para quem aprecia o detalhe. Calcado artesanal, couro legitimo, conforto que voce sente no primeiro uso. Consulte disponibilidade."
+    </div>
+  </div>
+
+  <div class="tone-card">
+    <div class="tone-tag">Tom 3</div>
+    <h4>Divertido</h4>
+    <p>Linguagem leve, emojis e CTA descontraido. Perfeito para produtos do dia a dia, publico jovem e marcas com personalidade mais informal.</p>
+    <div class="example">
+      <strong>Exemplo de legenda gerada:</strong> "Oi, seu pe te ama? Porque ele merece esse calcado. Conforto no nivel maximo. Manda mensagem e a gente resolve."
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span class="brand">Biztrivo Academy</span>
+    <span class="pg">Pagina 2</span>
+  </div>
+</div>
+
+<div class="page">
+  <h2>Limites e boas praticas</h2>
+  <div class="h2-rule"></div>
+
+  <ul class="checklist">
+    <li>Limite de 1 post por minuto para controle de custos.</li>
+    <li>Sempre revise a legenda antes de publicar no Instagram.</li>
+    <li>Configure seu WhatsApp e nome da loja nas Configuracoes para o CTA sair correto.</li>
+    <li>Combine o post gerado com Stories e Reels para multiplicar o alcance.</li>
+    <li>Use o PostsAI com regularidade: consistencia no feed gera autoridade.</li>
+    <li>Teste os tres tons e veja qual gera mais engajamento no seu publico.</li>
+  </ul>
+
+  <div class="warning">
+    <strong>Importante:</strong> a IA gera conteudo a partir do que voce cadastrou. Quanto melhor o nome, a descricao e a foto do produto, melhor o resultado gerado. Produto mal cadastrado gera post fraco.
+  </div>
+
+  <h2>O que influencia a qualidade do resultado</h2>
+  <div class="h2-rule"></div>
+  <p>O PostsAI e tao bom quanto o que voce alimenta. Tres fatores fazem toda a diferenca:</p>
+
+  <div class="tone-card">
+    <div class="tone-tag">Fator 1</div>
+    <h4>Foto do produto</h4>
+    <p>A imagem gerada e composta a partir da sua foto original. Fundo limpo, boa iluminacao e produto centralizado resultam em posts muito mais profissionais.</p>
+  </div>
+
+  <div class="tone-card">
+    <div class="tone-tag">Fator 2</div>
+    <h4>Nome do produto</h4>
+    <p>Um nome claro e descritivo ajuda a IA a entender o que esta sendo vendido. "Calcado Feminino Confort Bege 36" gera resultado melhor que "Produto 01".</p>
+  </div>
+
+  <div class="tone-card">
+    <div class="tone-tag">Fator 3</div>
+    <h4>Descricao cadastrada</h4>
+    <p>Quanto mais detalhes sobre material, diferenciais e publico-alvo voce incluir na descricao, mais relevante e personalizada sera a legenda gerada.</p>
+  </div>
+
+  <div class="highlight">
+    <strong>Conclusao:</strong> o PostsAI nao substitui estrategia, mas elimina a barreira de criacao. Use ele para manter o feed ativo, testar linguagens e escalar sua presenca no Instagram sem depender de agencia.
+  </div>
+
+  <div class="page-footer">
+    <span class="brand">Biztrivo Academy</span>
+    <span class="pg">Pagina 3</span>
+  </div>
+</div>
+
 </body>
 </html>

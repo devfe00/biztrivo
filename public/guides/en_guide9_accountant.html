@@ -3,75 +3,629 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Accountant Mode Guide</title>
+<title>Accountant Mode Guide — Biztrivo Academy</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Inter',sans-serif;background:#f8fafc;color:#1e293b;line-height:1.7}
-.page{max-width:750px;margin:0 auto;background:#fff;min-height:100vh;padding:60px 50px;page-break-after:always}
-.cover{background:linear-gradient(135deg,#10b981 0%,#059669 50%,#047857 100%);color:#fff;display:flex;flex-direction:column;justify-content:center;min-height:100vh;padding:60px 50px}
-.cover .tag{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);padding:6px 16px;border-radius:20px;font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:30px;align-self:flex-start}
-.cover h1{font-size:46px;font-weight:800;line-height:1.15;margin-bottom:20px;max-width:560px}
-.cover p{font-size:18px;opacity:.85;max-width:480px;line-height:1.6;margin-bottom:40px}
-h2{font-size:26px;font-weight:800;color:#047857;margin:40px 0 12px;padding-bottom:8px;border-bottom:3px solid #d1fae5}
-h2:first-of-type{margin-top:0}
-h3{font-size:17px;font-weight:700;color:#1e293b;margin:28px 0 8px}
-p{font-size:15px;color:#374151;margin-bottom:14px}
-ul,ol{margin:14px 0 14px 22px}
-li{font-size:15px;color:#374151;margin-bottom:8px}
-.highlight{background:#ecfdf5;border-left:4px solid #10b981;padding:16px 20px;border-radius:0 10px 10px 0;margin:20px 0}
-.highlight strong{color:#047857}
-.warning{background:#fef3c7;border-left:4px solid #f59e0b;padding:16px 20px;border-radius:0 10px 10px 0;margin:20px 0;font-size:14px;color:#92400e}
-.warning strong{color:#d97706}
-.box{background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:12px;padding:20px 24px;margin:20px 0}
-.box .label{font-size:11px;font-weight:700;letter-spacing:1.5px;color:#059669;text-transform:uppercase;margin-bottom:10px}
-.formula{background:#1e293b;color:#10b981;padding:16px 24px;border-radius:10px;font-family:monospace;font-size:15px;font-weight:700;margin:20px 0;text-align:center}
-.footer{margin-top:60px;padding-top:20px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;font-size:12px;color:#94a3b8}
-.footer .brand{font-weight:700;color:#10b981}
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+  :root {
+    --green:    #10b981;
+    --teal:     #0d9488;
+    --blue:     #0ea5e9;
+    --dark:     #0f172a;
+    --text:     #334155;
+    --muted:    #64748b;
+    --border:   #e2e8f0;
+    --bg:       #f8fafc;
+    --grad:     linear-gradient(135deg, #10b981 0%, #0d9488 45%, #0ea5e9 100%);
+    --grad-sub: linear-gradient(135deg, #f0fdf9 0%, #f0fdfa 50%, #f0f9ff 100%);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #fff;
+    color: var(--text);
+    line-height: 1.7;
+  }
+
+  .page {
+    max-width: 100%;
+    margin: 0;
+    background: #fff;
+    min-height: 100vh;
+    padding: 64px 8%;
+    page-break-after: always;
+  }
+
+  /* ── COVER ── */
+  .cover {
+    background: var(--grad);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: 100vh;
+    padding: 64px 8%;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover::before {
+    content: '';
+    position: absolute;
+    top: -100px; right: -80px;
+    width: 420px; height: 420px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    pointer-events: none;
+  }
+  .cover::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; left: 60px;
+    width: 260px; height: 260px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+    pointer-events: none;
+  }
+  .cover-tag {
+    display: inline-block;
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.32);
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+    width: fit-content;
+  }
+  .cover h1 {
+    font-size: 50px;
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -0.5px;
+    margin-bottom: 20px;
+    max-width: 620px;
+  }
+  .cover-sub {
+    font-size: 17px;
+    opacity: 0.85;
+    max-width: 500px;
+    line-height: 1.65;
+    margin-bottom: 44px;
+  }
+  .cover-pills {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 72px;
+  }
+  .cover-pills span {
+    background: rgba(255,255,255,0.14);
+    border: 1px solid rgba(255,255,255,0.25);
+    padding: 7px 16px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .cover-brand {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    opacity: 0.6;
+  }
+
+  /* ── TYPOGRAPHY ── */
+  h2 {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--dark);
+    letter-spacing: -0.3px;
+    line-height: 1.2;
+    margin-bottom: 6px;
+    margin-top: 48px;
+  }
+  h2:first-child { margin-top: 0; }
+  .h2-rule {
+    height: 3px;
+    width: 44px;
+    background: var(--grad);
+    border-radius: 2px;
+    margin-bottom: 20px;
+    margin-top: 8px;
+  }
+  p {
+    font-size: 15px;
+    color: var(--text);
+    margin-bottom: 16px;
+    line-height: 1.75;
+  }
+  ul, ol {
+    margin: 14px 0 20px 22px;
+  }
+  li {
+    font-size: 15px;
+    color: var(--text);
+    margin-bottom: 8px;
+    line-height: 1.7;
+  }
+
+  /* ── CALLOUTS ── */
+  .highlight {
+    background: var(--grad-sub);
+    border-left: 4px solid var(--green);
+    padding: 18px 24px;
+    border-radius: 0 10px 10px 0;
+    margin: 24px 0;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  .highlight strong { color: var(--teal); }
+
+  .warning {
+    background: #fffbeb;
+    border-left: 4px solid #f59e0b;
+    padding: 18px 24px;
+    border-radius: 0 8px 8px 0;
+    margin: 24px 0;
+    font-size: 14px;
+    color: #78350f;
+    line-height: 1.65;
+  }
+  .warning strong { color: #b45309; }
+
+  .formula {
+    background: var(--dark);
+    color: var(--green);
+    padding: 18px 24px;
+    border-radius: 10px;
+    font-family: monospace;
+    font-size: 14px;
+    font-weight: 700;
+    margin: 24px 0;
+    text-align: center;
+    border: 1px solid rgba(16,185,129,0.3);
+  }
+
+  /* ── PILLAR CARDS ── */
+  .pillar-card {
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 20px 0;
+    background: #fff;
+  }
+  .pillar-card .pillar-tag {
+    display: inline-block;
+    background: #d1fae5;
+    color: #065f46;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+  }
+  .pillar-card h4 {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--dark);
+    margin-bottom: 8px;
+  }
+  .pillar-card p { margin-bottom: 10px; }
+  .pillar-card .example {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-size: 14px;
+    color: var(--muted);
+    margin-top: 14px;
+    border: 1px solid var(--border);
+  }
+  .pillar-card .example + .example {
+    margin-top: 10px;
+  }
+  .pillar-card .example strong { color: var(--teal); }
+
+  /* ── P&L GROUP CARDS ── */
+  .pl-group {
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 20px 0;
+    background: #fff;
+  }
+  .pl-group .pl-label {
+    display: inline-block;
+    background: var(--grad);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+  }
+  .pl-group h4 {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--dark);
+    margin-bottom: 8px;
+  }
+  .pl-group p { margin-bottom: 10px; }
+  .pl-group .example {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-size: 14px;
+    color: var(--muted);
+    margin-top: 10px;
+    border: 1px solid var(--border);
+  }
+  .pl-group .example strong { color: var(--teal); }
+
+  /* ── TABLE ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 24px 0;
+    font-size: 14px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  table th {
+    background: var(--dark);
+    color: white;
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+  table tr:nth-child(even) td { background: #f0fdf9; }
+  table tr:last-child td { border-bottom: none; }
+
+  /* ── CHECKLIST ── */
+  .checklist {
+    list-style: none;
+    margin: 16px 0;
+  }
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.65;
+  }
+  .checklist li::before {
+    content: "✓";
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--grad);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 900;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  /* ── FOOTER ── */
+  .page-footer {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .page-footer .brand {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    background: var(--grad);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .page-footer .pg { font-size: 12px; color: #94a3b8; }
 </style>
 </head>
 <body>
+
+<!-- COVER -->
 <div class="page cover">
-  <div class="tag">📚 Biztrivo Academy</div>
+  <div class="cover-tag">Biztrivo Academy</div>
   <h1>Accountant Mode Guide</h1>
-  <p>Automatic P&L, Financial Score and tax estimates straight from your cash register.</p>
+  <p class="cover-sub">Automatic P&L, Financial Score and tax estimates straight from your cash register. No spreadsheets, no guesswork.</p>
+  <div class="cover-pills">
+    <span>Automatic P&L</span>
+    <span>4-pillar Score</span>
+    <span>MEI tax tracking</span>
+    <span>Best practices</span>
+  </div>
+  <div class="cover-brand">Biztrivo Academy</div>
 </div>
+
+<!-- PAGE 1 -->
 <div class="page">
-<h2>What is Accountant Mode</h2>
-<p>Accountant Mode turns your Daily Cash Register entries into ready-to-use accounting reports: P&L, Financial Score and MEI tax estimate. You speak the same language as your accountant, with reliable numbers.</p>
-<div class="highlight"><strong>Who it is for:</strong> any retailer who wants to truly understand how much the store makes, without building a spreadsheet.</div>
 
-<h2>Automatic P&L</h2>
-<p>The P&L sorts transactions into four groups:</p>
-<ul>
-<li><strong>Revenue:</strong> everything tagged as Sale.</li>
-<li><strong>COGS:</strong> Replenishment and raw materials.</li>
-<li><strong>Operating expenses:</strong> Packaging, Shipping, Other.</li>
-<li><strong>Owner pay:</strong> withdrawals flagged as Personal.</li>
-</ul>
-<p>The system automatically calculates Gross Profit, EBITDA, Net Profit and Real Margin for the month.</p>
+  <h2>What is Accountant Mode</h2>
+  <div class="h2-rule"></div>
+  <p>Accountant Mode turns your Daily Cash Register entries into ready-to-use accounting reports: P&L (Profit and Loss Statement), Financial Score and MEI tax estimate. You start speaking the same language as your accountant, with reliable, organized numbers.</p>
+  <p>Instead of finding out at the end of the month whether the store made a profit or a loss, you track in real time how every dollar that comes in and goes out impacts your business result.</p>
 
-<h2>Financial Score</h2>
-<p>The Score (0 to 100) shows your store health in four pillars:</p>
-<ol>
-<li><strong>Margin:</strong> real profit as a percentage of revenue.</li>
-<li><strong>Controlled owner pay:</strong> personal withdrawals under 30% of revenue.</li>
-<li><strong>Diversification:</strong> not relying on a single product or customer.</li>
-<li><strong>Consistency:</strong> steady monthly revenue.</li>
-</ol>
+  <div class="highlight">
+    <strong>Who it is for:</strong> any retailer who wants to truly understand how much the store makes — whether it is a bakery, thrift store, clothing boutique, pet shop, or any other small business — without building spreadsheets or paying for expensive software.
+  </div>
 
-<h2>Taxes (MEI)</h2>
-<p>Accountant Mode estimates your fixed monthly DAS and warns you if the annual projection exceeds the R$ 81,000 MEI limit. No nasty surprises from the tax authority.</p>
+  <div class="warning">
+    <strong>Important:</strong> Accountant Mode works based on the entries you make in the Daily Cash Register. If you do not log a sale, it will not appear in the P&L. Accurate entries = accurate reports.
+  </div>
 
-<h2>Best practices</h2>
-<ul>
-<li>Log every transaction in the Daily Cash Register without exception.</li>
-<li>Use the correct categories so the P&L stays accurate.</li>
-<li>Flag personal withdrawals with the Personal toggle.</li>
-<li>Export the monthly PDF and send it to your accountant.</li>
-</ul>
+  <h2>How the Automatic P&L Works</h2>
+  <div class="h2-rule"></div>
+  <p>The P&L (Profit and Loss statement) is the report that shows whether your store made money or not over a given period. Accountant Mode builds this report automatically from the categories you select when recording each transaction in the cash register.</p>
+  <p>Transactions are sorted into four groups. Here is how each one works in practice:</p>
 
-<div class="footer"><span class="brand">Biztrivo Academy</span><span>Page 1</span></div>
+  <div class="pl-group">
+    <div class="pl-label">Group 1</div>
+    <h4>Revenue (everything tagged as Sale)</h4>
+    <p>Any entry categorized as Sale contributes to the Gross Revenue line of the P&L. It is the top of the statement: how much the store billed before any discount or cost.</p>
+    <div class="example">
+      <strong>Example 1 — Bakery:</strong> Day's sales: 12 cakes ($80 each) + 30 chocolate truffles ($5 each) = $1,110 logged as Sale. That is the figure that goes into the Revenue line of the P&L.
+    </div>
+    <div class="example">
+      <strong>Example 2 — Thrift store:</strong> Sold 5 pieces on Saturday for $250 total, logged as Sale. The following week, another $180. The P&L accumulates $430 in Revenue for the period.
+    </div>
+    <div class="example">
+      <strong>Example 3 — Accessories boutique:</strong> In-store sale: $120. Instagram order paid via bank transfer: $340. Both logged as Sale. The system totals both: $460 in Revenue.
+    </div>
+  </div>
+
+  <div class="pl-group">
+    <div class="pl-label">Group 2</div>
+    <h4>COGS — Cost of Goods Sold (Replenishment and raw materials)</h4>
+    <p>Everything you bought to resell or use in production goes here. It is the direct cost of what you sold. The difference between Revenue and COGS is your Gross Profit.</p>
+    <div class="example">
+      <strong>Example 1 — Bakery:</strong> Flour, eggs, butter and packaging boxes purchased for the week's production: $95. Logged as Replenishment/Raw Material. This amount goes into COGS.
+    </div>
+    <div class="example">
+      <strong>Example 2 — Clothing store:</strong> 20 t-shirts bought wholesale for $150 to resell. Logged as Replenishment. The system deducts from Gross Profit: Revenue $300 - COGS $150 = Gross Profit $150.
+    </div>
+    <div class="example">
+      <strong>Example 3 — Pet shop:</strong> Dog food, cat litter and grooming products purchased for resale: $230. These are direct inputs for what will be sold. They go into COGS and reduce gross profit for the month.
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span class="brand">Biztrivo Academy</span>
+    <span class="pg">Page 1</span>
+  </div>
 </div>
+
+<!-- PAGE 2 -->
+<div class="page">
+
+  <div class="pl-group">
+    <div class="pl-label">Group 3</div>
+    <h4>Operating Expenses (Packaging, Shipping, Other)</h4>
+    <p>These are costs not directly tied to the product itself but necessary to run the store. They include everything you spend to keep the business operating day to day.</p>
+    <div class="example">
+      <strong>Example 1 — Cosmetics store:</strong> Branded bags, tape and tissue paper for gift wrapping: $35. Logged as Packaging. Goes into Operating Expenses.
+    </div>
+    <div class="example">
+      <strong>Example 2 — Online store:</strong> Postal shipping costs for the week's orders: $52. Payment processor fee: $14. Both logged as Shipping and Other, respectively. They reduce EBITDA.
+    </div>
+    <div class="example">
+      <strong>Example 3 — Bakery:</strong> Gas for the oven ($32), prorated electricity for the month ($22), cleaning supplies ($11). All logged under Other/Operating. Accountant Mode totals them automatically in this line.
+    </div>
+    <div class="example">
+      <strong>Example 4 — Clothing store:</strong> Studio rent: $200, internet: $25, management software: $12. Fixed monthly operating expenses. They all go into this group and the P&L reflects them every month.
+    </div>
+  </div>
+
+  <div class="pl-group">
+    <div class="pl-label">Group 4</div>
+    <h4>Owner Pay (withdrawals flagged as Personal)</h4>
+    <p>This is your own salary as the business owner. When you take money from the register for personal expenses, it must be logged with the Personal flag. The system separates it from operations and displays it in the P&L owner pay line.</p>
+    <div class="example">
+      <strong>Example 1 — Bakery:</strong> Every Friday the owner withdraws $125 for household expenses. Logged as Personal. At month's end, the P&L shows $500 in owner pay, cleanly separated from business costs.
+    </div>
+    <div class="example">
+      <strong>Example 2 — Thrift store:</strong> Personal credit card payment made with cash from the register: $87. Logged as Personal. Accountant Mode does not confuse this with an operating expense — it goes into the owner pay group.
+    </div>
+    <div class="example">
+      <strong>Example 3 — Accessories boutique:</strong> Two partners each withdraw $200 on the 15th and on the 30th. All four withdrawals logged as Personal. The P&L shows total owner pay of $800 for the month.
+    </div>
+  </div>
+
+  <h2>What the P&L Calculates Automatically</h2>
+  <div class="h2-rule"></div>
+  <p>With entries in the right categories, the system generates the most important indicators of your business result:</p>
+
+  <table>
+    <tr>
+      <th>Metric</th>
+      <th>Formula</th>
+      <th>What it reveals</th>
+    </tr>
+    <tr>
+      <td><strong>Gross Profit</strong></td>
+      <td>Revenue - COGS</td>
+      <td>What is left before operating expenses</td>
+    </tr>
+    <tr>
+      <td><strong>EBITDA</strong></td>
+      <td>Gross Profit - Operating Expenses</td>
+      <td>Real operating result of the store</td>
+    </tr>
+    <tr>
+      <td><strong>Net Profit</strong></td>
+      <td>EBITDA - Owner Pay - Taxes</td>
+      <td>What actually stayed in the business</td>
+    </tr>
+    <tr>
+      <td><strong>Real Margin</strong></td>
+      <td>Net Profit / Revenue x 100</td>
+      <td>Profit as a percentage of revenue</td>
+    </tr>
+  </table>
+
+  <div class="highlight">
+    <strong>Full practical example — Clothing store, October:</strong> Revenue $2,100 | COGS $800 | Gross Profit $1,300 | Operating Expenses $412 | EBITDA $888 | Owner Pay $500 | MEI Tax $18 | Net Profit $370 | Real Margin 17.6%. Without Accountant Mode, this owner would not know their real margin is 17.6% — not the "40% profit" they thought they were making.
+  </div>
+
+  <div class="page-footer">
+    <span class="brand">Biztrivo Academy</span>
+    <span class="pg">Page 2</span>
+  </div>
+</div>
+
+<!-- PAGE 3 -->
+<div class="page">
+
+  <h2>Financial Score: the 4 pillars of store health</h2>
+  <div class="h2-rule"></div>
+  <p>The Score (0 to 100) evaluates your store's financial health across four dimensions. It does not measure profit alone — it measures the overall solidity of the business. A store with a high score is predictable, sustainable and ready to grow.</p>
+
+  <div class="pillar-card">
+    <div class="pillar-tag">Pillar 1</div>
+    <h4>Margin — real profit as a percentage of revenue</h4>
+    <p>Measures net profit as a share of revenue. Businesses with margins below 10% are in the risk zone: any unexpected expense turns into a loss.</p>
+    <div class="example">
+      <strong>High score:</strong> Bakery with Revenue $1,500 and Net Profit $375 = Margin 25%. High score on this pillar.
+    </div>
+    <div class="example">
+      <strong>Low score:</strong> Clothing store with Revenue $2,500 and Net Profit $100 = Margin 4%. The score flags that the operation is consuming almost all the revenue.
+    </div>
+    <div class="example">
+      <strong>How to improve:</strong> Review the selling price of your best-moving products. A small price adjustment (+$1 or +$2) often raises the margin significantly without pushing customers away.
+    </div>
+  </div>
+
+  <div class="pillar-card">
+    <div class="pillar-tag">Pillar 2</div>
+    <h4>Controlled owner pay — personal withdrawals under 30% of revenue</h4>
+    <p>Withdrawing more than the business can sustain is one of the main reasons small businesses fail. The system automatically checks whether your owner pay is within a healthy limit.</p>
+    <div class="example">
+      <strong>High score:</strong> Pet shop with Revenue $1,250 and owner pay of $300 (24% of revenue). Within the limit. High score.
+    </div>
+    <div class="example">
+      <strong>Low score:</strong> Thrift store with Revenue $800 and owner pay of $400 (50% of revenue). The owner is withdrawing more than the business can support. Low score and risk alert.
+    </div>
+    <div class="example">
+      <strong>How to improve:</strong> Set a fixed monthly owner pay — treat it like a salary. Do not withdraw based on what you need at the moment; that destabilizes cash flow and the P&L.
+    </div>
+  </div>
+
+  <div class="pillar-card">
+    <div class="pillar-tag">Pillar 3</div>
+    <h4>Diversification — not relying on a single product or customer</h4>
+    <p>If 70% of your revenue comes from one product or one customer, any change to that source can bring the entire income down. The score penalizes this dependency.</p>
+    <div class="example">
+      <strong>High score:</strong> Cosmetics store selling moisturizers, perfumes, makeup and hair care. No single product accounts for more than 30% of revenue. Diversified and resilient.
+    </div>
+    <div class="example">
+      <strong>Low score:</strong> Bakery where 80% of revenue comes from one custom cake. If demand for that product drops, the store goes with it.
+    </div>
+    <div class="example">
+      <strong>How to improve:</strong> Introduce complementary products at a lower price point to spread revenue across more items. Bundles and kits help distribute income without large investment.
+    </div>
+  </div>
+
+  <div class="pillar-card">
+    <div class="pillar-tag">Pillar 4</div>
+    <h4>Consistency — steady monthly revenue over time</h4>
+    <p>A store that brings in $1,250 every month is healthier than one that makes $3,000 in December and $200 in January. The score evaluates the predictability of revenue over time.</p>
+    <div class="example">
+      <strong>High score:</strong> Barbershop with monthly revenue between $1,200 and $1,350 over the past six months. Small variation, high consistency score.
+    </div>
+    <div class="example">
+      <strong>Low score:</strong> Halloween costume store with 90% of revenue concentrated in October. High seasonality, low score on this pillar — which does not mean a bad business, but it demands careful cash flow planning.
+    </div>
+    <div class="example">
+      <strong>How to improve:</strong> Create recurring revenue streams: subscriptions, monthly packages, maintenance plans. The more predictable the revenue, the healthier the business.
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span class="brand">Biztrivo Academy</span>
+    <span class="pg">Page 3</span>
+  </div>
+</div>
+
+<!-- PAGE 4 -->
+<div class="page">
+
+  <h2>Taxes: MEI control with no surprises</h2>
+  <div class="h2-rule"></div>
+  <p>Accountant Mode includes an automatic estimate of the DAS (MEI monthly flat tax payment) and monitors the annual revenue projection to alert you when you are approaching the legal limit.</p>
+
+  <div class="formula">
+    MEI Limit 2024: R$ 81,000 per year = average of R$ 6,750 per month
+  </div>
+
+  <div class="pl-group">
+    <div class="pl-label">How it works</div>
+    <h4>Monthly DAS estimate</h4>
+    <p>The system shows the fixed DAS amount for your MEI activity type (retail, service, or both) and projects annual revenue based on the average of months already logged.</p>
+    <div class="example">
+      <strong>Example 1 — Retail MEI:</strong> Fixed DAS of R$ 71.60/month (2024 table). The store billed R$ 4,200 in January and R$ 5,100 in February. Annual projection: R$ 55,800. Within the limit. No alert.
+    </div>
+    <div class="example">
+      <strong>Example 2 — Growing revenue:</strong> Over the first 8 months, monthly average of R$ 7,500. Annual projection: R$ 90,000. Accountant Mode triggers the MEI limit alert before the tax authority acts — giving you time to plan the transition to the next business category.
+    </div>
+    <div class="example">
+      <strong>Example 3 — Seasonal store:</strong> Party supply store with peaks in November and December. The system uses a weighted average and warns if the high months will push the annual total past R$ 81,000.
+    </div>
+  </div>
+
+  <div class="warning">
+    <strong>Note:</strong> Accountant Mode produces an estimate based on your logged entries. For official filings, always consult your accountant. The goal here is to give you visibility and predictability, not to replace professional guidance.
+  </div>
+
+  <h2>Best practices for accurate results</h2>
+  <div class="h2-rule"></div>
+  <p>Accountant Mode is only as good as the data you feed it. Follow these practices and your reports will reflect the reality of the business — no distortions.</p>
+
+  <ul class="checklist">
+    <li>Log every transaction in the Daily Cash Register without exception — including exchanges, refunds, complimentary items and bank-transfer sales.</li>
+    <li>Use the correct categories: Sale for incoming revenue, Replenishment for goods purchased, Packaging/Shipping/Other for operating expenses.</li>
+    <li>Flag personal withdrawals as Personal — never log owner pay as a supplier expense.</li>
+    <li>Log purchases on the day payment leaves the register, not on the delivery date.</li>
+    <li>If you made an installment card sale, log the full amount on the day of the sale and record the card processing fee separately under Other.</li>
+    <li>Export the monthly P&L PDF and send it to your accountant — they will appreciate having organized data.</li>
+    <li>Review your Financial Score every month and note what changed: a drop in the Margin pillar is an immediate signal to revisit your pricing.</li>
+  </ul>
+
+  <div class="highlight">
+    <strong>Final takeaway:</strong> Accountant Mode is not just a report — it is a thermometer. With an automatic P&L you know where every dollar goes, the Score shows the true health of the business, and the tax monitor means no nasty surprises from the tax authority. The retailer who knows their numbers makes better decisions, charges the right prices, and grows with confidence.
+  </div>
+
+  <div class="page-footer">
+    <span class="brand">Biztrivo Academy</span>
+    <span class="pg">Page 4</span>
+  </div>
+</div>
+
 </body>
 </html>

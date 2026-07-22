@@ -3,265 +3,436 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Como Precificar seus Produtos</title>
+<title>Como Precificar seus Produtos — Biztrivo Academy</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
-  
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+  :root {
+    --green:   #10b981;
+    --teal:    #0d9488;
+    --blue:    #0ea5e9;
+    --dark:    #0f172a;
+    --text:    #334155;
+    --muted:   #64748b;
+    --border:  #e2e8f0;
+    --bg:      #f8fafc;
+    --grad:    linear-gradient(135deg, #10b981 0%, #0d9488 45%, #0ea5e9 100%);
+    --grad-sub: linear-gradient(135deg, #f0fdf9 0%, #f0fdfa 50%, #f0f9ff 100%);
+  }
+
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  
+
   body {
     font-family: 'Inter', sans-serif;
-    background: #f8fafc;
-    color: #1e293b;
+    background: #fff;
+    color: var(--text);
     line-height: 1.7;
   }
 
+  /* ─── PAGE ─── */
   .page {
-    max-width: 750px;
-    margin: 0 auto;
-    background: white;
+    max-width: 100%;
+    margin: 0;
+    background: #fff;
     min-height: 100vh;
-    padding: 60px 50px;
+    padding: 64px 56px;
     page-break-after: always;
   }
 
+  /* ─── COVER ─── */
   .cover {
-    background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
-    color: white;
+    background: var(--grad);
+    color: #fff;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: flex-start;
+    justify-content: flex-end;
     min-height: 100vh;
-    padding: 60px 50px;
+    padding: 64px 56px;
+    position: relative;
+    overflow: hidden;
   }
-
-  .cover .tag {
-    background: rgba(255,255,255,0.2);
-    border: 1px solid rgba(255,255,255,0.4);
-    padding: 6px 16px;
+  .cover::before {
+    content: '';
+    position: absolute;
+    top: -100px; right: -80px;
+    width: 420px; height: 420px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    pointer-events: none;
+  }
+  .cover::after {
+    content: '';
+    position: absolute;
+    bottom: 80px; right: 80px;
+    width: 180px; height: 180px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+    pointer-events: none;
+  }
+  .cover-tag {
+    display: inline-block;
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.32);
+    padding: 5px 14px;
     border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    margin-bottom: 30px;
-  }
-
-  .cover h1 {
-    font-size: 46px;
-    font-weight: 800;
-    line-height: 1.15;
-    margin-bottom: 20px;
-    max-width: 500px;
-  }
-
-  .cover p {
-    font-size: 18px;
-    opacity: 0.85;
-    max-width: 420px;
-    line-height: 1.6;
-    margin-bottom: 40px;
-  }
-
-  .cover .author {
-    font-size: 13px;
-    opacity: 0.7;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-  }
-
-  .cover-deco {
-    margin-top: 60px;
-    display: flex;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-
-  .cover-deco span {
-    background: rgba(255,255,255,0.15);
-    padding: 8px 18px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 600;
-  }
-
-  h2 {
-    font-size: 26px;
-    font-weight: 800;
-    color: #047857;
-    margin-bottom: 12px;
-    margin-top: 40px;
-    padding-bottom: 8px;
-    border-bottom: 3px solid #d1fae5;
-  }
-
-  h2:first-of-type { margin-top: 0; }
-
-  h3 {
-    font-size: 17px;
-    font-weight: 700;
-    color: #1e293b;
-    margin-top: 28px;
-    margin-bottom: 8px;
-  }
-
-  p {
-    font-size: 15px;
-    color: #374151;
-    margin-bottom: 14px;
-  }
-
-  .highlight {
-    background: #ecfdf5;
-    border-left: 4px solid #10b981;
-    padding: 16px 20px;
-    border-radius: 0 10px 10px 0;
-    margin: 20px 0;
-  }
-
-  .highlight strong {
-    color: #047857;
-  }
-
-  .example-box {
-    background: #f0fdf4;
-    border: 1.5px solid #bbf7d0;
-    border-radius: 12px;
-    padding: 20px 24px;
-    margin: 20px 0;
-  }
-
-  .example-box .label {
     font-size: 11px;
     font-weight: 700;
-    letter-spacing: 1.5px;
-    color: #059669;
+    letter-spacing: 1.8px;
     text-transform: uppercase;
-    margin-bottom: 10px;
+    margin-bottom: 32px;
+    width: fit-content;
   }
-
-  .formula {
-    background: #1e293b;
-    color: #10b981;
-    padding: 16px 24px;
-    border-radius: 10px;
-    font-family: monospace;
-    font-size: 16px;
+  .cover h1 {
+    font-size: 50px;
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -0.5px;
+    margin-bottom: 20px;
+    max-width: 520px;
+  }
+  .cover-sub {
+    font-size: 17px;
+    opacity: 0.85;
+    max-width: 400px;
+    line-height: 1.65;
+    margin-bottom: 44px;
+  }
+  .cover-pills {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 72px;
+  }
+  .cover-pills span {
+    background: rgba(255,255,255,0.14);
+    border: 1px solid rgba(255,255,255,0.25);
+    padding: 7px 16px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+  .cover-brand {
+    font-size: 11px;
     font-weight: 700;
-    margin: 20px 0;
-    text-align: center;
-    letter-spacing: 0.5px;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    opacity: 0.6;
   }
 
+  /* ─── STEP BADGE ─── */
+  .step-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    margin-top: 44px;
+  }
+  .step-row:first-child { margin-top: 0; }
+  .step-badge {
+    background: var(--grad);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+  .step-title {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+  }
+
+  /* ─── HEADINGS ─── */
+  h2 {
+    font-size: 23px;
+    font-weight: 800;
+    color: var(--dark);
+    letter-spacing: -0.3px;
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+  .h2-rule {
+    height: 3px;
+    width: 44px;
+    background: var(--grad);
+    border-radius: 2px;
+    margin-bottom: 16px;
+    margin-top: 8px;
+  }
+  h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--dark);
+    margin: 22px 0 8px;
+  }
+  p {
+    font-size: 14.5px;
+    color: var(--text);
+    margin-bottom: 14px;
+    line-height: 1.75;
+  }
+
+  /* ─── HIGHLIGHT ─── */
+  .highlight {
+    background: var(--grad-sub);
+    border-left: 3px solid var(--teal);
+    padding: 15px 20px;
+    border-radius: 0 10px 10px 0;
+    margin: 22px 0;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  .highlight strong { color: var(--teal); }
+
+  /* ─── CHECKLIST ─── */
   .checklist {
     list-style: none;
-    margin: 16px 0;
+    margin: 14px 0;
   }
-
   .checklist li {
-    padding: 10px 0;
-    border-bottom: 1px solid #f1f5f9;
-    font-size: 15px;
-    color: #374151;
     display: flex;
     align-items: flex-start;
     gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 14.5px;
+    color: var(--text);
+    line-height: 1.65;
   }
-
   .checklist li::before {
     content: "✓";
-    color: #10b981;
-    font-weight: 800;
-    font-size: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--grad);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 900;
     flex-shrink: 0;
-    margin-top: 1px;
+    margin-top: 2px;
   }
 
+  /* ─── FORMULA ─── */
+  .formula {
+    background: var(--dark);
+    color: #6ee7b7;
+    padding: 18px 24px;
+    border-radius: 10px;
+    font-family: 'Courier New', monospace;
+    font-size: 14.5px;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: 0.3px;
+    margin: 22px 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .formula::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2.5px;
+    background: var(--grad);
+  }
+
+  /* ─── WARNING ─── */
   .warning {
-    background: #fef3c7;
-    border-left: 4px solid #f59e0b;
-    padding: 16px 20px;
-    border-radius: 0 10px 10px 0;
+    background: #fffbeb;
+    border-left: 3px solid #f59e0b;
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
     margin: 20px 0;
-    font-size: 14px;
-    color: #92400e;
+    font-size: 13.5px;
+    color: #78350f;
+    line-height: 1.65;
   }
+  .warning strong { color: #b45309; }
 
-  .warning strong { color: #d97706; }
-
-  .number-grid {
+  /* ─── EXAMPLE GRID ─── */
+  .example-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin: 20px 0;
+    gap: 14px;
+    margin: 18px 0;
   }
-
-  .number-card {
-    background: #f8fafc;
-    border: 1.5px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 20px;
-    text-align: center;
+  .ex {
+    background: #fff;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    position: relative;
+    overflow: hidden;
   }
-
-  .number-card .big {
-    font-size: 36px;
+  .ex::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2.5px;
+    background: var(--grad);
+  }
+  .ex .biz {
+    font-size: 10px;
     font-weight: 800;
-    color: #10b981;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 9px;
   }
-
-  .number-card .desc {
+  .ex p {
     font-size: 13px;
-    color: #64748b;
+    color: var(--text);
+    margin-bottom: 0;
+    line-height: 1.6;
+  }
+  .ex .res {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--dark);
+    border-top: 1px solid var(--border);
+    padding-top: 9px;
+    margin-top: 9px;
+  }
+  .ex .calc {
+    font-size: 11.5px;
+    color: var(--muted);
+    line-height: 1.5;
     margin-top: 4px;
   }
 
+  /* ─── TABLE ─── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 13.5px;
+  }
+  table thead tr {
+    background: var(--grad);
+  }
+  table th {
+    color: #fff;
+    padding: 11px 16px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.4px;
+  }
+  table td {
+    padding: 10px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  table tr:nth-child(even) td { background: var(--bg); }
+
+  /* ─── SINGLE EXAMPLE BOX ─── */
+  .ex-full {
+    background: var(--grad-sub);
+    border: 1.5px solid #cbd5e1;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin: 18px 0;
+  }
+  .ex-full .ex-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .ex-full .ex-label::before {
+    content: '';
+    display: inline-block;
+    width: 16px; height: 2px;
+    background: var(--grad);
+    border-radius: 1px;
+  }
+  .ex-full p { font-size: 13.5px; }
+
+  /* ─── STAT GRID ─── */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+    margin: 22px 0;
+  }
+  .stat {
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 14px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--grad);
+  }
+  .stat .big {
+    font-size: 30px;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 5px;
+    background: var(--grad);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .stat .desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.45;
+  }
+
+  /* ─── DIVIDER ─── */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 36px 0;
+  }
+
+  /* ─── FOOTER ─── */
   .page-footer {
-    margin-top: 60px;
-    padding-top: 20px;
-    border-top: 1px solid #e2e8f0;
+    margin-top: 56px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
     display: flex;
     justify-content: space-between;
     align-items: center;
   }
-
   .page-footer .brand {
-    font-size: 13px;
-    font-weight: 700;
-    color: #10b981;
-  }
-
-  .page-footer .pg {
     font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    background: var(--grad);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .page-footer .pg {
+    font-size: 11px;
     color: #94a3b8;
   }
 
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 20px 0;
-    font-size: 14px;
-  }
-
-  table th {
-    background: #047857;
-    color: white;
-    padding: 12px 16px;
-    text-align: left;
-    font-weight: 700;
-  }
-
-  table td {
-    padding: 10px 16px;
-    border-bottom: 1px solid #e2e8f0;
-    color: #374151;
-  }
-
-  table tr:nth-child(even) td { background: #f8fafc; }
-
   @media print {
-    .page { page-break-after: always; }
+    body { background: #fff; }
+    .page { page-break-after: always; box-shadow: none; }
   }
 </style>
 </head>
@@ -269,22 +440,22 @@
 
 <!-- CAPA -->
 <div class="page cover">
-  <div class="tag">📚 Biztrivo Academy</div>
+  <div class="cover-tag">Biztrivo Academy</div>
   <h1>Como Precificar seus Produtos</h1>
-  <p>Chega de chute. Aprenda a calcular o preço certo, lucrar de verdade e nunca mais vender no prejuízo sem saber.</p>
-  <div class="cover-deco">
-    <span>✅ Checklist completo</span>
-    <span>📊 Exemplos reais</span>
-    <span>💰 Fórmula pronta</span>
+  <p class="cover-sub">Chega de chute. Aprenda a calcular o preço certo, lucrar de verdade e nunca mais vender no prejuízo sem saber.</p>
+  <div class="cover-pills">
+    <span>Checklist completo</span>
+    <span>Exemplos práticos</span>
+    <span>Fórmula pronta</span>
   </div>
-  <div style="margin-top: auto; padding-top: 60px;" class="author">
-    Biztrivo Academy — Para quem vende com propósito
-  </div>
+  <div class="cover-brand">Biztrivo Academy</div>
 </div>
 
 <!-- PÁGINA 2 -->
 <div class="page">
+
   <h2>O erro que quebra a maioria dos negócios</h2>
+  <div class="h2-rule"></div>
   <p>A maior parte das pessoas que vende produtos faz assim: olha quanto o concorrente cobra, cobra um pouco menos, e torce pra sobrar dinheiro. <strong>Isso é precificação no chute e ela quebra negócio.</strong></p>
   <p>Vender caro demais afasta cliente. Vender barato demais te faz trabalhar pra nada. O preço certo é aquele que cobre tudo o que você gasta, mais o seu lucro justo, mais margem pra imprevistos.</p>
 
@@ -292,95 +463,208 @@
     <strong>Regra de ouro:</strong> Preço não é o que o mercado cobra. Preço é o que te faz lucrar depois de pagar tudo.
   </div>
 
-  <h2>Passo 1 — Custo do Produto (CMV)</h2>
-  <p>O CMV (Custo da Mercadoria Vendida) é tudo que você gastou para ter aquele produto disponível para vender.</p>
+  <div class="step-row">
+    <span class="step-badge">Passo 1</span>
+    <span class="step-title">Custo da Mercadoria</span>
+  </div>
+  <h2>Custo do Produto (CMV)</h2>
+  <div class="h2-rule"></div>
+  <p>O CMV (Custo da Mercadoria Vendida) é tudo que você gastou para ter aquele produto disponível para vender: matéria-prima, frete de entrada, embalagem e perdas.</p>
 
   <ul class="checklist">
-    <li>Quanto você pagou pelo produto (ou pela matéria-prima)</li>
-    <li>Frete de compra (o que você pagou para receber)</li>
-    <li>Embalagem (sacola, caixinha, etiqueta)</li>
-    <li>Perdas e avarias (geralmente 2% a 5% do estoque)</li>
+    <li>Quanto você pagou pelo produto ou pela matéria-prima</li>
+    <li>Frete de compra: o que você pagou para receber o estoque</li>
+    <li>Embalagem: sacola, caixinha, etiqueta, fita</li>
+    <li>Perdas e avarias: geralmente de 2% a 5% do estoque</li>
   </ul>
 
-  <div class="example-box">
-    <div class="label">Exemplo prático</div>
-    <p>Você vende bolsas artesanais. Cada bolsa usa R$18 de material, R$3 de embalagem, e você considera R$1 de perda média. <strong>Custo do produto = R$22.</strong></p>
+  <div class="example-grid">
+    <div class="ex">
+      <div class="biz">Bolsas artesanais</div>
+      <p>Material: R$18,00<br>Embalagem: R$3,00<br>Perda estimada: R$1,00</p>
+      <div class="res">CMV = R$22,00 por unidade</div>
+    </div>
+    <div class="ex">
+      <div class="biz">Loja de roupas</div>
+      <p>Produto: R$45,00<br>Frete de entrada: R$3,00<br>Embalagem: R$1,50</p>
+      <div class="res">CMV = R$49,50 por peça</div>
+    </div>
+    <div class="ex">
+      <div class="biz">Cafeteria (bolo no pote)</div>
+      <p>Ingredientes: R$3,80<br>Pote e embalagem: R$1,20<br>Perda estimada: R$0,30</p>
+      <div class="res">CMV = R$5,30 por unidade</div>
+    </div>
+    <div class="ex">
+      <div class="biz">Cosméticos (revenda)</div>
+      <p>Produto: R$22,00<br>Frete de compra: R$2,50<br>Embalagem/etiqueta: R$1,50</p>
+      <div class="res">CMV = R$26,00 por item</div>
+    </div>
   </div>
 
-  <h2>Passo 2 — Custos Fixos por Unidade</h2>
-  <p>Custos fixos são o que você paga todo mês independente de vender ou não: aluguel, energia, celular, internet, sistema. Você precisa diluir esses custos em cada produto vendido.</p>
+  <div class="step-row">
+    <span class="step-badge">Passo 2</span>
+    <span class="step-title">Custos Fixos por Unidade</span>
+  </div>
+  <h2>Diluindo os custos fixos</h2>
+  <div class="h2-rule"></div>
+  <p>Custos fixos são o que você paga todo mês independente de vender ou não: aluguel, energia, celular, internet, sistema. Você precisa dividir esses custos entre cada produto vendido no mês.</p>
 
   <div class="formula">
-    Custo fixo por produto = Total fixo mensal ÷ Qtd. de peças vendidas/mês
+    Custo fixo por produto = Total fixo mensal ÷ Quantidade vendida por mês
   </div>
 
-  <div class="example-box">
-    <div class="label">Exemplo prático</div>
-    <p>Você tem R$800/mês de custos fixos e vende 80 bolsas por mês. <strong>Custo fixo por bolsa = R$800 ÷ 80 = R$10.</strong></p>
+  <div class="example-grid">
+    <div class="ex">
+      <div class="biz">Loja física pequena</div>
+      <p>Fixos mensais: R$2.000<br>Peças vendidas: 200/mês</p>
+      <div class="res">R$10,00 de fixo por peça</div>
+    </div>
+    <div class="ex">
+      <div class="biz">Vendedor online (home)</div>
+      <p>Fixos mensais: R$400<br>Produtos vendidos: 50/mês</p>
+      <div class="res">R$8,00 de fixo por produto</div>
+    </div>
+    <div class="ex">
+      <div class="biz">Bolsas artesanais</div>
+      <p>Fixos mensais: R$800<br>Bolsas vendidas: 80/mês</p>
+      <div class="res">R$10,00 de fixo por bolsa</div>
+    </div>
+    <div class="ex">
+      <div class="biz">Cafeteria (bolo no pote)</div>
+      <p>Fixos mensais: R$1.200<br>Unidades vendidas: 300/mês</p>
+      <div class="res">R$4,00 de fixo por unidade</div>
+    </div>
   </div>
 
   <div class="page-footer">
     <span class="brand">Biztrivo Academy</span>
-    <span class="pg">Página 2</span>
+    <span class="pg">Pág. 2</span>
   </div>
 </div>
 
 <!-- PÁGINA 3 -->
 <div class="page">
-  <h2>Passo 3 — Custos Variáveis</h2>
-  <p>Esses custos existem só quando você vende. Muita gente esquece deles e aí o lucro some.</p>
 
-  <ul class="checklist">
-    <li>Taxa do cartão ou marketplace (Mercado Livre, Shopee, iFood): geralmente 12% a 20%</li>
-    <li>Frete de envio (o que o cliente não paga)</li>
-    <li>Comissão de vendedores, se tiver</li>
-    <li>Imposto simples ou MEI: em média 6% sobre faturamento</li>
-  </ul>
+  <div class="step-row" style="margin-top:0;">
+    <span class="step-badge">Passo 3</span>
+    <span class="step-title">Custos Variáveis</span>
+  </div>
+  <h2>O que você paga só quando vende</h2>
+  <div class="h2-rule"></div>
+  <p>Esses custos existem só quando você realiza uma venda. Muita gente esquece deles e aí o lucro some sem explicação.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Custo variável</th>
+        <th>Valor típico</th>
+        <th>Observação</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Taxa Mercado Livre (clássico)</td><td>14% a 16%</td><td>Varia por categoria do produto</td></tr>
+      <tr><td>Taxa Shopee</td><td>12% a 20%</td><td>Inclui comissão e transação</td></tr>
+      <tr><td>Maquininha débito</td><td>1% a 2%</td><td>Depende da operadora</td></tr>
+      <tr><td>Maquininha crédito à vista</td><td>2% a 4%</td><td>Depende da operadora</td></tr>
+      <tr><td>Simples Nacional (comércio)</td><td>4% a 7%</td><td>Sobre faturamento total</td></tr>
+      <tr><td>MEI</td><td>R$76,90/mês</td><td>Valor fixo, não por venda</td></tr>
+      <tr><td>Frete de envio (absorvido)</td><td>Variável</td><td>O que o cliente não paga</td></tr>
+    </tbody>
+  </table>
 
   <div class="warning">
-    <strong>⚠️ Atenção:</strong> Muitas pessoas colocam o produto no Mercado Livre e esquecem que a plataforma fica com até 16% de tudo que entra. Sem contar o frete. Sem contar o imposto. Precifique considerando esses descontos.
+    <strong>Atenção:</strong> Muitas pessoas colocam o produto no Mercado Livre e esquecem que a plataforma fica com até 16% de tudo que entra. Sem contar o frete. Sem contar o imposto. Precifique considerando todos esses descontos antes de definir qualquer valor.
   </div>
 
-  <h2>Passo 4 — A Fórmula do Preço Final</h2>
-  <p>Com todos os custos na mão, aplique essa fórmula:</p>
+  <div class="step-row">
+    <span class="step-badge">Passo 4</span>
+    <span class="step-title">Preço Final</span>
+  </div>
+  <h2>A fórmula do preço correto</h2>
+  <div class="h2-rule"></div>
+  <p>Com todos os custos em mãos, aplique essa fórmula. Ela garante que o preço final já absorve os descontos de plataforma, impostos e ainda entrega o lucro que você definiu.</p>
 
   <div class="formula">
-    Preço = (CMV + Custo Fixo por unidade) ÷ (1 – % Custos Variáveis – % Lucro desejado)
+    Preço = (CMV + Fixo por unidade) ÷ (1 &minus; % Variáveis &minus; % Lucro desejado)
   </div>
 
-  <div class="example-box">
-    <div class="label">Montando o preço da bolsa</div>
+  <div class="ex-full">
+    <div class="ex-label">Exemplo completo: Bolsa artesanal</div>
     <table>
       <tr><th>Item</th><th>Valor</th></tr>
-      <tr><td>Custo do produto (CMV)</td><td>R$ 22,00</td></tr>
-      <tr><td>Custo fixo por unidade</td><td>R$ 10,00</td></tr>
+      <tr><td>Custo do produto (CMV)</td><td>R$22,00</td></tr>
+      <tr><td>Custo fixo por unidade</td><td>R$10,00</td></tr>
       <tr><td>Taxa da plataforma (15%)</td><td>incluída na fórmula</td></tr>
-      <tr><td>Imposto MEI (6%)</td><td>incluída na fórmula</td></tr>
+      <tr><td>Simples Nacional (6%)</td><td>incluída na fórmula</td></tr>
       <tr><td>Lucro desejado (20%)</td><td>incluída na fórmula</td></tr>
     </table>
-    <p style="margin-top:12px;"><strong>Cálculo:</strong> (22 + 10) ÷ (1 – 0,15 – 0,06 – 0,20) = R$32 ÷ 0,59 = <strong>R$54,23</strong></p>
-    <p>Cobrar R$55 é o preço honesto que cobre tudo e ainda te dá 20% de lucro real.</p>
+    <p style="margin-top:12px;"><strong>Cálculo:</strong> (22 + 10) ÷ (1 - 0,15 - 0,06 - 0,20) = R$32 ÷ 0,59 = <strong>R$54,23</strong></p>
+    <p>Cobrar R$55 cobre tudo e ainda garante 20% de lucro real sobre o preço de venda.</p>
   </div>
 
+  <div class="example-grid">
+    <div class="ex">
+      <div class="biz">Bolo no pote (cafeteria)</div>
+      <p>CMV R$5,30 + Fixo R$4,00<br>Cartão 3% + Simples 4%<br>Lucro desejado: 30%</p>
+      <div class="calc">9,30 ÷ (1 - 0,03 - 0,04 - 0,30) = 9,30 ÷ 0,63</div>
+      <div class="res">Preço sugerido: R$14,76</div>
+    </div>
+    <div class="ex">
+      <div class="biz">Camiseta (loja de roupas)</div>
+      <p>CMV R$49,50 + Fixo R$10,00<br>Marketplace 15% + Simples 5%<br>Lucro desejado: 25%</p>
+      <div class="calc">59,50 ÷ (1 - 0,15 - 0,05 - 0,25) = 59,50 ÷ 0,55</div>
+      <div class="res">Preço sugerido: R$108,18</div>
+    </div>
+    <div class="ex">
+      <div class="biz">Cosmético (revenda)</div>
+      <p>CMV R$26,00 + Fixo R$8,00<br>Maquininha 3% + Simples 4%<br>Lucro desejado: 35%</p>
+      <div class="calc">34,00 ÷ (1 - 0,03 - 0,04 - 0,35) = 34,00 ÷ 0,58</div>
+      <div class="res">Preço sugerido: R$58,62</div>
+    </div>
+    <div class="ex">
+      <div class="biz">Atalho dos 3x</div>
+      <p>Muitos segmentos de varejo usam 3x o CMV como ponto de partida rápido.</p>
+      <div class="calc">CMV R$22,00 x 3 = R$66,00</div>
+      <div class="res">Útil para validação, não substitui o cálculo completo.</div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span class="brand">Biztrivo Academy</span>
+    <span class="pg">Pág. 3</span>
+  </div>
+</div>
+
+<!-- PÁGINA 4 -->
+<div class="page">
+
   <h2>Checklist antes de definir seu preço</h2>
+  <div class="h2-rule"></div>
+  <p>Antes de publicar qualquer produto, passe por cada item abaixo. Se algum estiver faltando, o preço pode estar errado sem que você saiba.</p>
+
   <ul class="checklist">
     <li>Calculei o custo de cada produto individualmente?</li>
-    <li>Somei o frete de compra e a embalagem?</li>
-    <li>Dividi meus custos fixos pelo número de vendas mensais?</li>
-    <li>Incluí as taxas da plataforma ou do cartão?</li>
-    <li>Incluí os impostos do MEI ou Simples?</li>
-    <li>Defini um percentual de lucro antes de calcular?</li>
-    <li>Testei se o preço final está competitivo no mercado?</li>
+    <li>Incluí o frete de compra e a embalagem no CMV?</li>
+    <li>Estimei as perdas e avarias do meu estoque?</li>
+    <li>Dividi meus custos fixos pelo volume mensal de vendas?</li>
+    <li>Incluí as taxas da plataforma ou da maquininha?</li>
+    <li>Incluí os impostos do MEI ou do Simples Nacional?</li>
+    <li>Defini um percentual de lucro antes de calcular o preço?</li>
+    <li>Verifiquei se o preço final é competitivo no mercado?</li>
   </ul>
 
-  <div class="number-grid">
-    <div class="number-card">
+  <div class="stat-grid">
+    <div class="stat">
       <div class="big">20%</div>
-      <div class="desc">Lucro mínimo saudável para produtos físicos</div>
+      <div class="desc">Margem mínima saudável para produtos físicos</div>
     </div>
-    <div class="number-card">
+    <div class="stat">
       <div class="big">3x</div>
-      <div class="desc">Regra rápida: muitos segmentos cobram 3x o custo</div>
+      <div class="desc">Múltiplo rápido: muitos segmentos cobram 3x o CMV</div>
+    </div>
+    <div class="stat">
+      <div class="big">40%</div>
+      <div class="desc">Margem ideal para revenda com altos custos operacionais</div>
     </div>
   </div>
 
@@ -390,7 +674,7 @@
 
   <div class="page-footer">
     <span class="brand">Biztrivo Academy</span>
-    <span class="pg">Página 3</span>
+    <span class="pg">Pág. 4</span>
   </div>
 </div>
 

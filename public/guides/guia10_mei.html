@@ -3,69 +3,487 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Guia MEI Inteligente</title>
+<title>Guia MEI Inteligente — Biztrivo Academy</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Inter',sans-serif;background:#f8fafc;color:#1e293b;line-height:1.7}
-.page{max-width:750px;margin:0 auto;background:#fff;min-height:100vh;padding:60px 50px;page-break-after:always}
-.cover{background:linear-gradient(135deg,#10b981 0%,#059669 50%,#047857 100%);color:#fff;display:flex;flex-direction:column;justify-content:center;min-height:100vh;padding:60px 50px}
-.cover .tag{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);padding:6px 16px;border-radius:20px;font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:30px;align-self:flex-start}
-.cover h1{font-size:46px;font-weight:800;line-height:1.15;margin-bottom:20px;max-width:560px}
-.cover p{font-size:18px;opacity:.85;max-width:480px;line-height:1.6;margin-bottom:40px}
-h2{font-size:26px;font-weight:800;color:#047857;margin:40px 0 12px;padding-bottom:8px;border-bottom:3px solid #d1fae5}
-h2:first-of-type{margin-top:0}
-h3{font-size:17px;font-weight:700;color:#1e293b;margin:28px 0 8px}
-p{font-size:15px;color:#374151;margin-bottom:14px}
-ul,ol{margin:14px 0 14px 22px}
-li{font-size:15px;color:#374151;margin-bottom:8px}
-.highlight{background:#ecfdf5;border-left:4px solid #10b981;padding:16px 20px;border-radius:0 10px 10px 0;margin:20px 0}
-.highlight strong{color:#047857}
-.warning{background:#fef3c7;border-left:4px solid #f59e0b;padding:16px 20px;border-radius:0 10px 10px 0;margin:20px 0;font-size:14px;color:#92400e}
-.warning strong{color:#d97706}
-.box{background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:12px;padding:20px 24px;margin:20px 0}
-.box .label{font-size:11px;font-weight:700;letter-spacing:1.5px;color:#059669;text-transform:uppercase;margin-bottom:10px}
-.formula{background:#1e293b;color:#10b981;padding:16px 24px;border-radius:10px;font-family:monospace;font-size:15px;font-weight:700;margin:20px 0;text-align:center}
-.footer{margin-top:60px;padding-top:20px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;font-size:12px;color:#94a3b8}
-.footer .brand{font-weight:700;color:#10b981}
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+  :root {
+    --green:    #10b981;
+    --teal:     #0d9488;
+    --blue:     #0ea5e9;
+    --dark:     #0f172a;
+    --text:     #334155;
+    --muted:    #64748b;
+    --border:   #e2e8f0;
+    --bg:       #f8fafc;
+    --grad:     linear-gradient(135deg, #10b981 0%, #0d9488 45%, #0ea5e9 100%);
+    --grad-sub: linear-gradient(135deg, #f0fdf9 0%, #f0fdfa 50%, #f0f9ff 100%);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #fff;
+    color: var(--text);
+    line-height: 1.7;
+  }
+
+  .page {
+    max-width: 100%;
+    margin: 0;
+    background: #fff;
+    min-height: 100vh;
+    padding: 64px 8%;
+    page-break-after: always;
+  }
+
+  /* CAPA */
+  .cover {
+    background: var(--grad);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: 100vh;
+    padding: 64px 8%;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover::before {
+    content: '';
+    position: absolute;
+    top: -100px; right: -80px;
+    width: 420px; height: 420px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    pointer-events: none;
+  }
+  .cover-tag {
+    display: inline-block;
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.32);
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+    width: fit-content;
+  }
+  .cover h1 {
+    font-size: 50px;
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -0.5px;
+    margin-bottom: 20px;
+    max-width: 600px;
+  }
+  .cover-sub {
+    font-size: 17px;
+    opacity: 0.85;
+    max-width: 500px;
+    line-height: 1.65;
+    margin-bottom: 44px;
+  }
+  .cover-pills {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 72px;
+  }
+  .cover-pills span {
+    background: rgba(255,255,255,0.14);
+    border: 1px solid rgba(255,255,255,0.25);
+    padding: 7px 16px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .cover-brand {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    opacity: 0.6;
+  }
+
+  /* TIPOGRAFIA */
+  h2 {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--dark);
+    letter-spacing: -0.3px;
+    line-height: 1.2;
+    margin-bottom: 6px;
+    margin-top: 48px;
+  }
+  h2:first-child { margin-top: 0; }
+  .h2-rule {
+    height: 3px;
+    width: 44px;
+    background: var(--grad);
+    border-radius: 2px;
+    margin-bottom: 20px;
+    margin-top: 8px;
+  }
+  p {
+    font-size: 15px;
+    color: var(--text);
+    margin-bottom: 16px;
+    line-height: 1.75;
+  }
+
+  /* COMPONENTES */
+  .highlight {
+    background: var(--grad-sub);
+    border-left: 4px solid var(--green);
+    padding: 18px 24px;
+    border-radius: 0 10px 10px 0;
+    margin: 24px 0;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  .highlight strong { color: var(--teal); }
+
+  .warning {
+    background: #fffbeb;
+    border-left: 4px solid #f59e0b;
+    padding: 18px 24px;
+    border-radius: 0 8px 8px 0;
+    margin: 24px 0;
+    font-size: 14px;
+    color: #78350f;
+    line-height: 1.65;
+  }
+  .warning strong { color: #b45309; }
+
+  .formula {
+    background: var(--dark);
+    color: var(--green);
+    padding: 18px 24px;
+    border-radius: 10px;
+    font-family: monospace;
+    font-size: 15px;
+    font-weight: 700;
+    margin: 24px 0;
+    text-align: center;
+  }
+
+  /* CARDS */
+  .mei-card {
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 20px 0;
+    background: #fff;
+  }
+  .mei-card .mei-tag {
+    display: inline-block;
+    background: #d1fae5;
+    color: #065f46;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+  }
+  .mei-card h4 {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--dark);
+    margin-bottom: 8px;
+  }
+  .mei-card .example {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-size: 14px;
+    color: var(--muted);
+    margin-top: 14px;
+    border: 1px solid var(--border);
+  }
+  .mei-card .example strong { color: var(--teal); }
+
+  /* TABELA */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 24px 0;
+    font-size: 14px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  table th {
+    background: var(--dark);
+    color: #fff;
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+  table tr:nth-child(even) td { background: #f0fdf9; }
+  table tr:last-child td { border-bottom: none; }
+
+  /* CHECKLIST */
+  .checklist {
+    list-style: none;
+    margin: 16px 0;
+  }
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.65;
+  }
+  .checklist li::before {
+    content: "✓";
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--grad);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 900;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  /* RODAPÉ */
+  .page-footer {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .page-footer .brand {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    background: var(--grad);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .page-footer .pg { font-size: 12px; color: #94a3b8; }
 </style>
 </head>
 <body>
+
+<!-- CAPA -->
 <div class="page cover">
-  <div class="tag">📚 Biztrivo Academy</div>
+  <div class="cover-tag">Biztrivo Academy</div>
   <h1>Guia MEI Inteligente</h1>
-  <p>Controle seu limite anual de faturamento, o DAS mensal e evite o desenquadramento do MEI.</p>
+  <p class="cover-sub">Controle seu limite anual de faturamento, o DAS mensal e evite o desenquadramento do MEI antes que o problema apareça.</p>
+  <div class="cover-pills">
+    <span>Limite anual</span>
+    <span>DAS mensal</span>
+    <span>Alertas de risco</span>
+    <span>Checklist mensal</span>
+  </div>
+  <div class="cover-brand">Biztrivo Academy</div>
 </div>
+
+<!-- PÁGINA 1 -->
 <div class="page">
-<h2>Por que monitorar seu MEI</h2>
-<p>Em 2026 o limite anual de faturamento do MEI é de R$ 81.000. Passou disso, você é desenquadrado, vira ME e paga muito mais imposto. O módulo MEI do Biztrivo te avisa antes do problema acontecer.</p>
 
-<h2>Limite anual</h2>
-<p>O sistema soma todas as receitas do ano corrente e mostra:</p>
-<ul>
-<li>Quanto você já faturou.</li>
-<li>Quanto falta para o limite.</li>
-<li>Projeção para o fim do ano com base no seu ritmo atual.</li>
-<li>Alerta de risco caso a projeção ultrapasse R$ 81.000.</li>
-</ul>
+  <h2>Por que monitorar seu MEI</h2>
+  <div class="h2-rule"></div>
+  <p>Em 2026, o limite anual de faturamento do MEI é de R$ 81.000. Ultrapassar esse valor não gera apenas uma multa: você é automaticamente desenquadrado da categoria, passa a ser tributado como Microempresa (ME) e começa a pagar muito mais imposto — com cobrança retroativa.</p>
+  <p>O módulo MEI do Biztrivo monitora seu faturamento em tempo real e emite alertas antes que você chegue perto do limite. Não é sobre burocracia; é sobre proteger o que você construiu.</p>
 
-<div class="warning"><strong>Atenção:</strong> ultrapassar em até 20% gera desenquadramento no ano seguinte com cobrança retroativa. Ultrapassar acima de 20% desenquadra imediatamente. Pague atenção aos alertas.</div>
+  <div class="warning">
+    <strong>Atenção:</strong> ultrapassar o limite em ate 20% gera desenquadramento no ano seguinte com cobranca retroativa de impostos. Ultrapassar acima de 20% gera desenquadramento imediato, no mesmo exercicio fiscal. Nao ignore os alertas do sistema.
+  </div>
 
-<h2>DAS mensal</h2>
-<p>O DAS é a guia única que reúne INSS, ICMS e ISS do MEI. Em 2026 o valor é de R$ 76,90 para comércio. O sistema lembra você todo mês, no dia 20, do vencimento.</p>
+  <h2>Como o limite anual funciona na pratica</h2>
+  <div class="h2-rule"></div>
+  <p>O Biztrivo soma todas as suas receitas do ano corrente e exibe, em tempo real, quatro informacoes essenciais:</p>
 
-<h2>Quando migrar para ME</h2>
-<p>Se você está sempre encostando no limite, talvez seja hora de planejar a migração para Microempresa. Conversar com um contador antes evita susto na declaração anual.</p>
+  <div class="mei-card">
+    <div class="mei-tag">Indicador 1</div>
+    <h4>Total faturado no ano</h4>
+    <p>Soma de todas as vendas registradas desde 1 de janeiro ate o dia de hoje. Qualquer venda lancada no sistema entra automaticamente nesse calculo.</p>
+    <div class="example">
+      <strong>Exemplo:</strong> Voce esta em julho e ja faturou R$ 52.000. O painel mostra esse valor atualizado a cada novo lancamento.
+    </div>
+  </div>
 
-<h2>Checklist mensal</h2>
-<ul>
-<li>Conferir total faturado no mês.</li>
-<li>Pagar o DAS até o dia 20.</li>
-<li>Olhar a projeção anual.</li>
-<li>Guardar comprovantes de receita por 5 anos.</li>
-</ul>
+  <div class="mei-card">
+    <div class="mei-tag">Indicador 2</div>
+    <h4>Quanto falta ate o limite</h4>
+    <p>A diferenca entre R$ 81.000 e o total faturado ate agora. Esse numero fica em destaque para que voce saiba exatamente quanto espaco ainda tem para faturar no ano.</p>
+    <div class="example">
+      <strong>Exemplo:</strong> Com R$ 52.000 faturados, o sistema exibe "R$ 29.000 restantes". Simples e direto.
+    </div>
+  </div>
 
-<div class="footer"><span class="brand">Biztrivo Academy</span><span>Página 1</span></div>
+  <div class="mei-card">
+    <div class="mei-tag">Indicador 3</div>
+    <h4>Projecao para o fim do ano</h4>
+    <p>Com base no seu ritmo medio de faturamento mensal, o sistema calcula quanto voce deve faturar ate 31 de dezembro. Isso permite planejar com antecedencia, nao apagar incendio.</p>
+    <div class="example">
+      <strong>Exemplo:</strong> Voce fatura em media R$ 7.500 por mes. Em julho, o sistema projeta: R$ 52.000 ja faturados + R$ 37.500 restantes no ano = R$ 89.500 projetados. Isso e R$ 8.500 acima do limite — alerta ativado.
+    </div>
+  </div>
+
+  <div class="mei-card">
+    <div class="mei-tag">Indicador 4</div>
+    <h4>Alerta de risco</h4>
+    <p>Quando a projecao anual ultrapassa R$ 81.000, o sistema emite um alerta visivel no painel. Voce recebe a notificacao com tempo suficiente para tomar uma decisao: reduzir o ritmo de vendas nos meses restantes ou iniciar a migracao para ME.</p>
+    <div class="example">
+      <strong>Exemplo:</strong> O alerta aparece em outubro com a mensagem "Sua projecao atual e de R$ 89.500. Voce pode ultrapassar o limite em novembro. Considere conversar com um contador."
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span class="brand">Biztrivo Academy</span>
+    <span class="pg">Pagina 1</span>
+  </div>
 </div>
+
+<!-- PÁGINA 2 -->
+<div class="page">
+
+  <h2>DAS mensal: o que e e como funciona</h2>
+  <div class="h2-rule"></div>
+  <p>O DAS (Documento de Arrecadacao do Simples) e a guia unica que reune INSS, ICMS e ISS do MEI em um unico boleto. Em 2026, o valor para comercio e de R$ 76,90 mensais.</p>
+  <p>Pagar o DAS em dia garante seus direitos previdenciarios — aposentadoria, auxilio-doenca, salario-maternidade — e evita juros e multas por atraso. O vencimento e todo dia 20 do mes.</p>
+
+  <table>
+    <tr>
+      <th>Componente</th>
+      <th>O que cobre</th>
+      <th>Valor (2026)</th>
+    </tr>
+    <tr>
+      <td><strong>INSS</strong></td>
+      <td>Previdencia social (aposentadoria, beneficios)</td>
+      <td>R$ 72,90</td>
+    </tr>
+    <tr>
+      <td><strong>ICMS</strong></td>
+      <td>Imposto sobre circulacao de mercadorias (comercio)</td>
+      <td>R$ 1,00</td>
+    </tr>
+    <tr>
+      <td><strong>ISS</strong></td>
+      <td>Imposto sobre servicos (prestadores de servico)</td>
+      <td>R$ 5,00</td>
+    </tr>
+    <tr>
+      <td><strong>Total comercio</strong></td>
+      <td>INSS + ICMS</td>
+      <td><strong>R$ 76,90</strong></td>
+    </tr>
+  </table>
+
+  <div class="highlight">
+    <strong>Lembrete automatico:</strong> O Biztrivo envia uma notificacao no dia 20 de cada mes lembrando do vencimento do DAS. Voce nao precisa guardar data nenhuma — o sistema cuida disso.
+  </div>
+
+  <h2>Quando migrar para Microempresa (ME)</h2>
+  <div class="h2-rule"></div>
+  <p>Se voce esta constantemente proximo do limite anual ou ja ultrapassou em algum mes, pode ser hora de planejar a migracao para ME. Isso nao e um problema — e crescimento. Mas precisa ser feito com planejamento.</p>
+
+  <div class="mei-card">
+    <div class="mei-tag">Sinal 1</div>
+    <h4>Projecao acima de R$ 75.000 por dois meses seguidos</h4>
+    <p>Se o sistema projeta que voce vai ultrapassar o limite por dois meses consecutivos, e hora de marcar uma consulta com um contador. Nao espere o desenquadramento acontecer.</p>
+  </div>
+
+  <div class="mei-card">
+    <div class="mei-tag">Sinal 2</div>
+    <h4>Voce quer contratar funcionarios adicionais</h4>
+    <p>O MEI permite apenas um funcionario registrado. Se o negocio cresceu e voce precisa de mais pessoas, a migracao para ME ou EPP pode ser necessaria independentemente do faturamento.</p>
+  </div>
+
+  <div class="mei-card">
+    <div class="mei-tag">Sinal 3</div>
+    <h4>Sua atividade nao esta na lista do MEI</h4>
+    <p>Nem todas as atividades economicas sao permitidas no MEI. Se voce diversificou os servicos ou produtos, verifique se sua atividade ainda esta no rol autorizado. O Biztrivo exibe um aviso se detectar inconsistencia.</p>
+  </div>
+
+  <div class="warning">
+    <strong>Importante:</strong> A migracao para ME muda seu regime tributario, seus encargos mensais e seus direitos. Nunca tome essa decisao sozinho. Consulte um contador antes de qualquer mudanca, de preferencia com 3 a 6 meses de antecedencia.
+  </div>
+
+  <div class="page-footer">
+    <span class="brand">Biztrivo Academy</span>
+    <span class="pg">Pagina 2</span>
+  </div>
+</div>
+
+<!-- PÁGINA 3 -->
+<div class="page">
+
+  <h2>Checklist mensal do MEI</h2>
+  <div class="h2-rule"></div>
+  <p>Reserve 15 minutos por mes para passar por esses itens. E o suficiente para manter seu MEI saudavel e evitar surpresas no fim do ano.</p>
+
+  <ul class="checklist">
+    <li>Conferir o total faturado no mes e comparar com o ritmo esperado.</li>
+    <li>Pagar o DAS ate o dia 20 (use o lembrete automatico do Biztrivo).</li>
+    <li>Revisar a projecao anual e verificar se ha alerta de risco ativo.</li>
+    <li>Guardar os comprovantes de receita do mes em pasta digital organizada.</li>
+    <li>Verificar se todas as vendas do mes foram lancadas corretamente no sistema.</li>
+    <li>Confirmar que sua atividade ainda e compativel com o regime MEI.</li>
+  </ul>
+
+  <h2>Perguntas frequentes</h2>
+  <div class="h2-rule"></div>
+
+  <div class="mei-card">
+    <div class="mei-tag">Duvida 1</div>
+    <h4>O que acontece se eu nao pagar o DAS por 3 meses seguidos?</h4>
+    <p>Apos 3 meses de inadimplencia, o CNPJ do MEI pode ser cancelado automaticamente pela Receita Federal. Alem disso, voce perde os beneficios previdenciarios referentes ao periodo sem pagamento. Regularize o quanto antes, a Biztrivo avisa se voce esta em atraso.</p>
+  </div>
+
+  <div class="mei-card">
+    <div class="mei-tag">Duvida 2</div>
+    <h4>Posso parcelar o DAS atrasado?</h4>
+    <p>Sim. Debitos do MEI podem ser parcelados pelo portal do Simples Nacional (parcelamento ordinario). O valor minimo de cada parcela e R$ 50,00. Entre em contato com a Receita Federal ou um contador para formalizar o parcelamento.</p>
+  </div>
+
+  <div class="mei-card">
+    <div class="mei-tag">Duvida 3</div>
+    <h4>Preciso emitir nota fiscal como MEI?</h4>
+    <p>Depende do seu cliente. Para pessoas fisicas, nao e obrigatorio. Para pessoas juridicas (outras empresas), a nota fiscal e obrigatoria na maioria dos casos. O Biztrivo facilita a emissao integrada para evitar irregularidades.</p>
+  </div>
+
+  <div class="formula">
+    Projecao anual = (Total faturado ate agora ÷ meses decorridos) x 12
+  </div>
+
+  <div class="highlight">
+    <strong>Conclusao:</strong> Manter o MEI em ordem nao exige muito tempo exige consistencia. Com o Biztrivo monitorando seu faturamento, emitindo alertas e te lembrando do DAS, voce foca no que importa: vender mais e crescer com seguranca.
+  </div>
+
+  <div class="page-footer">
+    <span class="brand">Biztrivo Academy</span>
+    <span class="pg">Pagina 3</span>
+  </div>
+</div>
+
 </body>
 </html>
