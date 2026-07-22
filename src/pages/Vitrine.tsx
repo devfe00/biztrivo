@@ -57,22 +57,26 @@ const Vitrine = () => {
   }, [config.products, checkStockAlert]);
 
   const handleAddProduct = async () => {
-    if (!name.trim() || !discountPrice) return;
-    const dp = parseFloat(discountPrice.replace(',', '.')) || 0;
-    if (dp <= 0) { toast.error('O preço deve ser maior que zero.'); return; }
+  if (!name.trim() || !originalPrice) return;
+  try {
     await addProduct({
       name: sanitizeText(name),
       photo,
       originalPrice: Math.max(0, parseFloat(originalPrice.replace(',', '.')) || 0),
-      discountPrice: dp,
+      discountPrice: discountPrice
+        ? Math.max(0.01, parseFloat(discountPrice.replace(',', '.')) || 0)
+        : Math.max(0.01, parseFloat(originalPrice.replace(',', '.')) || 0),
       description: sanitizeText(description),
       stock: Math.max(0, parseInt(stock) || 0),
     });
-
     setName(''); setPhoto(''); setOriginalPrice(''); setDiscountPrice(''); setDescription(''); setStock('');
     setShowForm(false);
     toast.success('Produto adicionado!');
-  };
+  } catch (err) {
+    console.error('Erro ao salvar produto:', err);
+    toast.error('Erro ao salvar produto. Verifique o console.');
+  }
+};
 
   const handleCopy = () => {
     navigator.clipboard.writeText(publicUrl);

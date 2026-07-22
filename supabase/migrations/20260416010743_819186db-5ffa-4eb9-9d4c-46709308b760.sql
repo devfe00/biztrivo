@@ -1,1 +1,0 @@
-ALTER TABLE public.profiles ADD COLUMN daily_goal numeric DEFAULT 0;
