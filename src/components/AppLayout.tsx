@@ -8,18 +8,19 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Toaster } from "sonner";
 import Footer from '@/components/Footer';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { useI18n, LANGUAGES } from '@/lib/i18n';
 
-const navItems = [
-  { path: '/dashboard', label: 'Painel', icon: LayoutDashboard },
-  { path: '/caixa', label: 'Caixa', icon: Wallet },
-  { path: '/vitrine', label: 'Vitrine', icon: Store },
-  { path: '/posts-ia', label: 'Posts IA', icon: Instagram },
-  { path: '/offline', label: 'Offline', icon: WifiOff },
-  { path: '/calculadora', label: 'Preço', icon: Calculator },
-  { path: '/relatorios', label: 'Relatório', icon: BarChart3 },
-  { path: '/mei', label: 'MEI', icon: FileText },
-  { path: '/contador', label: 'Modo Contador', icon: Calculator },
-  { path: '/academy', label: 'Academy', icon: GraduationCap },
+const navItemsBase = [
+  { path: '/dashboard', key: 'nav.dashboard', icon: LayoutDashboard },
+  { path: '/caixa', key: 'nav.caixa', icon: Wallet },
+  { path: '/vitrine', key: 'nav.vitrine', icon: Store },
+  { path: '/posts-ia', key: 'nav.posts_ia', icon: Instagram },
+  { path: '/offline', key: 'nav.offline', icon: WifiOff },
+  { path: '/calculadora', key: 'nav.calculadora', icon: Calculator },
+  { path: '/relatorios', key: 'nav.relatorios', icon: BarChart3 },
+  { path: '/mei', key: 'nav.mei', icon: FileText },
+  { path: '/contador', key: 'nav.contador', icon: Calculator },
+  { path: '/academy', key: 'nav.academy', icon: GraduationCap },
 ];
 
 const AppLayout = ({ children }: { children: ReactNode }) => {
@@ -31,6 +32,8 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
 
   const { config } = useStore();
   const { signOut } = useAuth();
+  const { t, lang, setLang } = useI18n();
+  const navItems = navItemsBase.map(i => ({ ...i, label: t(i.key) }));
 
   const storeName = config.storeName || 'Minha Loja';
   const profileImage = config.profileImage || '';
@@ -46,7 +49,7 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const handleLogout = async () => {
-    if (window.confirm('Tem certeza que deseja sair?')) {
+    if (window.confirm(t('auth.logout_confirm'))) {
       await signOut();
       navigate('/login');
     }
@@ -138,13 +141,13 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
               >
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center overflow-hidden">
                   {profileImage
-                    ? <img src={profileImage} alt="Perfil" className="w-full h-full object-cover" />
+                    ? <img src={profileImage} alt={t('nav.view_profile')} className="w-full h-full object-cover" />
                     : <User className="text-white" size={16} />
                   }
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-foreground truncate">{storeName}</p>
-                  <p className="text-xs text-muted-foreground">Ver perfil</p>
+                  <p className="text-xs text-muted-foreground">{t('nav.view_profile')}</p>
                 </div>
                 <Settings size={16} className="text-muted-foreground" />
               </Link>
@@ -152,7 +155,7 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
                 onClick={() => { setMobileOpen(false); handleLogout(); }}
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-all"
               >
-                <LogOut size={18} /><span>Sair</span>
+                <LogOut size={18} /><span>{t('nav.logout')}</span>
               </button>
             </div>
           </div>
@@ -163,6 +166,16 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
       <main className="flex-1 flex flex-col overflow-auto">
         {/* Header desktop */}
         <header className="hidden md:flex items-center justify-end px-8 py-4 border-b border-border bg-card gap-2">
+          <select
+            value={lang}
+            onChange={(e) => setLang(e.target.value as any)}
+            className="text-sm bg-transparent border border-border rounded-lg px-2 py-1 text-foreground cursor-pointer"
+            aria-label="Language"
+          >
+            {LANGUAGES.map(l => (
+              <option key={l.code} value={l.code}>{l.flag} {l.label}</option>
+            ))}
+          </select>
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setProfileOpen(!profileOpen)}
@@ -170,13 +183,13 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
             >
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center overflow-hidden">
                 {profileImage
-                  ? <img src={profileImage} alt="Perfil" className="w-full h-full object-cover" />
+                  ? <img src={profileImage} alt={t('nav.view_profile')} className="w-full h-full object-cover" />
                   : <User className="text-white" size={20} />
                 }
               </div>
               <div className="text-left">
                 <p className="text-sm font-semibold text-foreground">{storeName}</p>
-                <p className="text-xs text-muted-foreground">Ver perfil</p>
+                <p className="text-xs text-muted-foreground">{t('nav.view_profile')}</p>
               </div>
               <ChevronDown
                 size={16}
@@ -191,14 +204,14 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
                   onClick={() => setProfileOpen(false)}
                   className="flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-muted transition-colors"
                 >
-                  <Settings size={18} /><span>Configurações</span>
+                  <Settings size={18} /><span>{t('nav.settings')}</span>
                 </Link>
                 <hr className="my-2 border-border" />
                 <button
                   onClick={handleLogout}
                   className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
                 >
-                  <LogOut size={18} /><span>Sair</span>
+                  <LogOut size={18} /><span>{t('nav.logout')}</span>
                 </button>
               </div>
             )}
