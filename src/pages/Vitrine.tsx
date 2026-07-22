@@ -64,8 +64,8 @@ const Vitrine = () => {
       photo,
       originalPrice: Math.max(0, parseFloat(originalPrice.replace(',', '.')) || 0),
       discountPrice: discountPrice
-        ? Math.max(0.01, parseFloat(discountPrice.replace(',', '.')) || 0)
-        : Math.max(0.01, parseFloat(originalPrice.replace(',', '.')) || 0),
+  ? Math.max(0.01, parseFloat(discountPrice.replace(',', '.')) || 0)
+  : 0,
       description: sanitizeText(description),
       stock: Math.max(0, parseInt(stock) || 0),
     });
@@ -115,7 +115,7 @@ const Vitrine = () => {
 
   const handleEditSave = async () => {
     if (!editingProduct) return;
-    if (editingProduct.discountPrice <= 0) { toast.error('O preço deve ser maior que zero.'); return; }
+    if (editingProduct.originalPrice <= 0) { toast.error('O preço deve ser maior que zero.'); return; }
     await updateProduct({
       ...editingProduct,
       name: sanitizeText(editingProduct.name),

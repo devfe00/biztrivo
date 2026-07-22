@@ -139,6 +139,23 @@ const langDropdownRef = useRef<HTMLDivElement>(null);
             </nav>
 
             <div className="border-t border-border p-3 space-y-2">
+              <div className="flex gap-1 flex-wrap px-1">
+    {LANGUAGES.map(l => (
+      <button
+        key={l.code}
+        onClick={() => { setLang(l.code as any); setMobileOpen(false); }}
+        className={cn(
+          'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-colors',
+          lang === l.code
+            ? 'border-primary bg-primary/10 text-primary'
+            : 'border-border text-muted-foreground hover:bg-muted'
+        )}
+      >
+        <span>{l.flag}</span>
+        <span>{l.label}</span>
+      </button>
+    ))}
+  </div>
               <Link
                 to="/configuracoes"
                 onClick={() => setMobileOpen(false)}

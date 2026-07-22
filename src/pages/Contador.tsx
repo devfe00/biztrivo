@@ -154,7 +154,7 @@ const I18N: Record<Pais, {
   BR: {
     titulo: 'Modo Contador',
     subtitulo: (m, a) => `Visão contábil por competência · ${m}/${a}`,
-    exportar: 'Exportar para contador',
+    exportar: 'Exportar para Contador Particular',
     infoBanner: 'Os dados são lidos automaticamente do seu Caixa. Nenhum lançamento duplicado, a DRE reflete exatamente o que você já registrou, reorganizado por linha contábil.',
     k1: 'Receita', k2: 'Lucro bruto', k3: 'Resultado líquido',
     tabs: ['DRE', 'Saúde', 'Impostos'],
