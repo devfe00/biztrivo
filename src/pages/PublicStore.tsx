@@ -203,10 +203,10 @@ const PublicStore = () => {
                     <h3 className="font-semibold text-sm line-clamp-2" style={{ color: '#1e293b' }}>{product.name}</h3>
                     {product.description && <p className="text-xs mt-1 line-clamp-2" style={{ color: '#94a3b8' }}>{product.description}</p>}
                     <div className="flex items-center gap-2 mt-2">
-                      {product.originalPrice > product.discountPrice && (
+                      {product.discountPrice > 0 && product.originalPrice > product.discountPrice && (
                         <span className="text-xs line-through" style={{ color: '#94a3b8' }}>R$ {product.originalPrice.toFixed(2).replace('.', ',')}</span>
                       )}
-                      <span className="text-sm font-bold" style={{ color: pc }}>R$ {product.discountPrice.toFixed(2).replace('.', ',')}</span>
+                      <span className="text-sm font-bold" style={{ color: pc }}>R$ {(product.discountPrice > 0 ? product.discountPrice : product.originalPrice).toFixed(2).replace('.', ',')}</span>
                     </div>
                     <button
                       onClick={() => handleBuy(product.id, product.name, product.discountPrice, product.stock)}
