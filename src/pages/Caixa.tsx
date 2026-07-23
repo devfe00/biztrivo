@@ -7,10 +7,20 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { TrendingUp, TrendingDown, Trash2, Search, Wallet } from 'lucide-react';
+import { useT } from '@/lib/i18n';
 
-const categories = ['Venda', 'Reposição', 'Embalagem', 'Frete', 'Pessoal', 'Outros'];
+const CATEGORY_KEYS = ['Venda', 'Reposição', 'Embalagem', 'Frete', 'Pessoal', 'Outros'] as const;
+const CAT_LABEL_KEY: Record<string, string> = {
+  'Venda': 'ext.cx_cat_venda',
+  'Reposição': 'ext.cx_cat_reposicao',
+  'Embalagem': 'ext.cx_cat_embalagem',
+  'Frete': 'ext.cx_cat_frete',
+  'Pessoal': 'ext.cx_cat_pessoal',
+  'Outros': 'ext.cx_cat_outros',
+};
 
 const Caixa = () => {
+  const tr = useT();
   const { config, addTransaction, removeTransaction } = useStore();
   const { notifySale, notifyPersonalExpense } = useNotifications();
   const [value, setValue] = useState('');
@@ -68,22 +78,22 @@ const Caixa = () => {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold font-heading">Caixa Diário</h1>
-        <p className="text-muted-foreground mt-1">Controle cada centavo do seu negócio</p>
+        <h1 className="text-3xl font-bold font-heading">{tr('ext.cx_title')}</h1>
+        <p className="text-muted-foreground mt-1">{tr('ext.cx_subtitle')}</p>
       </div>
 
       {/* Summary */}
       <div className="grid grid-cols-3 gap-4">
         <Card className="p-4 border-none shadow-md text-center">
-          <p className="text-xs text-muted-foreground">Entradas</p>
+          <p className="text-xs text-muted-foreground">{tr('ext.cx_in')}</p>
           <p className="text-xl font-bold font-heading text-secondary">{formatCurrency(totalEntradas)}</p>
         </Card>
         <Card className="p-4 border-none shadow-md text-center">
-          <p className="text-xs text-muted-foreground">Saídas</p>
+          <p className="text-xs text-muted-foreground">{tr('ext.cx_out')}</p>
           <p className="text-xl font-bold font-heading text-destructive">{formatCurrency(totalSaidas)}</p>
         </Card>
         <Card className="p-4 border-none shadow-md text-center">
-          <p className="text-xs text-muted-foreground">Saldo</p>
+          <p className="text-xs text-muted-foreground">{tr('ext.cx_bal')}</p>
           <p className={`text-xl font-bold font-heading ${totalEntradas - totalSaidas >= 0 ? 'text-secondary' : 'text-destructive'}`}>
             {formatCurrency(totalEntradas - totalSaidas)}
           </p>
@@ -94,55 +104,55 @@ const Caixa = () => {
       <Card className="p-6 border-none shadow-md space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="value">Valor (R$)</Label>
+            <Label htmlFor="value">{tr('ext.cx_value')}</Label>
             <Input id="value" type="text" placeholder="0,00" value={value} onChange={e => setValue(e.target.value)} className="mt-1 text-lg font-semibold" />
           </div>
           <div>
-            <Label htmlFor="category">Categoria</Label>
+            <Label htmlFor="category">{tr('ext.cx_category')}</Label>
             <Select value={category} onValueChange={setCategory}>
               <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
               <SelectContent>
-                {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                {CATEGORY_KEYS.map(c => <SelectItem key={c} value={c}>{tr(CAT_LABEL_KEY[c])}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
         </div>
 
         <div>
-          <Label htmlFor="desc">Descrição</Label>
-          <Input id="desc" placeholder="Ex: Venda de camiseta, compra de embalagens..." value={description} onChange={e => setDescription(e.target.value)} className="mt-1" />
+          <Label htmlFor="desc">{tr('ext.cx_desc')}</Label>
+          <Input id="desc" placeholder={tr('ext.cx_desc_ph')} value={description} onChange={e => setDescription(e.target.value)} className="mt-1" />
         </div>
 
         <div className="flex items-center gap-3">
           <Switch checked={isPersonal} onCheckedChange={setIsPersonal} />
-          <Label className="text-sm cursor-pointer">Gasto Pessoal <span className="text-muted-foreground">(marca separado no extrato)</span></Label>
+          <Label className="text-sm cursor-pointer">{tr('ext.cx_personal')} <span className="text-muted-foreground">{tr('ext.cx_personal_hint')}</span></Label>
         </div>
 
         <div className="flex gap-4 pt-2">
           <button onClick={() => handleAdd('entrada')}
             className="flex-1 py-4 rounded-xl bg-secondary text-secondary-foreground font-bold text-lg flex items-center justify-center gap-2 hover:opacity-90 transition-opacity shadow-glow-green">
-            <TrendingUp className="w-6 h-6" /> + Entrada
+            <TrendingUp className="w-6 h-6" /> {tr('ext.cx_btn_in')}
           </button>
           <button onClick={() => handleAdd('saida')}
             className="flex-1 py-4 rounded-xl bg-destructive text-destructive-foreground font-bold text-lg flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
-            <TrendingDown className="w-6 h-6" /> - Saída
+            <TrendingDown className="w-6 h-6" /> {tr('ext.cx_btn_out')}
           </button>
         </div>
       </Card>
 
       {/* Ledger */}
       <div>
-        <h2 className="text-lg font-semibold font-heading mb-4">Extrato de Hoje</h2>
+        <h2 className="text-lg font-semibold font-heading mb-4">{tr('ext.cx_ledger')}</h2>
         <div className="flex flex-col sm:flex-row gap-3 mb-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input placeholder="Buscar lançamento..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+            <Input placeholder={tr('ext.cx_search')} value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
           </div>
           <Select value={filterCategory} onValueChange={setFilterCategory}>
             <SelectTrigger className="w-full sm:w-[160px]"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="Todas">Todas</SelectItem>
-              {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+              <SelectItem value="Todas">{tr('ext.cx_all')}</SelectItem>
+              {CATEGORY_KEYS.map(c => <SelectItem key={c} value={c}>{tr(CAT_LABEL_KEY[c])}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
@@ -158,10 +168,10 @@ const Caixa = () => {
             <Card className="p-10 border-none shadow-md text-center">
               <Wallet className="w-12 h-12 mx-auto mb-3 text-primary/30" />
               <p className="text-lg font-semibold font-heading">
-                {runningBalance.length === 0 ? 'Seu dia começa agora!' : 'Nenhum resultado encontrado'}
+                {runningBalance.length === 0 ? tr('ext.cx_empty_title') : tr('ext.cx_none_title')}
               </p>
               <p className="text-sm text-muted-foreground mt-1">
-                {runningBalance.length === 0 ? 'Registre sua primeira venda e tome controle do seu dinheiro 💪' : 'Tente buscar por outro termo ou categoria'}
+                {runningBalance.length === 0 ? tr('ext.cx_empty_sub') : tr('ext.cx_none_sub')}
               </p>
             </Card>
           ) : (
@@ -175,8 +185,8 @@ const Caixa = () => {
                     <div>
                       <p className="font-medium text-sm">{t.description}</p>
                       <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-xs text-muted-foreground">{t.category}</span>
-                        {t.isPersonal && <span className="text-xs px-2 py-0.5 rounded-full bg-warning/10 text-warning font-medium">Pessoal</span>}
+                        <span className="text-xs text-muted-foreground">{CAT_LABEL_KEY[t.category] ? tr(CAT_LABEL_KEY[t.category]) : t.category}</span>
+                        {t.isPersonal && <span className="text-xs px-2 py-0.5 rounded-full bg-warning/10 text-warning font-medium">{tr('ext.cx_personal_tag')}</span>}
                       </div>
                     </div>
                   </div>
@@ -185,7 +195,7 @@ const Caixa = () => {
                       <p className={`font-bold text-sm ${t.type === 'entrada' ? 'text-secondary' : 'text-destructive'}`}>
                         {t.type === 'entrada' ? '+' : '-'} {formatCurrency(t.value)}
                       </p>
-                      <p className="text-xs text-muted-foreground">Saldo: {formatCurrency(t.balance)}</p>
+                      <p className="text-xs text-muted-foreground">{tr('ext.cx_running')} {formatCurrency(t.balance)}</p>
                     </div>
                     <button onClick={() => removeTransaction(t.id)}
                       className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-destructive transition-colors">
