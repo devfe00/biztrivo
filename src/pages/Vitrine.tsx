@@ -14,8 +14,10 @@ import { sanitizeText } from '@/lib/sanitize';
 import { validateImageFile } from '@/lib/fileValidation';
 import InstagramPostGenerator from '@/components/InstagramPostGenerator';
 import InvoiceComparator from '@/components/InvoiceComparator';
+import { useT } from '@/lib/i18n';
 
 const Vitrine = () => {
+  const t = useT();
   const { config, updateConfig, addProduct, removeProduct, updateProduct } = useStore();
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [igProduct, setIgProduct] = useState<Product | null>(null);

@@ -6,8 +6,10 @@ import { useMemo, useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { Input } from '@/components/ui/input';
 import CashflowForecast from '@/components/CashflowForecast';
+import { useT } from '@/lib/i18n';
 
 const Dashboard = () => {
+  const t = useT();
   const { config, updateConfig } = useStore();
 
   const [dailyGoal, setDailyGoal] = useState(config.dailyGoal);
@@ -62,8 +64,8 @@ const Dashboard = () => {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold font-heading">Dashboard</h1>
-        <p className="text-muted-foreground mt-1">Visão geral do seu negócio</p>
+        <h1 className="text-3xl font-bold font-heading">{t('ext.db_title')}</h1>
+        <p className="text-muted-foreground mt-1">{t('ext.db_subtitle')}</p>
       </div>
 
       {todayEntradas > 0 && (

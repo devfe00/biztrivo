@@ -6,8 +6,10 @@ import { useStore } from '@/contexts/StoreContext';
 import { auth, db, FUNCTIONS, callFunction } from '@/integrations/firebase/firebase';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { updatePassword } from 'firebase/auth';
+import { useT } from '@/lib/i18n';
 
 const Configuracoes: React.FC = () => {
+  const t = useT();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { config, updateConfig } = useStore();
@@ -172,10 +174,10 @@ const Configuracoes: React.FC = () => {
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
           <button onClick={() => navigate('/dashboard')} className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-4 transition-colors">
-            <ArrowLeft size={20} /><span>Voltar ao Dashboard</span>
+            <ArrowLeft size={20} /><span>{t('configuracoes.back')}</span>
           </button>
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground">Configurações</h1>
-          <p className="text-muted-foreground mt-2">Gerencie seu perfil e preferências</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground">{t('configuracoes.title')}</h1>
+          <p className="text-muted-foreground mt-2">{t('configuracoes.subtitle')}</p>
         </div>
 
         {message && (
@@ -189,15 +191,15 @@ const Configuracoes: React.FC = () => {
           <div className="flex border-b border-border">
             <button onClick={() => setActiveTab('profile')}
               className={`flex-1 px-6 py-4 text-sm font-medium transition-colors ${activeTab === 'profile' ? 'text-primary border-b-2 border-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}>
-              <div className="flex items-center justify-center gap-2"><User size={18} /><span>Perfil</span></div>
+              <div className="flex items-center justify-center gap-2"><User size={18} /><span>{t('configuracoes.tab_profile')}</span></div>
             </button>
             <button onClick={() => setActiveTab('password')}
               className={`flex-1 px-6 py-4 text-sm font-medium transition-colors ${activeTab === 'password' ? 'text-primary border-b-2 border-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}>
-              <div className="flex items-center justify-center gap-2"><Lock size={18} /><span>Senha</span></div>
+              <div className="flex items-center justify-center gap-2"><Lock size={18} /><span>{t('configuracoes.tab_password')}</span></div>
             </button>
             <button onClick={() => setActiveTab('subscription')}
               className={`flex-1 px-6 py-4 text-sm font-medium transition-colors ${activeTab === 'subscription' ? 'text-primary border-b-2 border-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}>
-              <div className="flex items-center justify-center gap-2"><CreditCard size={18} /><span>Assinatura</span></div>
+              <div className="flex items-center justify-center gap-2"><CreditCard size={18} /><span>{t('configuracoes.tab_subscription')}</span></div>
             </button>
           </div>
 
@@ -217,27 +219,27 @@ const Configuracoes: React.FC = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="storeName" className="block text-sm font-medium text-foreground mb-2">Nome da Loja *</label>
+                  <label htmlFor="storeName" className="block text-sm font-medium text-foreground mb-2">{t('configuracoes.store_name')}</label>
                   <input id="storeName" type="text" value={storeName} onChange={(e) => setStoreName(e.target.value)}
                     className="w-full px-4 py-3 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent transition-all bg-background text-foreground"
-                    placeholder="Digite o nome da sua loja" required />
+                    placeholder={t('configuracoes.store_name_placeholder')} required />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">Email</label>
+                  <label className="block text-sm font-medium text-foreground mb-2">{t('configuracoes.email')}</label>
                   <input type="email" value={user?.email || ''} className="w-full px-4 py-3 border border-input rounded-lg bg-muted text-muted-foreground cursor-not-allowed" disabled />
-                  <p className="text-xs text-muted-foreground mt-1">O email não pode ser alterado</p>
+                  <p className="text-xs text-muted-foreground mt-1">{t('configuracoes.email_readonly')}</p>
                 </div>
 
                 <div>
-  <label className="block text-sm font-medium text-foreground mb-2">País de operação</label>
+  <label className="block text-sm font-medium text-foreground mb-2">{t('configuracoes.country')}</label>
   <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
   {([
-    { value: 'BR',     label: 'Brasil',  icon: '🇧🇷' },
-    { value: 'ES',     label: 'España',  icon: '🇪🇸' },
-    { value: 'FR',     label: 'France',  icon: '🇫🇷' },
-    { value: 'US',     label: 'USA',     icon: '🇺🇸' },
-    { value: 'outros', label: 'Outros',  icon: '🌍' },
+    { value: 'BR',     label: t('ext.cfg_country_br'),    icon: '🇧🇷' },
+    { value: 'ES',     label: t('ext.cfg_country_es'),    icon: '🇪🇸' },
+    { value: 'FR',     label: t('ext.cfg_country_fr'),    icon: '🇫🇷' },
+    { value: 'US',     label: t('ext.cfg_country_us'),    icon: '🇺🇸' },
+    { value: 'outros', label: t('ext.cfg_country_other'), icon: '🌍' },
   ] as { value: string; label: string; icon: string }[]).map(({ value, label, icon }) => (
     <button
       key={value}
@@ -254,9 +256,7 @@ const Configuracoes: React.FC = () => {
     </button>
   ))}
 </div>
-  <p className="text-xs text-muted-foreground mt-1">
-    Define quais módulos fiscais aparecem no menu (ex: MEI é exclusivo do Brasil)
-  </p>
+  <p className="text-xs text-muted-foreground mt-1">{t('configuracoes.country_hint')}</p>
 </div>
 
                 <button type="submit" disabled={loading}
