@@ -1,4 +1,3 @@
-// src/contexts/StoreContext.tsx
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
 import {
   doc, collection, getDoc, getDocs, addDoc, updateDoc, deleteDoc,
@@ -10,12 +9,35 @@ import { db, storage } from '@/integrations/firebase/firebase';
 import { sanitizeText } from '@/lib/sanitize';
 import { onlyDigits } from '@/lib/cnpj';
 
+async function compressImage(dataUrl: string, maxSize = 1600, quality = 0.82): Promise<string> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const needsResize = img.width > maxSize || img.height > maxSize;
+      if (!needsResize && dataUrl.startsWith('data:image/jpeg')) {
+        resolve(dataUrl);
+        return;
+      }
+      const scale = needsResize ? Math.min(1, maxSize / Math.max(img.width, img.height)) : 1;
+      const w = Math.round(img.width * scale);
+      const h = Math.round(img.height * scale);
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      canvas.getContext('2d')!.drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.src = dataUrl;
+  });
+}
+
 async function uploadImageIfNeeded(dataUrlOrUrl: string, path: string): Promise<string> {
   if (!dataUrlOrUrl || !dataUrlOrUrl.startsWith('data:')) {
     return dataUrlOrUrl ?? '';
   }
+  const compressed = await compressImage(dataUrlOrUrl);
   const storageRef = ref(storage, path);
-  await uploadString(storageRef, dataUrlOrUrl, 'data_url');
+  await uploadString(storageRef, compressed, 'data_url');
   return getDownloadURL(storageRef);
 }
 

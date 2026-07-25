@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
-import { MessageCircle, ShoppingBag, AlertCircle, Search, Phone, X, Loader2, Eye } from 'lucide-react';
+import { MessageCircle, ShoppingBag, AlertCircle, Search, Phone, X, Loader2, Eye, Sun, Moon } from 'lucide-react';
 import { FUNCTIONS, callFunction } from '@/integrations/firebase/firebase';
 
 interface StoreProduct {
@@ -49,6 +49,60 @@ const PublicStore = () => {
   const [buyingProductId, setBuyingProductId] = useState<string | null>(null);
 
 const [viewingProduct, setViewingProduct] = useState<StoreProduct | null>(null);
+
+  const [darkMode, setDarkMode] = useState<boolean>(() => {
+    try { return localStorage.getItem('biztrivo:theme') === 'dark'; } catch { return false; }
+  });
+
+  const pc = store?.primaryColor ?? '#3b82f6';
+
+  const toggleTheme = () => {
+    setDarkMode(prev => {
+      const next = !prev;
+      try { localStorage.setItem('biztrivo:theme', next ? 'dark' : 'light'); } catch {}
+      return next;
+    });
+  };
+
+  const t = darkMode
+    ? {
+        bg: '#0f172a',
+        headerBg: 'linear-gradient(to right, #15803d, #1e40af)',
+        headerBorder: 'transparent',
+        storeName: '#fff',
+        storeCount: 'rgba(255,255,255,0.7)',
+        searchBg: 'rgba(255,255,255,0.15)',
+        searchBorder: 'rgba(255,255,255,0.2)',
+        searchBorderFocus: 'rgba(255,255,255,0.6)',
+        searchColor: '#fff',
+        cardBg: '#1e293b',
+        cardShadow: '0 1px 3px rgba(0,0,0,0.3)',
+        productName: '#f1f5f9',
+        footerBorder: 'rgba(255,255,255,0.1)',
+        footerText: 'rgba(255,255,255,0.4)',
+        footerBrand: '#4ade80',
+        toggleBg: 'rgba(255,255,255,0.15)',
+        toggleColor: '#fff',
+      }
+    : {
+        bg: '#fafafa',
+        headerBg: '#fff',
+        headerBorder: '#f1f5f9',
+        storeName: pc ?? '#1e293b',
+        storeCount: '#94a3b8',
+        searchBg: '#f8fafc',
+        searchBorder: '#e2e8f0',
+        searchBorderFocus: pc ?? '#3b82f6',
+        searchColor: '#1e293b',
+        cardBg: '#fff',
+        cardShadow: '0 1px 3px rgba(0,0,0,0.06)',
+        productName: '#1e293b',
+        footerBorder: '#f1f5f9',
+        footerText: '#94a3b8',
+        footerBrand: pc ?? '#3b82f6',
+        toggleBg: '#f1f5f9',
+        toggleColor: '#475569',
+      };
 
   useEffect(() => {
     if (!slug) { setLoading(false); return; }
@@ -124,7 +178,7 @@ const [viewingProduct, setViewingProduct] = useState<StoreProduct | null>(null);
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#fafafa' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #15803d, #1e40af)' }}>
         <div className="w-8 h-8 border-3 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#3b82f6', borderTopColor: 'transparent' }} />
       </div>
     );
@@ -132,21 +186,19 @@ const [viewingProduct, setViewingProduct] = useState<StoreProduct | null>(null);
 
   if (!store) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#fafafa' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #15803d, #1e40af)' }}>
         <div className="text-center px-4">
-          <ShoppingBag className="w-14 h-14 mx-auto mb-4" style={{ color: '#cbd5e1' }} />
-          <h1 className="text-xl font-bold" style={{ color: '#1e293b' }}>Vitrine não encontrada</h1>
-          <p className="mt-2 text-sm" style={{ color: '#94a3b8' }}>Esta vitrine pode estar inativa ou não existir.</p>
+          <ShoppingBag className="w-14 h-14 mx-auto mb-4" style={{ color: 'rgba(255,255,255,0.5)' }} />
+          <h1 className="text-xl font-bold" style={{ color: '#fff' }}>Vitrine não encontrada</h1>
+          <p className="mt-2 text-sm" style={{ color: 'rgba(255,255,255,0.7)' }}>Esta vitrine pode estar inativa ou não existir.</p>
         </div>
       </div>
     );
   }
 
-  const pc = store.primaryColor;
-
   return (
-    <div className="min-h-screen pb-20" style={{ backgroundColor: '#fafafa' }}>
-      <header className="sticky top-0 z-40 border-b" style={{ backgroundColor: '#fff', borderColor: '#f1f5f9' }}>
+    <div className="min-h-screen pb-20" style={{ backgroundColor: t.bg }}>
+      <header className="sticky top-0 z-40 border-b" style={{ background: t.headerBg, borderColor: t.headerBorder }}>
         <div className="max-w-4xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
@@ -154,18 +206,21 @@ const [viewingProduct, setViewingProduct] = useState<StoreProduct | null>(null);
                 <img src={store.logo} alt={store.storeName} className="w-10 h-10 rounded-lg object-cover" style={{ boxShadow: `0 2px 8px ${pc}30` }} />
               )}
               <div>
-                <h1 className="text-lg font-bold leading-tight" style={{ color: pc }}>{store.storeName}</h1>
-                <p className="text-xs" style={{ color: '#94a3b8' }}>{filteredProducts.length} {filteredProducts.length === 1 ? 'produto' : 'produtos'}</p>
+                <h1 className="text-lg font-bold leading-tight" style={{ color: t.storeName }}>{store.storeName}</h1>
+                <p className="text-xs" style={{ color: t.storeCount }}>{filteredProducts.length} {filteredProducts.length === 1 ? 'produto' : 'produtos'}</p>
               </div>
             </div>
+            <button onClick={toggleTheme} className="w-8 h-8 rounded-full flex items-center justify-center transition-all" style={{ backgroundColor: t.toggleBg, color: t.toggleColor }}>
+              {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
           </div>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: '#94a3b8' }} />
             <input type="text" placeholder="Buscar produtos..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-10 py-2 rounded-lg text-sm outline-none transition-all"
-              style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', color: '#1e293b' }}
-              onFocus={(e) => (e.target.style.borderColor = pc)}
-              onBlur={(e) => (e.target.style.borderColor = '#e2e8f0')} />
+              style={{ backgroundColor: t.searchBg, border: `1px solid ${t.searchBorder}`, color: t.searchColor }}
+              onFocus={(e) => (e.target.style.borderColor = t.searchBorderFocus)}
+              onBlur={(e) => (e.target.style.borderColor = t.searchBorder)} />
             {searchQuery && (
               <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: '#94a3b8' }}>
                 <X className="w-4 h-4" />
@@ -187,7 +242,7 @@ const [viewingProduct, setViewingProduct] = useState<StoreProduct | null>(null);
               const outOfStock = product.stock === 0;
               const isBuying = buyingProductId === product.id;
               return (
-                <div key={product.id} className="rounded-xl overflow-hidden group relative" style={{ backgroundColor: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+                <div key={product.id} className="rounded-xl overflow-hidden group relative" style={{ backgroundColor: t.cardBg, boxShadow: t.cardShadow }}>
                   {outOfStock && !store.vitrineOnlyMode && (
                     <div className="absolute top-2 right-2 z-10 px-2 py-0.5 rounded text-xs font-semibold flex items-center gap-1" style={{ backgroundColor: '#ef4444', color: '#fff' }}>
                       <AlertCircle className="w-3 h-3" /> Esgotado
@@ -203,7 +258,7 @@ const [viewingProduct, setViewingProduct] = useState<StoreProduct | null>(null);
                     </div>
                   )}
                   <div className="p-3">
-                    <h3 className="font-semibold text-sm line-clamp-2" style={{ color: '#1e293b' }}>{product.name}</h3>
+                    <h3 className="font-semibold text-sm line-clamp-2" style={{ color: t.productName }}>{product.name}</h3>
                     {product.description && <p className="text-xs mt-1 line-clamp-2" style={{ color: '#94a3b8' }}>{product.description}</p>}
                     {!store.vitrineOnlyMode && (
                       <div className="flex items-center gap-2 mt-2">
@@ -252,36 +307,33 @@ const [viewingProduct, setViewingProduct] = useState<StoreProduct | null>(null);
 
       {viewingProduct && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} onClick={() => setViewingProduct(null)}>
-          <div className="w-full max-w-md rounded-2xl overflow-hidden" style={{ backgroundColor: '#fff' }} onClick={e => e.stopPropagation()}>
-            {viewingProduct.photo ? (
-              <div className="aspect-square overflow-hidden" style={{ backgroundColor: '#f1f5f9' }}>
-                <img src={viewingProduct.photo} alt={viewingProduct.name} className="w-full h-full object-contain" />
-              </div>
-            ) : (
-              <div className="aspect-square flex items-center justify-center" style={{ backgroundColor: '#f1f5f9' }}>
-                <ShoppingBag className="w-12 h-12" style={{ color: '#cbd5e1' }} />
-              </div>
-            )}
-            <div className="p-5 space-y-3">
-              <div className="flex items-start justify-between gap-3">
-                <h2 className="text-lg font-bold leading-tight" style={{ color: '#1e293b' }}>{viewingProduct.name}</h2>
-                <button onClick={() => setViewingProduct(null)} style={{ color: '#94a3b8' }} className="shrink-0 mt-0.5">
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-              {viewingProduct.description && (
-                <p className="text-sm leading-relaxed" style={{ color: '#475569' }}>{viewingProduct.description}</p>
-              )}
-              <button onClick={() => setViewingProduct(null)} className="w-full py-2.5 rounded-lg text-sm font-semibold transition-all active:scale-95 mt-1" style={{ backgroundColor: '#f1f5f9', color: '#475569' }}>
-                Fechar
-              </button>
+          <div className="w-full max-w-md rounded-2xl overflow-hidden" style={{ backgroundColor: darkMode ? '#1e293b' : '#fff' }} onClick={e => e.stopPropagation()}>
+          {viewingProduct.photo ? (
+            <div className="aspect-square overflow-hidden" style={{ backgroundColor: darkMode ? '#0f172a' : '#f1f5f9' }}>
+              <img src={viewingProduct.photo} alt={viewingProduct.name} className="w-full h-full object-contain" />
             </div>
+          ) : (
+            <div className="aspect-square flex items-center justify-center" style={{ backgroundColor: darkMode ? '#0f172a' : '#f1f5f9' }}>
+              <ShoppingBag className="w-12 h-12" style={{ color: '#cbd5e1' }} />
+            </div>
+          )}
+          <div className="p-5 space-y-3">
+            <div>
+              <h2 className="text-lg font-bold leading-tight" style={{ color: darkMode ? '#f1f5f9' : '#1e293b' }}>{viewingProduct.name}</h2>
+            </div>
+            {viewingProduct.description && (
+              <p className="text-sm leading-relaxed" style={{ color: darkMode ? '#94a3b8' : '#475569' }}>{viewingProduct.description}</p>
+            )}
+            <button onClick={() => setViewingProduct(null)} className="w-full py-2.5 rounded-lg text-sm font-semibold transition-all active:scale-95 mt-1" style={{ backgroundColor: darkMode ? '#0f172a' : '#f1f5f9', color: darkMode ? '#94a3b8' : '#475569' }}>
+              Fechar
+            </button>
           </div>
+        </div>
         </div>
       )}
 
-      <footer className="py-5 text-center border-t" style={{ borderColor: '#f1f5f9' }}>
-        <p className="text-xs" style={{ color: '#94a3b8' }}>Vitrine criada com <span className="font-semibold" style={{ color: pc }}>Biztrivo</span></p>
+      <footer className="py-5 text-center border-t" style={{ borderColor: t.footerBorder }}>
+        <p className="text-xs" style={{ color: t.footerText }}>Vitrine criada com <span className="font-semibold" style={{ color: t.footerBrand }}>Biztrivo</span></p>
       </footer>
     </div>
   );
