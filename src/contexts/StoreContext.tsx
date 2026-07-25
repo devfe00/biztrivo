@@ -57,6 +57,7 @@ export interface StoreConfig {
   products: Product[];
   transactions: Transaction[];
   vitrineActive: boolean;
+  vitrineOnlyMode: boolean;
   vitrineClicks: number;
   profileImage: string;
   dailyGoal: number;
@@ -86,6 +87,7 @@ const defaultConfig: StoreConfig = {
   products: [],
   transactions: [],
   vitrineActive: false,
+  vitrineOnlyMode: false,
   vitrineClicks: 0,
   profileImage: '',
   dailyGoal: 0,
@@ -162,6 +164,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
         primaryColor: profile?.primaryColor ?? '#3b82f6',
         whatsapp: profile?.whatsapp ?? '',
         vitrineActive: profile?.vitrineActive ?? false,
+        vitrineOnlyMode: profile?.vitrineOnlyMode ?? false,
         profileImage: profile?.profileImage ?? '',
         slug: profile?.slug ?? '',
         // dados privados
@@ -205,6 +208,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
     if (partial.primaryColor !== undefined) publicUpdate.primaryColor = partial.primaryColor;
     if (partial.whatsapp !== undefined) publicUpdate.whatsapp = partial.whatsapp;
     if (partial.vitrineActive !== undefined) publicUpdate.vitrineActive = partial.vitrineActive;
+    if (partial.vitrineOnlyMode !== undefined) publicUpdate.vitrineOnlyMode = partial.vitrineOnlyMode;
     if (partial.profileImage !== undefined) {
       profileImageUrl = await uploadImageIfNeeded(partial.profileImage, `profiles/${user.uid}/profile.jpg`);
       publicUpdate.profileImage = profileImageUrl;

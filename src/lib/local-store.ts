@@ -26,6 +26,7 @@ export interface LocalStoreConfig {
   products: LocalProduct[];
   transactions: LocalTransaction[];
   vitrineActive: boolean;
+  vitrineOnlyMode: boolean;
   vitrineClicks: number;
   profileImage: string;
 }
@@ -40,6 +41,7 @@ export const defaultLocalStoreConfig: LocalStoreConfig = {
   products: [],
   transactions: [],
   vitrineActive: false,
+  vitrineOnlyMode: false,
   vitrineClicks: 0,
   profileImage: '',
 };

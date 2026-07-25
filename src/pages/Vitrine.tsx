@@ -49,6 +49,7 @@ const Vitrine = () => {
   const [stock, setStock] = useState('');
 
   useEffect(() => {
+    if (config.vitrineOnlyMode) return;
     config.products.forEach(product => {
       const hasShown = sessionStorage.getItem(`stock-alert-${product.id}`);
       if (!hasShown) {
@@ -56,10 +57,10 @@ const Vitrine = () => {
         if (product.stock <= 3) sessionStorage.setItem(`stock-alert-${product.id}`, 'true');
       }
     });
-  }, [config.products, checkStockAlert]);
+  }, [config.products, config.vitrineOnlyMode, checkStockAlert]);
 
   const handleAddProduct = async () => {
-  if (!name.trim() || !originalPrice) return;
+  if (!name.trim() || (!config.vitrineOnlyMode && !originalPrice)) return;
   try {
     await addProduct({
       name: sanitizeText(name),
@@ -117,7 +118,7 @@ const Vitrine = () => {
 
   const handleEditSave = async () => {
     if (!editingProduct) return;
-    if (editingProduct.originalPrice <= 0) { toast.error('O preço deve ser maior que zero.'); return; }
+    if (!config.vitrineOnlyMode && editingProduct.originalPrice <= 0) { toast.error('O preço deve ser maior que zero.'); return; }
     await updateProduct({
       ...editingProduct,
       name: sanitizeText(editingProduct.name),
@@ -176,8 +177,15 @@ const Vitrine = () => {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <Switch checked={config.vitrineActive} onCheckedChange={v => updateConfig({ vitrineActive: v })} />
+          <Switch checked={config.vitrineActive} onCheckedChange={v => updateConfig({ vitrineActive: v, ...(v && { vitrineOnlyMode: false }) })} />
           <Label>Vitrine Ativa</Label>
+        </div>
+        <div className="flex items-center gap-3">
+          <Switch checked={config.vitrineOnlyMode} onCheckedChange={v => updateConfig({ vitrineOnlyMode: v, ...(v && { vitrineActive: false }) })} />
+          <div>
+            <Label>Modo Vitrine (só exibição)</Label>
+            <p className="text-xs text-muted-foreground mt-0.5">O botão "Comprar" some. Clientes veem os detalhes do produto, mas o contato fica a cargo deles. Ótimo para showroom ou catálogo de referência.</p>
+          </div>
         </div>
       </Card>
 
@@ -252,20 +260,22 @@ const Vitrine = () => {
                 </label>
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <Label>Preço Original (R$)</Label>
-                <Input value={originalPrice} onChange={e => setOriginalPrice(e.target.value)} className="mt-1" placeholder="49,90" />
+            {!config.vitrineOnlyMode && (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <Label>Preço Original (R$)</Label>
+                  <Input value={originalPrice} onChange={e => setOriginalPrice(e.target.value)} className="mt-1" placeholder="49,90" />
+                </div>
+                <div>
+                  <Label>Preço com Desconto (R$)</Label>
+                  <Input value={discountPrice} onChange={e => setDiscountPrice(e.target.value)} className="mt-1" placeholder="39,90" />
+                </div>
+                <div>
+                  <Label>Estoque Atual</Label>
+                  <Input type="number" value={stock} onChange={e => setStock(e.target.value)} className="mt-1" placeholder="10" min="0" />
+                </div>
               </div>
-              <div>
-                <Label>Preço com Desconto (R$)</Label>
-                <Input value={discountPrice} onChange={e => setDiscountPrice(e.target.value)} className="mt-1" placeholder="39,90" />
-              </div>
-              <div>
-                <Label>Estoque Atual</Label>
-                <Input type="number" value={stock} onChange={e => setStock(e.target.value)} className="mt-1" placeholder="10" min="0" />
-              </div>
-            </div>
+            )}
             <div>
               <Label>Descrição Curta</Label>
               <Textarea value={description} onChange={e => setDescription(e.target.value)} className="mt-1" placeholder="Uma breve descrição do produto..." rows={2} />
@@ -290,7 +300,7 @@ const Vitrine = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {config.products.map(p => (
               <Card key={p.id} className="border-none shadow-md overflow-hidden relative">
-                {p.stock === 0 && (
+                {p.stock === 0 && !config.vitrineOnlyMode && (
                   <div className="absolute top-2 right-2 z-10 px-2 py-1 rounded-md bg-destructive text-destructive-foreground text-xs font-semibold flex items-center gap-1">
                     <AlertCircle className="w-3 h-3" /> Esgotado
                   </div>
@@ -305,15 +315,19 @@ const Vitrine = () => {
                 <div className="p-4">
                   <h3 className="font-semibold text-sm">{p.name}</h3>
                   {p.description && <p className="text-xs text-muted-foreground mt-1">{p.description}</p>}
-                  <div className="flex items-center gap-2 mt-2">
-  {p.discountPrice > 0 && p.originalPrice > p.discountPrice && (
-    <span className="text-xs text-muted-foreground line-through">R$ {p.originalPrice.toFixed(2).replace('.', ',')}</span>
-  )}
-  <span className="text-sm font-bold text-secondary">
-    R$ {(p.discountPrice > 0 ? p.discountPrice : p.originalPrice).toFixed(2).replace('.', ',')}
-  </span>
-</div>
-                  <p className="text-xs text-muted-foreground mt-1">Estoque: {p.stock ?? 0}</p>
+                  {!config.vitrineOnlyMode && (
+                    <div className="flex items-center gap-2 mt-2">
+                      {p.discountPrice > 0 && p.originalPrice > p.discountPrice && (
+                        <span className="text-xs text-muted-foreground line-through">R$ {p.originalPrice.toFixed(2).replace('.', ',')}</span>
+                      )}
+                      <span className="text-sm font-bold text-secondary">
+                        R$ {(p.discountPrice > 0 ? p.discountPrice : p.originalPrice).toFixed(2).replace('.', ',')}
+                      </span>
+                    </div>
+                  )}
+                  {!config.vitrineOnlyMode && (
+                    <p className="text-xs text-muted-foreground mt-1">Estoque: {p.stock ?? 0}</p>
+                  )}
                   <div className="mt-3 flex items-center gap-3">
                     <button onClick={() => setEditingProduct({ ...p })} className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1 transition-colors">
                       <Pencil className="w-3 h-3" /> Editar
@@ -369,20 +383,22 @@ const Vitrine = () => {
                   <img src={editingProduct.photo} alt="Preview" className="mt-2 w-20 h-20 object-cover rounded-lg" />
                 )}
               </div>
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <Label>Preço Original (R$)</Label>
-                  <Input type="number" step="0.01" min="0" value={editingProduct.originalPrice} onChange={e => setEditingProduct({ ...editingProduct, originalPrice: Math.max(0, parseFloat(e.target.value) || 0) })} className="mt-1" />
+              {!config.vitrineOnlyMode && (
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <Label>Preço Original (R$)</Label>
+                    <Input type="number" step="0.01" min="0" value={editingProduct.originalPrice} onChange={e => setEditingProduct({ ...editingProduct, originalPrice: Math.max(0, parseFloat(e.target.value) || 0) })} className="mt-1" />
+                  </div>
+                  <div>
+                    <Label>Preço Desconto (R$)</Label>
+                    <Input type="number" step="0.01" min="0.01" value={editingProduct.discountPrice} onChange={e => setEditingProduct({ ...editingProduct, discountPrice: parseFloat(e.target.value) || 0 })} className="mt-1" />
+                  </div>
+                  <div>
+                    <Label>Estoque</Label>
+                    <Input type="number" min="0" value={editingProduct.stock} onChange={e => setEditingProduct({ ...editingProduct, stock: parseInt(e.target.value) || 0 })} className="mt-1" />
+                  </div>
                 </div>
-                <div>
-                  <Label>Preço Desconto (R$)</Label>
-                  <Input type="number" step="0.01" min="0.01" value={editingProduct.discountPrice} onChange={e => setEditingProduct({ ...editingProduct, discountPrice: parseFloat(e.target.value) || 0 })} className="mt-1" />
-                </div>
-                <div>
-                  <Label>Estoque</Label>
-                  <Input type="number" min="0" value={editingProduct.stock} onChange={e => setEditingProduct({ ...editingProduct, stock: parseInt(e.target.value) || 0 })} className="mt-1" />
-                </div>
-              </div>
+              )}
               <div>
                 <Label>Descrição Curta</Label>
                 <Textarea value={editingProduct.description} onChange={e => setEditingProduct({ ...editingProduct, description: e.target.value })} className="mt-1" rows={2} />

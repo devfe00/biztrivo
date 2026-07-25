@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
-import { MessageCircle, ShoppingBag, AlertCircle, Search, Phone, X, Loader2 } from 'lucide-react';
+import { MessageCircle, ShoppingBag, AlertCircle, Search, Phone, X, Loader2, Eye } from 'lucide-react';
 import { FUNCTIONS, callFunction } from '@/integrations/firebase/firebase';
 
 interface StoreProduct {
@@ -18,6 +18,7 @@ interface StoreData {
   logo: string;
   primaryColor: string;
   whatsapp: string;
+  vitrineOnlyMode: boolean;
   products: StoreProduct[];
 }
 
@@ -46,6 +47,8 @@ const PublicStore = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showWhatsAppButton, setShowWhatsAppButton] = useState(true);
   const [buyingProductId, setBuyingProductId] = useState<string | null>(null);
+
+const [viewingProduct, setViewingProduct] = useState<StoreProduct | null>(null);
 
   useEffect(() => {
     if (!slug) { setLoading(false); return; }
@@ -185,14 +188,14 @@ const PublicStore = () => {
               const isBuying = buyingProductId === product.id;
               return (
                 <div key={product.id} className="rounded-xl overflow-hidden group relative" style={{ backgroundColor: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-                  {outOfStock && (
+                  {outOfStock && !store.vitrineOnlyMode && (
                     <div className="absolute top-2 right-2 z-10 px-2 py-0.5 rounded text-xs font-semibold flex items-center gap-1" style={{ backgroundColor: '#ef4444', color: '#fff' }}>
                       <AlertCircle className="w-3 h-3" /> Esgotado
                     </div>
                   )}
                   {product.photo ? (
                     <div className="aspect-square overflow-hidden" style={{ backgroundColor: '#f1f5f9' }}>
-                      <img src={product.photo} alt={product.name} loading="lazy" className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${outOfStock ? 'opacity-40 grayscale' : ''}`} />
+                      <img src={product.photo} alt={product.name} loading="lazy" className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${outOfStock && !store.vitrineOnlyMode ? 'opacity-40 grayscale' : ''}`} />
                     </div>
                   ) : (
                     <div className="aspect-square flex items-center justify-center" style={{ backgroundColor: '#f1f5f9' }}>
@@ -202,19 +205,30 @@ const PublicStore = () => {
                   <div className="p-3">
                     <h3 className="font-semibold text-sm line-clamp-2" style={{ color: '#1e293b' }}>{product.name}</h3>
                     {product.description && <p className="text-xs mt-1 line-clamp-2" style={{ color: '#94a3b8' }}>{product.description}</p>}
-                    <div className="flex items-center gap-2 mt-2">
-                      {product.discountPrice > 0 && product.originalPrice > product.discountPrice && (
-                        <span className="text-xs line-through" style={{ color: '#94a3b8' }}>R$ {product.originalPrice.toFixed(2).replace('.', ',')}</span>
-                      )}
-                      <span className="text-sm font-bold" style={{ color: pc }}>R$ {(product.discountPrice > 0 ? product.discountPrice : product.originalPrice).toFixed(2).replace('.', ',')}</span>
-                    </div>
-                    <button
-                      onClick={() => handleBuy(product.id, product.name, product.discountPrice > 0 ? product.discountPrice : product.originalPrice, product.stock)}
-                      disabled={outOfStock || isBuying}
-                      className="mt-3 w-full py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-all active:scale-95 disabled:cursor-not-allowed"
-                      style={{ backgroundColor: outOfStock ? '#94a3b8' : pc, color: '#fff', opacity: outOfStock ? 0.4 : 1 }}>
-                      {isBuying ? <Loader2 className="w-4 h-4 animate-spin" /> : outOfStock ? <><AlertCircle className="w-4 h-4" /> Produto Indisponível</> : <><MessageCircle className="w-4 h-4" /> Comprar</>}
-                    </button>
+                    {!store.vitrineOnlyMode && (
+                      <div className="flex items-center gap-2 mt-2">
+                        {product.discountPrice > 0 && product.originalPrice > product.discountPrice && (
+                          <span className="text-xs line-through" style={{ color: '#94a3b8' }}>R$ {product.originalPrice.toFixed(2).replace('.', ',')}</span>
+                        )}
+                        <span className="text-sm font-bold" style={{ color: pc }}>R$ {(product.discountPrice > 0 ? product.discountPrice : product.originalPrice).toFixed(2).replace('.', ',')}</span>
+                      </div>
+                    )}
+                    {store.vitrineOnlyMode ? (
+                      <button
+                        onClick={() => setViewingProduct(product)}
+                        className="mt-3 w-full py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-all active:scale-95"
+                        style={{ backgroundColor: pc, color: '#fff' }}>
+                        <Eye className="w-4 h-4" /> Ver Detalhes
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleBuy(product.id, product.name, product.discountPrice > 0 ? product.discountPrice : product.originalPrice, product.stock)}
+                        disabled={outOfStock || isBuying}
+                        className="mt-3 w-full py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-all active:scale-95 disabled:cursor-not-allowed"
+                        style={{ backgroundColor: outOfStock ? '#94a3b8' : pc, color: '#fff', opacity: outOfStock ? 0.4 : 1 }}>
+                        {isBuying ? <Loader2 className="w-4 h-4 animate-spin" /> : outOfStock ? <><AlertCircle className="w-4 h-4" /> Produto Indisponível</> : <><MessageCircle className="w-4 h-4" /> Comprar</>}
+                      </button>
+                    )}
                   </div>
                 </div>
               );
@@ -233,6 +247,36 @@ const PublicStore = () => {
           <button onClick={() => setShowWhatsAppButton(false)} className="w-5 h-5 rounded-full flex items-center justify-center opacity-50 hover:opacity-100 transition-opacity" style={{ backgroundColor: '#334155' }}>
             <X className="w-3 h-3 text-white" />
           </button>
+        </div>
+      )}
+
+      {viewingProduct && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} onClick={() => setViewingProduct(null)}>
+          <div className="w-full max-w-md rounded-2xl overflow-hidden" style={{ backgroundColor: '#fff' }} onClick={e => e.stopPropagation()}>
+            {viewingProduct.photo ? (
+              <div className="aspect-square overflow-hidden" style={{ backgroundColor: '#f1f5f9' }}>
+                <img src={viewingProduct.photo} alt={viewingProduct.name} className="w-full h-full object-contain" />
+              </div>
+            ) : (
+              <div className="aspect-square flex items-center justify-center" style={{ backgroundColor: '#f1f5f9' }}>
+                <ShoppingBag className="w-12 h-12" style={{ color: '#cbd5e1' }} />
+              </div>
+            )}
+            <div className="p-5 space-y-3">
+              <div className="flex items-start justify-between gap-3">
+                <h2 className="text-lg font-bold leading-tight" style={{ color: '#1e293b' }}>{viewingProduct.name}</h2>
+                <button onClick={() => setViewingProduct(null)} style={{ color: '#94a3b8' }} className="shrink-0 mt-0.5">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              {viewingProduct.description && (
+                <p className="text-sm leading-relaxed" style={{ color: '#475569' }}>{viewingProduct.description}</p>
+              )}
+              <button onClick={() => setViewingProduct(null)} className="w-full py-2.5 rounded-lg text-sm font-semibold transition-all active:scale-95 mt-1" style={{ backgroundColor: '#f1f5f9', color: '#475569' }}>
+                Fechar
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
