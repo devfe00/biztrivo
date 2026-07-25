@@ -209,7 +209,7 @@ const PublicStore = () => {
                       <span className="text-sm font-bold" style={{ color: pc }}>R$ {(product.discountPrice > 0 ? product.discountPrice : product.originalPrice).toFixed(2).replace('.', ',')}</span>
                     </div>
                     <button
-                      onClick={() => handleBuy(product.id, product.name, product.discountPrice, product.stock)}
+                      onClick={() => handleBuy(product.id, product.name, product.discountPrice > 0 ? product.discountPrice : product.originalPrice, product.stock)}
                       disabled={outOfStock || isBuying}
                       className="mt-3 w-full py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-all active:scale-95 disabled:cursor-not-allowed"
                       style={{ backgroundColor: outOfStock ? '#94a3b8' : pc, color: '#fff', opacity: outOfStock ? 0.4 : 1 }}>
