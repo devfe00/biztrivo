@@ -480,6 +480,9 @@
     "vt_share_text": "Découvrez la vitrine de {{name}} !",
     "db_title": "Tableau de Bord",
     "db_subtitle": "Vue d'ensemble de votre activité",
-    "db_cancel": "Annuler"
+    "db_cancel": "Annuler",
+    "vt_only_mode": "Mode vitrine (affichage seul)",
+    "vt_only_mode_hint": "Le bouton « Acheter » disparaît. Les clients voient les détails du produit, mais le contact leur revient. Parfait pour un showroom ou un catalogue de référence.",
+    "vt_edit_photo": "Photo"
   }
 }

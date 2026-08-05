@@ -480,6 +480,9 @@
     "vt_share_text": "¡Mira el escaparate de {{name}}!",
     "db_title": "Panel",
     "db_subtitle": "Resumen de tu negocio",
-    "db_cancel": "Cancelar"
+    "db_cancel": "Cancelar",
+    "vt_only_mode": "Modo escaparate (solo exhibición)",
+    "vt_only_mode_hint": "El botón \"Comprar\" desaparece. Los clientes ven los detalles del producto, pero el contacto queda de su parte. Ideal para showroom o catálogo de referencia.",
+    "vt_edit_photo": "Foto"
   }
 }

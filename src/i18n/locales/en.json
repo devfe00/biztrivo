@@ -480,6 +480,9 @@
     "vt_share_text": "Check out {{name}}'s storefront!",
     "db_title": "Dashboard",
     "db_subtitle": "Overview of your business",
-    "db_cancel": "Cancel"
+    "db_cancel": "Cancel",
+    "vt_only_mode": "Display-only mode",
+    "vt_only_mode_hint": "The \"Buy\" button is hidden. Customers see product details, but reaching out is up to them. Great for a showroom or reference catalog.",
+    "vt_edit_photo": "Photo"
   }
 }

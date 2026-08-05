@@ -480,6 +480,9 @@
     "vt_share_text": "Confira a vitrine {{name}}!",
     "db_title": "Dashboard",
     "db_subtitle": "Visão geral do seu negócio",
-    "db_cancel": "Cancelar"
+    "db_cancel": "Cancelar",
+    "vt_only_mode": "Modo Vitrine (só exibição)",
+    "vt_only_mode_hint": "O botão \"Comprar\" some. Clientes veem os detalhes do produto, mas o contato fica a cargo deles. Ótimo para showroom ou catálogo de referência.",
+    "vt_edit_photo": "Foto"
   }
 }
