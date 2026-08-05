@@ -73,12 +73,12 @@ const Dashboard = () => {
           {personalPercent > 30 ? (
             <div className="flex items-center gap-3">
               <AlertTriangle className="w-5 h-5 text-warning shrink-0" />
-              <p className="text-sm font-medium text-warning flex items-center gap-1.5"><AlertTriangle className="w-3.5 h-3.5" /> Atenção: Suas retiradas pessoais estão altas ({personalPercent.toFixed(0)}% das entradas).</p>
+              <p className="text-sm font-medium text-warning flex items-center gap-1.5"><AlertTriangle className="w-3.5 h-3.5" /> {t('dashboard.alert_personal_high', { percent: personalPercent.toFixed(0) })}</p>
             </div>
           ) : todaySaldo >= 0 ? (
-            <p className="text-sm font-medium text-secondary flex items-center gap-1.5"><TrendingUp className="w-3.5 h-3.5" /> Ótimo trabalho! Saldo positivo de {formatCurrency(todaySaldo)} hoje.</p>
+            <p className="text-sm font-medium text-secondary flex items-center gap-1.5"><TrendingUp className="w-3.5 h-3.5" /> {t('dashboard.alert_positive', { amount: formatCurrency(todaySaldo) })}</p>
           ) : (
-            <p className="text-sm font-medium text-destructive flex items-center gap-1.5"><TrendingDown className="w-3.5 h-3.5" /> Atenção: Suas saídas superaram as entradas hoje.</p>
+            <p className="text-sm font-medium text-destructive flex items-center gap-1.5"><TrendingDown className="w-3.5 h-3.5" /> {t('dashboard.alert_negative')}</p>
           )}
         </Card>
       )}
@@ -87,7 +87,7 @@ const Dashboard = () => {
         <Card className="p-5 border-none shadow-md">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Saldo do Dia</p>
+              <p className="text-sm text-muted-foreground">{t('dashboard.balance_day')}</p>
               <p className={`text-2xl font-bold font-heading mt-1 ${todaySaldo >= 0 ? 'text-secondary' : 'text-destructive'}`}>{formatCurrency(todaySaldo)}</p>
             </div>
             <div className="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center shadow-glow">
@@ -101,8 +101,8 @@ const Dashboard = () => {
             {dailyGoal === 0 ? (
               <div className="text-center">
                 <Target className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                <p className="text-xs text-muted-foreground">Defina uma meta para hoje!</p>
-                <button onClick={() => setIsEditingGoal(true)} className="mt-2 text-xs px-3 py-1 rounded-lg bg-primary text-primary-foreground hover:opacity-90"><Target className="w-3.5 h-3.5" /> Definir Meta</button>
+                <p className="text-xs text-muted-foreground">{t('dashboard.goal_set')}</p>
+                <button onClick={() => setIsEditingGoal(true)} className="mt-2 text-xs px-3 py-1 rounded-lg bg-primary text-primary-foreground hover:opacity-90">{t('dashboard.set_goal_btn')}</button>
               </div>
             ) : (
               <>
@@ -119,25 +119,25 @@ const Dashboard = () => {
                     <span className="text-xl font-bold">{Math.min(goalProgress, 100).toFixed(0)}%</span>
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground mt-2">Meta: {formatCurrency(dailyGoal)}</p>
+                <p className="text-xs text-muted-foreground mt-2">{t('dashboard.goal_label', { amount: formatCurrency(dailyGoal) })}</p>
                 <p className="text-sm font-semibold text-secondary">{formatCurrency(todayEntradas)}</p>
                 {goalProgress >= 100 ? (
-                  <p className="text-xs text-secondary mt-1 font-medium flex items-center gap-1"><Trophy className="w-3 h-3" /> Meta batida!</p>
+                  <p className="text-xs text-secondary mt-1 font-medium flex items-center gap-1"><Trophy className="w-3 h-3" /> {t('dashboard.goal_reached')}</p>
                 ) : (
-                  <p className="text-xs text-muted-foreground mt-1">Faltam {formatCurrency(dailyGoal - todayEntradas)}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{t('dashboard.goal_missing', { amount: formatCurrency(dailyGoal - todayEntradas) })}</p>
                 )}
-                <button onClick={() => setIsEditingGoal(true)} className="mt-2 text-xs text-muted-foreground hover:text-foreground">Ajustar meta</button>
+                <button onClick={() => setIsEditingGoal(true)} className="mt-2 text-xs text-muted-foreground hover:text-foreground">{t('dashboard.adjust_goal')}</button>
               </>
             )}
           </div>
           {isEditingGoal && (
             <div className="absolute inset-0 bg-background/95 backdrop-blur-sm flex items-center justify-center p-4">
               <div className="space-y-3 w-full">
-                <p className="text-sm font-medium text-center">Defina sua meta diária</p>
-                <Input type="text" placeholder="Ex: 500,00" value={goalInput} onChange={e => setGoalInput(e.target.value)} className="text-center" autoFocus />
+                <p className="text-sm font-medium text-center">{t('dashboard.goal_modal_title')}</p>
+                <Input type="text" placeholder={t('dashboard.goal_placeholder')} value={goalInput} onChange={e => setGoalInput(e.target.value)} className="text-center" autoFocus />
                 <div className="flex gap-2">
-                  <button onClick={handleSaveGoal} className="flex-1 py-2 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium">Salvar</button>
-                  <button onClick={() => { setIsEditingGoal(false); setGoalInput(''); }} className="flex-1 py-2 rounded-lg bg-muted text-sm font-medium">Cancelar</button>
+                  <button onClick={handleSaveGoal} className="flex-1 py-2 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium">{t('dashboard.goal_save')}</button>
+                  <button onClick={() => { setIsEditingGoal(false); setGoalInput(''); }} className="flex-1 py-2 rounded-lg bg-muted text-sm font-medium">{t('ext.db_cancel')}</button>
                 </div>
               </div>
             </div>
@@ -148,7 +148,7 @@ const Dashboard = () => {
           <Card className="p-5 border-none shadow-md hover:ring-2 hover:ring-destructive/30 transition-all cursor-pointer">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Saídas Hoje</p>
+                <p className="text-sm text-muted-foreground">{t('dashboard.exits_today')}</p>
                 <p className="text-2xl font-bold font-heading mt-1 text-destructive">{formatCurrency(todaySaidas)}</p>
               </div>
               <div className="w-12 h-12 rounded-xl bg-destructive/10 flex items-center justify-center">
@@ -161,7 +161,7 @@ const Dashboard = () => {
         <Card className="p-5 border-none shadow-md">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Gasto Pessoal</p>
+              <p className="text-sm text-muted-foreground">{t('dashboard.personal_expense')}</p>
               <p className="text-2xl font-bold font-heading mt-1 text-warning">{formatCurrency(personalExpenses)}</p>
             </div>
             <div className="w-12 h-12 rounded-xl bg-warning/10 flex items-center justify-center">
@@ -175,35 +175,35 @@ const Dashboard = () => {
         <Card className="p-6 border-none shadow-md">
           <div className="flex items-center gap-3 mb-4">
             <Store className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-semibold font-heading">Minha Vitrine</h2>
+            <h2 className="text-lg font-semibold font-heading">{t('dashboard.my_vitrine')}</h2>
           </div>
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-sm text-muted-foreground">Status</p>
+              <p className="text-sm text-muted-foreground">{t('dashboard.status')}</p>
               <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium mt-1 ${config.vitrineActive ? 'bg-secondary/10 text-secondary' : 'bg-muted text-muted-foreground'}`}>
                 <span className={`w-2 h-2 rounded-full ${config.vitrineActive ? 'bg-secondary' : 'bg-muted-foreground'}`} />
-                {config.vitrineActive ? 'Ativa' : 'Inativa'}
+                {config.vitrineActive ? t('common.active') : t('common.inactive')}
               </span>
             </div>
             <div className="text-right">
-              <p className="text-sm text-muted-foreground">Produtos</p>
+              <p className="text-sm text-muted-foreground">{t('dashboard.products')}</p>
               <p className="text-2xl font-bold font-heading">{config.products.length}</p>
             </div>
           </div>
           <Link to="/vitrine" className="flex items-center justify-center gap-2 w-full py-3 rounded-lg gradient-primary text-primary-foreground font-medium text-sm shadow-glow hover:opacity-90 transition-opacity">
-            <ExternalLink className="w-4 h-4" /> Gerenciar Vitrine
+            <ExternalLink className="w-4 h-4" /> {t('dashboard.manage_vitrine')}
           </Link>
         </Card>
 
         <Card className="p-6 border-none shadow-md">
           <div className="flex items-center gap-3 mb-4">
             <Wallet className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-semibold font-heading">Caixa Rápido</h2>
+            <h2 className="text-lg font-semibold font-heading">{t('dashboard.quick_cash')}</h2>
           </div>
-          <p className="text-sm text-muted-foreground mb-4">Registre suas entradas e saídas do dia.</p>
+          <p className="text-sm text-muted-foreground mb-4">{t('dashboard.quick_cash_sub')}</p>
           <div className="flex gap-3">
-            <Link to="/caixa" className="flex-1 py-3 rounded-lg bg-secondary text-secondary-foreground font-semibold text-sm text-center hover:opacity-90 transition-opacity shadow-glow-green">+ Entrada</Link>
-            <Link to="/caixa" className="flex-1 py-3 rounded-lg bg-destructive text-destructive-foreground font-semibold text-sm text-center hover:opacity-90 transition-opacity">- Saída</Link>
+            <Link to="/caixa" className="flex-1 py-3 rounded-lg bg-secondary text-secondary-foreground font-semibold text-sm text-center hover:opacity-90 transition-opacity shadow-glow-green">{t('dashboard.income')}</Link>
+            <Link to="/caixa" className="flex-1 py-3 rounded-lg bg-destructive text-destructive-foreground font-semibold text-sm text-center hover:opacity-90 transition-opacity">{t('dashboard.expense')}</Link>
           </div>
         </Card>
       </div>

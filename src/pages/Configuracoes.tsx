@@ -6,10 +6,11 @@ import { useStore } from '@/contexts/StoreContext';
 import { auth, db, FUNCTIONS, callFunction } from '@/integrations/firebase/firebase';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { updatePassword } from 'firebase/auth';
-import { useT } from '@/lib/i18n';
+import { useT, useI18n } from '@/lib/i18n';
 
 const Configuracoes: React.FC = () => {
   const t = useT();
+  const { lang } = useI18n();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { config, updateConfig } = useStore();
@@ -91,8 +92,8 @@ const Configuracoes: React.FC = () => {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { setMessage({ type: 'error', text: 'A imagem deve ter no máximo 5MB' }); return; }
-    if (!file.type.startsWith('image/')) { setMessage({ type: 'error', text: 'Por favor, selecione uma imagem válida' }); return; }
+    if (file.size > 5 * 1024 * 1024) { setMessage({ type: 'error', text: t('configuracoes.error_image_size') }); return; }
+    if (!file.type.startsWith('image/')) { setMessage({ type: 'error', text: t('configuracoes.error_image_type') }); return; }
     const reader = new FileReader();
     reader.onloadend = () => setProfileImage(reader.result as string);
     reader.readAsDataURL(file);
@@ -100,14 +101,14 @@ const Configuracoes: React.FC = () => {
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!storeName.trim()) { setMessage({ type: 'error', text: 'O nome da loja é obrigatório' }); return; }
+    if (!storeName.trim()) { setMessage({ type: 'error', text: t('configuracoes.error_store_name') }); return; }
     setLoading(true);
     setMessage(null);
     try {
       await updateConfig({ storeName, profileImage });
-      setMessage({ type: 'success', text: 'Perfil atualizado com sucesso!' });
+      setMessage({ type: 'success', text: t('configuracoes.success_profile') });
     } catch {
-      setMessage({ type: 'error', text: 'Erro ao atualizar perfil.' });
+      setMessage({ type: 'error', text: t('configuracoes.error_profile') });
     } finally {
       setLoading(false);
     }
@@ -115,59 +116,59 @@ const Configuracoes: React.FC = () => {
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newPassword.length < 6) { setMessage({ type: 'error', text: 'A nova senha deve ter no mínimo 6 caracteres' }); return; }
-    if (newPassword !== confirmPassword) { setMessage({ type: 'error', text: 'As senhas não conferem' }); return; }
+    if (newPassword.length < 6) { setMessage({ type: 'error', text: t('configuracoes.error_password_short') }); return; }
+    if (newPassword !== confirmPassword) { setMessage({ type: 'error', text: t('configuracoes.error_password_match') }); return; }
 
     setLoading(true);
     setMessage(null);
     try {
-      if (!auth.currentUser) throw new Error('Sessão expirada');
+      if (!auth.currentUser) throw new Error(t('auth.session_expired'));
       await updatePassword(auth.currentUser, newPassword);
-      setMessage({ type: 'success', text: 'Senha alterada com sucesso!' });
+      setMessage({ type: 'success', text: t('configuracoes.success_password') });
       setNewPassword('');
       setConfirmPassword('');
     } catch (err: any) {
       if (err?.code === 'auth/requires-recent-login') {
-        setMessage({ type: 'error', text: 'Por segurança, saia e entre novamente antes de trocar a senha.' });
+        setMessage({ type: 'error', text: t('configuracoes.error_password_relogin') });
       } else {
-        setMessage({ type: 'error', text: err?.message || 'Erro ao alterar senha.' });
+        setMessage({ type: 'error', text: err?.message || t('configuracoes.error_unexpected') });
       }
     }
     setLoading(false);
   };
 
   const handleCancelSubscription = async () => {
-    if (!window.confirm('Tem certeza que deseja cancelar sua assinatura? Você ainda terá acesso por 30 dias após o cancelamento.')) return;
+    if (!window.confirm(t('configuracoes.cancel_confirm'))) return;
 
     setCancellingSubscription(true);
     setMessage(null);
 
     try {
       if (!auth.currentUser) {
-        setMessage({ type: 'error', text: 'Sessão expirada. Faça login novamente.' });
+        setMessage({ type: 'error', text: t('auth.session_expired') });
         return;
       }
 
       const data = await callFunction<{ grace_period_end: string }>(FUNCTIONS.cancelSubscription);
 
       setSubscription(prev => prev ? { ...prev, status: 'cancelled', current_period_end: data.grace_period_end } : null);
-      setMessage({ type: 'success', text: 'Assinatura cancelada. Você ainda tem acesso por 30 dias.' });
+      setMessage({ type: 'success', text: t('configuracoes.success_cancelled') });
     } catch {
-      setMessage({ type: 'error', text: 'Erro ao cancelar assinatura. Tente novamente.' });
+      setMessage({ type: 'error', text: t('configuracoes.error_cancel') });
     } finally {
       setCancellingSubscription(false);
     }
   };
 
   const handleLogout = async () => {
-    if (window.confirm('Tem certeza que deseja sair?')) {
+    if (window.confirm(t('auth.logout_confirm'))) {
       await signOut();
       navigate('/login');
     }
   };
 
   const isGracePeriod = subscription?.status === 'cancelled' && subscription?.current_period_end && new Date(subscription.current_period_end) > new Date();
-  const gracePeriodEnd = subscription?.current_period_end ? new Date(subscription.current_period_end).toLocaleDateString('pt-BR') : '';
+  const gracePeriodEnd = subscription?.current_period_end ? new Date(subscription.current_period_end).toLocaleDateString(lang) : '';
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
@@ -261,7 +262,7 @@ const Configuracoes: React.FC = () => {
 
                 <button type="submit" disabled={loading}
                   className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg disabled:opacity-50 flex items-center justify-center gap-2">
-                  {loading ? <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /><span>Salvando...</span></> : <><Save size={20} /><span>Salvar Alterações</span></>}
+                  {loading ? <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /><span>{t('configuracoes.saving')}</span></> : <><Save size={20} /><span>{t('configuracoes.save')}</span></>}
                 </button>
               </form>
             )}
@@ -269,12 +270,12 @@ const Configuracoes: React.FC = () => {
             {activeTab === 'password' && (
               <form onSubmit={handleChangePassword} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">Nova Senha *</label>
+                  <label className="block text-sm font-medium text-foreground mb-2">{t('configuracoes.new_password')}</label>
                   <div className="relative">
                     <input type={showNewPassword ? 'text' : 'password'} value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       className="w-full px-4 py-3 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent pr-12 bg-background text-foreground"
-                      placeholder="Mínimo 6 caracteres" required />
+                      placeholder={t('configuracoes.password_placeholder')} required />
                     <button type="button" onClick={() => setShowNewPassword(!showNewPassword)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                       {showNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -283,15 +284,15 @@ const Configuracoes: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">Confirmar Nova Senha *</label>
+                  <label className="block text-sm font-medium text-foreground mb-2">{t('configuracoes.confirm_password')}</label>
                   <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
                     className="w-full px-4 py-3 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent bg-background text-foreground"
-                    placeholder="Digite novamente" required />
+                    placeholder={t('configuracoes.confirm_password_placeholder')} required />
                 </div>
 
                 <button type="submit" disabled={loading}
                   className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold disabled:opacity-50 flex items-center justify-center gap-2">
-                  {loading ? <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /><span>Alterando...</span></> : <><Lock size={20} /><span>Alterar Senha</span></>}
+                  {loading ? <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /><span>{t('configuracoes.changing_password')}</span></> : <><Lock size={20} /><span>{t('configuracoes.change_password')}</span></>}
                 </button>
               </form>
             )}
@@ -299,28 +300,28 @@ const Configuracoes: React.FC = () => {
             {activeTab === 'subscription' && (
               <div className="space-y-6">
                 <div className="bg-muted rounded-lg p-6 border border-border">
-                  <h3 className="text-lg font-semibold text-foreground mb-4">Detalhes da Assinatura</h3>
+                  <h3 className="text-lg font-semibold text-foreground mb-4">{t('configuracoes.subscription_details')}</h3>
                   
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Plano</span>
+                      <span className="text-muted-foreground">{t('configuracoes.plan')}</span>
                       <span className="font-medium text-foreground capitalize">{subscription?.plan || 'Free'}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Status</span>
+                      <span className="text-muted-foreground">{t('configuracoes.status')}</span>
                       <span className={`px-3 py-1 rounded-full text-sm font-medium ${
                         subscription?.status === 'active' ? 'bg-green-500/15 text-green-600 dark:text-green-400' :
                         isGracePeriod ? 'bg-yellow-500/15 text-yellow-600 dark:text-yellow-400' :
                         'bg-destructive/15 text-destructive'
                       }`}>
-                        {subscription?.status === 'active' ? 'Ativa' :
-                         isGracePeriod ? 'Cancelada (Período de Carência)' :
-                         'Inativa'}
+                        {subscription?.status === 'active' ? t('configuracoes.status_active') :
+                         isGracePeriod ? t('configuracoes.status_grace') :
+                         t('configuracoes.status_inactive')}
                       </span>
                     </div>
                     {isGracePeriod && (
                       <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground">Acesso até</span>
+                        <span className="text-muted-foreground">{t('configuracoes.access_until')}</span>
                         <span className="font-medium text-yellow-500">{gracePeriodEnd}</span>
                       </div>
                     )}
@@ -331,7 +332,7 @@ const Configuracoes: React.FC = () => {
                   <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 flex items-start gap-3">
                     <AlertCircle size={20} className="text-yellow-500 flex-shrink-0 mt-0.5" />
                     <p className="text-yellow-600 dark:text-yellow-400 text-sm">
-                      Sua assinatura foi cancelada, mas você ainda tem acesso até <strong>{gracePeriodEnd}</strong>. Após essa data, seu acesso será suspenso.
+                      {t('configuracoes.grace_notice', { date: gracePeriodEnd }).replace(/<\/?1>/g, '')}
                     </p>
                   </div>
                 )}
@@ -343,9 +344,9 @@ const Configuracoes: React.FC = () => {
                     className="w-full bg-destructive/10 text-destructive py-3 rounded-lg font-semibold hover:bg-destructive/20 transition-all border border-destructive/30 flex items-center justify-center gap-2 disabled:opacity-50"
                   >
                     {cancellingSubscription ? (
-                      <><div className="w-5 h-5 border-2 border-destructive border-t-transparent rounded-full animate-spin" /><span>Cancelando...</span></>
+                      <><div className="w-5 h-5 border-2 border-destructive border-t-transparent rounded-full animate-spin" /><span>{t('configuracoes.cancelling')}</span></>
                     ) : (
-                      <><CreditCard size={20} /><span>Cancelar Assinatura</span></>
+                      <><CreditCard size={20} /><span>{t('configuracoes.cancel_sub')}</span></>
                     )}
                   </button>
                 )}
@@ -355,12 +356,12 @@ const Configuracoes: React.FC = () => {
                     <div className="flex items-start gap-3 mb-3">
                       <Tag size={22} className="text-green-500 flex-shrink-0 mt-0.5" />
                       <div>
-                        <h4 className="font-semibold text-foreground">Cupom Ajudaê disponível</h4>
+                        <h4 className="font-semibold text-foreground">{t('configuracoes.coupon_title')}</h4>
                        <p className="text-sm text-muted-foreground mt-1">
-  Identificamos que você é assinante <strong className="capitalize">{ajudaeStatus.plan}</strong> da Ajudaê.
+  {t('configuracoes.coupon_subscriber', { plan: ajudaeStatus.plan }).replace(/<\/?1>/g, '')}
   {ajudaeStatus.redeemed
-    ? <span className="inline-flex items-center gap-1 ml-1"><CheckCircle2 className="w-3.5 h-3.5 text-green-500 inline" /> Cupom já aplicado nesta conta.</span>
-    : ` Aplique seu desconto recorrente de ${ajudaeStatus.plan === 'premium' ? '30%' : '15%'}.`}
+    ? <span className="inline-flex items-center gap-1 ml-1"><CheckCircle2 className="w-3.5 h-3.5 text-green-500 inline" /> {t('configuracoes.coupon_redeemed')}</span>
+    : ` ${t('configuracoes.coupon_discount', { pct: ajudaeStatus.plan === 'premium' ? 30 : 15 })}`}
 </p>
                       </div>
                     </div>
@@ -371,14 +372,14 @@ const Configuracoes: React.FC = () => {
                         className="w-full bg-green-600 text-white py-2.5 rounded-lg font-semibold hover:bg-green-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                       >
                         {applyingCoupon ? (
-                          <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /><span>Aplicando...</span></>
+                          <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /><span>{t('configuracoes.coupon_applying')}</span></>
                         ) : (
-                          <><Tag size={18} /><span>Aplicar Cupom Ajudaê</span></>
+                          <><Tag size={18} /><span>{t('configuracoes.coupon_apply')}</span></>
                         )}
                       </button>
                     )}
                     <p className="text-xs text-muted-foreground mt-2">
-                      ⚠️ O desconto é mantido enquanto você for assinante ativo da Ajudaê. Se cancelar lá, o desconto é removido na próxima cobrança.
+                      {t('configuracoes.coupon_warning')}
                     </p>
                   </div>
                 )}
@@ -391,7 +392,7 @@ const Configuracoes: React.FC = () => {
                     }}
                     className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg flex items-center justify-center gap-2"
                   >
-                    <CreditCard size={20} /><span>Assinar Plano Pro</span>
+                    <CreditCard size={20} /><span>{t('configuracoes.subscribe_pro')}</span>
                   </button>
                 )}
               </div>
@@ -402,7 +403,7 @@ const Configuracoes: React.FC = () => {
         <div className="mt-6">
           <button onClick={handleLogout}
             className="w-full bg-destructive/10 text-destructive py-3 rounded-lg font-semibold hover:bg-destructive/20 transition-all border border-destructive/30 flex items-center justify-center gap-2">
-            <LogOut size={20} /><span>Sair da Conta</span>
+            <LogOut size={20} /><span>{t('configuracoes.logout')}</span>
           </button>
         </div>
       </div>
