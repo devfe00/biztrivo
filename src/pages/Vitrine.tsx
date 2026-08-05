@@ -38,7 +38,7 @@ const Vitrine = () => {
     link.download = `qrcode-${slug}.png`;
     link.href = url;
     link.click();
-    toast.success('QR Code baixado!');
+    toast.success(t('ext.vt_qr_downloaded'));
   }, [slug]);
 
   const [name, setName] = useState('');
@@ -74,17 +74,17 @@ const Vitrine = () => {
     });
     setName(''); setPhoto(''); setOriginalPrice(''); setDiscountPrice(''); setDescription(''); setStock('');
     setShowForm(false);
-    toast.success('Produto adicionado!');
+    toast.success(t('ext.vt_toast_added'));
   } catch (err) {
     console.error('Erro ao salvar produto:', err);
-    toast.error('Erro ao salvar produto. Verifique o console.');
+    toast.error(t('ext.vt_toast_save_err'));
   }
 };
 
   const handleCopy = () => {
     navigator.clipboard.writeText(publicUrl);
     setCopied(true);
-    toast.success('Link copiado!');
+    toast.success(t('ext.vt_toast_link'));
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -93,7 +93,7 @@ const Vitrine = () => {
     if (!file) return;
     const check = validateImageFile(file);
     if (!check.ok) {
-      toast.error(check.error ?? 'Arquivo inválido.');
+      toast.error(check.error ?? t('ext.vt_toast_invalid'));
       e.target.value = '';
       return;
     }
@@ -107,7 +107,7 @@ const Vitrine = () => {
     if (!file) return;
     const check = validateImageFile(file);
     if (!check.ok) {
-      toast.error(check.error ?? 'Arquivo inválido.');
+      toast.error(check.error ?? t('ext.vt_toast_invalid'));
       e.target.value = '';
       return;
     }
@@ -118,7 +118,7 @@ const Vitrine = () => {
 
   const handleEditSave = async () => {
     if (!editingProduct) return;
-    if (!config.vitrineOnlyMode && editingProduct.originalPrice <= 0) { toast.error('O preço deve ser maior que zero.'); return; }
+    if (!config.vitrineOnlyMode && editingProduct.originalPrice <= 0) { toast.error(t('ext.vt_toast_price_err')); return; }
     await updateProduct({
       ...editingProduct,
       name: sanitizeText(editingProduct.name),
@@ -127,7 +127,7 @@ const Vitrine = () => {
       originalPrice: Math.max(0, editingProduct.originalPrice),
     });
     setEditingProduct(null);
-    toast.success('Produto atualizado!');
+    toast.success(t('ext.vt_toast_updated'));
   };
 
   const handleEditPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -135,7 +135,7 @@ const Vitrine = () => {
     if (!file) return;
     const check = validateImageFile(file);
     if (!check.ok) {
-      toast.error(check.error ?? 'Arquivo inválido.');
+      toast.error(check.error ?? t('ext.vt_toast_invalid'));
       e.target.value = '';
       return;
     }
@@ -147,55 +147,55 @@ const Vitrine = () => {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold font-heading">Minha Vitrine</h1>
-        <p className="text-muted-foreground mt-1">Configure seu catálogo profissional</p>
+        <h1 className="text-3xl font-bold font-heading">{t('ext.vt_title')}</h1>
+        <p className="text-muted-foreground mt-1">{t('ext.vt_subtitle')}</p>
       </div>
 
       <Card className="p-6 border-none shadow-md space-y-5">
-        <h2 className="font-semibold font-heading text-lg">Configurações da Loja</h2>
+        <h2 className="font-semibold font-heading text-lg">{t('ext.vt_store_config')}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <Label>Nome da Loja</Label>
-            <Input value={config.storeName} onChange={e => updateConfig({ storeName: e.target.value })} className="mt-1" placeholder="Ex: Moda da Mari" maxLength={60} />
+            <Label>{t('ext.vt_store_name')}</Label>
+            <Input value={config.storeName} onChange={e => updateConfig({ storeName: e.target.value })} className="mt-1" placeholder={t('ext.vt_store_name_ph')} maxLength={60} />
           </div>
           <div>
-            <Label>WhatsApp (com DDD)</Label>
-            <Input value={config.whatsapp} onChange={e => updateConfig({ whatsapp: e.target.value })} className="mt-1" placeholder="11999999999" />
+            <Label>{t('ext.vt_whatsapp')}</Label>
+            <Input value={config.whatsapp} onChange={e => updateConfig({ whatsapp: e.target.value })} className="mt-1" placeholder={t('ext.vt_whatsapp_ph')} />
           </div>
         </div>
         <div className="flex flex-wrap gap-6">
           <div>
-            <Label>Logo da Loja</Label>
+            <Label>{t('ext.vt_logo')}</Label>
             <label className="mt-2 flex items-center justify-center w-20 h-20 rounded-xl border-2 border-dashed border-border hover:border-primary cursor-pointer transition-colors overflow-hidden">
               {config.logo ? <img src={config.logo} alt="Logo" className="w-full h-full object-cover" /> : <ImageIcon className="w-8 h-8 text-muted-foreground" />}
               <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
             </label>
           </div>
           <div>
-            <Label>Cor Principal</Label>
+            <Label>{t('ext.vt_color')}</Label>
             <input type="color" value={config.primaryColor} onChange={e => updateConfig({ primaryColor: e.target.value })} className="mt-2 w-20 h-20 rounded-xl cursor-pointer border-0" />
           </div>
         </div>
         <div className="flex items-center gap-3">
           <Switch checked={config.vitrineActive} onCheckedChange={v => updateConfig({ vitrineActive: v, ...(v && { vitrineOnlyMode: false }) })} />
-          <Label>Vitrine Ativa</Label>
+          <Label>{t('ext.vt_active')}</Label>
         </div>
         <div className="flex items-center gap-3">
           <Switch checked={config.vitrineOnlyMode} onCheckedChange={v => updateConfig({ vitrineOnlyMode: v, ...(v && { vitrineActive: false }) })} />
           <div>
-            <Label>Modo Vitrine (só exibição)</Label>
-            <p className="text-xs text-muted-foreground mt-0.5">O botão "Comprar" some. Clientes veem os detalhes do produto, mas o contato fica a cargo deles. Ótimo para showroom ou catálogo de referência.</p>
+            <Label>{t('ext.vt_only_mode')}</Label>
+            <p className="text-xs text-muted-foreground mt-0.5">{t('ext.vt_only_mode_hint')}</p>
           </div>
         </div>
       </Card>
 
       <Card className="p-5 border-none shadow-md space-y-4">
-        <Label className="text-sm text-muted-foreground">Link da sua vitrine</Label>
+        <Label className="text-sm text-muted-foreground">{t('ext.vt_link')}</Label>
         <div className="flex items-center gap-2">
           <div className="flex-1 px-4 py-2.5 rounded-lg bg-muted text-sm font-mono truncate">{publicUrl}</div>
           <button onClick={handleCopy} className="px-4 py-2.5 rounded-lg gradient-primary text-primary-foreground text-sm font-medium flex items-center gap-2 shadow-glow hover:opacity-90 transition-opacity">
             {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-            {copied ? 'Copiado!' : 'Copiar'}
+            {copied ? t('ext.vt_copied') : t('ext.vt_copy')}
           </button>
           <a href={`/loja/${slug}`} target="_blank" rel="noopener noreferrer" className="px-4 py-2.5 rounded-lg bg-muted text-sm font-medium flex items-center gap-2 hover:bg-accent transition-colors">
             <ExternalLink className="w-4 h-4" />
@@ -206,26 +206,26 @@ const Vitrine = () => {
             <QRCodeCanvas value={publicUrl} size={120} />
           </div>
           <div className="space-y-2 flex-1 min-w-[160px]">
-            <p className="text-sm font-medium">QR Code da sua loja</p>
-            <p className="text-xs text-muted-foreground">Imprima e cole no seu ponto de venda ou cartão de visita.</p>
+            <p className="text-sm font-medium">{t('ext.vt_qr_title')}</p>
+            <p className="text-xs text-muted-foreground">{t('ext.vt_qr_sub')}</p>
             <div className="flex flex-wrap gap-2">
               <button onClick={handleDownloadQR} className="px-4 py-2 rounded-lg bg-muted text-sm font-medium flex items-center gap-2 hover:bg-accent transition-colors">
-                <Download className="w-4 h-4" /> Baixar PNG
+                <Download className="w-4 h-4" /> {t('ext.vt_download_png')}
               </button>
               <button
                 onClick={async () => {
                   if (navigator.share) {
                     try {
-                      await navigator.share({ title: config.storeName, text: `Confira a vitrine ${config.storeName}!`, url: publicUrl });
+                      await navigator.share({ title: config.storeName, text: t('ext.vt_share_text', { name: config.storeName }), url: publicUrl });
                     } catch { /* user cancelled */ }
                   } else {
                     navigator.clipboard.writeText(publicUrl);
-                    toast.success('Link copiado!');
+                    toast.success(t('ext.vt_toast_link'));
                   }
                 }}
                 className="px-4 py-2 rounded-lg bg-muted text-sm font-medium flex items-center gap-2 hover:bg-accent transition-colors"
               >
-                <Share2 className="w-4 h-4" /> Compartilhar
+                <Share2 className="w-4 h-4" /> {t('ext.vt_share')}
               </button>
             </div>
           </div>
@@ -234,13 +234,13 @@ const Vitrine = () => {
 
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold font-heading">Produtos ({config.products.length})</h2>
+          <h2 className="text-lg font-semibold font-heading">{t('ext.vt_products_count', { n: config.products.length })}</h2>
           <div className="flex items-center gap-2">
             <button onClick={() => setInvoiceOpen(true)} className="px-4 py-2 rounded-lg bg-muted text-sm font-medium flex items-center gap-2 hover:bg-accent transition-colors">
-              <FileText className="w-4 h-4" /> Comparar Nota
+              <FileText className="w-4 h-4" /> {t('ext.vt_compare')}
             </button>
             <button onClick={() => setShowForm(!showForm)} className="px-4 py-2 rounded-lg gradient-primary text-primary-foreground text-sm font-medium flex items-center gap-2 shadow-glow hover:opacity-90 transition-opacity">
-              <Plus className="w-4 h-4" /> Adicionar
+              <Plus className="w-4 h-4" /> {t('ext.vt_add')}
             </button>
           </div>
         </div>
@@ -249,13 +249,13 @@ const Vitrine = () => {
           <Card className="p-6 border-none shadow-md mb-4 space-y-4 animate-fade-in">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <Label>Nome do Produto</Label>
-                <Input value={name} onChange={e => setName(e.target.value)} className="mt-1" placeholder="Ex: Camiseta Básica" />
+                <Label>{t('ext.vt_form_name')}</Label>
+                <Input value={name} onChange={e => setName(e.target.value)} className="mt-1" placeholder={t('ext.vt_form_name_ph')} />
               </div>
               <div>
-                <Label>Foto do Produto</Label>
+                <Label>{t('ext.vt_form_photo')}</Label>
                 <label className="mt-1 flex items-center justify-center h-10 px-4 rounded-md border border-input bg-background text-sm cursor-pointer hover:bg-muted transition-colors">
-                  {photo ? <><CheckCircle2 className="w-3.5 h-3.5" /> Foto selecionada</> : <><Camera className="w-3.5 h-3.5" /> Selecionar foto</>}
+                  {photo ? <><CheckCircle2 className="w-3.5 h-3.5" /> {t('ext.vt_photo_selected')}</> : <><Camera className="w-3.5 h-3.5" /> {t('ext.vt_photo_pick')}</>}
                   <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
                 </label>
               </div>
@@ -263,26 +263,26 @@ const Vitrine = () => {
             {!config.vitrineOnlyMode && (
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <Label>Preço Original (R$)</Label>
+                  <Label>{t('ext.vt_form_price')}</Label>
                   <Input value={originalPrice} onChange={e => setOriginalPrice(e.target.value)} className="mt-1" placeholder="49,90" />
                 </div>
                 <div>
-                  <Label>Preço com Desconto (R$)</Label>
+                  <Label>{t('ext.vt_form_disc')}</Label>
                   <Input value={discountPrice} onChange={e => setDiscountPrice(e.target.value)} className="mt-1" placeholder="39,90" />
                 </div>
                 <div>
-                  <Label>Estoque Atual</Label>
+                  <Label>{t('ext.vt_form_stock')}</Label>
                   <Input type="number" value={stock} onChange={e => setStock(e.target.value)} className="mt-1" placeholder="10" min="0" />
                 </div>
               </div>
             )}
             <div>
-              <Label>Descrição Curta</Label>
-              <Textarea value={description} onChange={e => setDescription(e.target.value)} className="mt-1" placeholder="Uma breve descrição do produto..." rows={2} />
+              <Label>{t('ext.vt_form_desc')}</Label>
+              <Textarea value={description} onChange={e => setDescription(e.target.value)} className="mt-1" placeholder={t('ext.vt_form_desc_ph')} rows={2} />
             </div>
             <div className="flex gap-3">
-              <button onClick={handleAddProduct} className="px-6 py-2.5 rounded-lg gradient-primary text-primary-foreground font-medium text-sm shadow-glow hover:opacity-90 transition-opacity">Salvar Produto</button>
-              <button onClick={() => setShowForm(false)} className="px-6 py-2.5 rounded-lg bg-muted text-muted-foreground font-medium text-sm hover:bg-accent transition-colors">Cancelar</button>
+              <button onClick={handleAddProduct} className="px-6 py-2.5 rounded-lg gradient-primary text-primary-foreground font-medium text-sm shadow-glow hover:opacity-90 transition-opacity">{t('ext.vt_save')}</button>
+              <button onClick={() => setShowForm(false)} className="px-6 py-2.5 rounded-lg bg-muted text-muted-foreground font-medium text-sm hover:bg-accent transition-colors">{t('ext.vt_cancel')}</button>
             </div>
           </Card>
         )}
@@ -290,10 +290,10 @@ const Vitrine = () => {
         {config.products.length === 0 ? (
           <Card className="p-10 border-none shadow-md text-center">
             <Rocket className="w-12 h-12 mx-auto mb-3 text-primary/30" />
-            <p className="text-lg font-semibold font-heading">Sua vitrine está esperando!</p>
-            <p className="text-sm text-muted-foreground mt-1 mb-4">Adicione seu primeiro produto e comece a vender agora mesmo 🚀</p>
+            <p className="text-lg font-semibold font-heading">{t('ext.vt_empty_title')}</p>
+            <p className="text-sm text-muted-foreground mt-1 mb-4">{t('ext.vt_empty_sub')}</p>
             <button onClick={() => setShowForm(true)} className="px-6 py-3 rounded-lg gradient-primary text-primary-foreground font-medium text-sm shadow-glow hover:opacity-90 transition-opacity inline-flex items-center gap-2">
-              <Plus className="w-4 h-4" /> Cadastrar Primeiro Produto
+              <Plus className="w-4 h-4" /> {t('ext.vt_empty_cta')}
             </button>
           </Card>
         ) : (
@@ -302,7 +302,7 @@ const Vitrine = () => {
               <Card key={p.id} className="border-none shadow-md overflow-hidden relative">
                 {p.stock === 0 && !config.vitrineOnlyMode && (
                   <div className="absolute top-2 right-2 z-10 px-2 py-1 rounded-md bg-destructive text-destructive-foreground text-xs font-semibold flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" /> Esgotado
+                    <AlertCircle className="w-3 h-3" /> {t('ext.vt_out_of_stock')}
                   </div>
                 )}
                 {p.photo ? (
@@ -326,17 +326,17 @@ const Vitrine = () => {
                     </div>
                   )}
                   {!config.vitrineOnlyMode && (
-                    <p className="text-xs text-muted-foreground mt-1">Estoque: {p.stock ?? 0}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{t('ext.vt_stock', { n: p.stock ?? 0 })}</p>
                   )}
                   <div className="mt-3 flex items-center gap-3">
                     <button onClick={() => setEditingProduct({ ...p })} className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1 transition-colors">
-                      <Pencil className="w-3 h-3" /> Editar
+                      <Pencil className="w-3 h-3" /> {t('ext.vt_edit')}
                     </button>
                     <button onClick={() => setIgProduct(p)} className="text-xs text-muted-foreground hover:text-pink-500 flex items-center gap-1 transition-colors">
-                      <Instagram className="w-3 h-3" /> Post IA
+                      <Instagram className="w-3 h-3" /> {t('ext.vt_ig_post')}
                     </button>
                     <button onClick={() => removeProduct(p.id)} className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-1 transition-colors">
-                      <Trash2 className="w-3 h-3" /> Remover
+                      <Trash2 className="w-3 h-3" /> {t('ext.vt_remove')}
                     </button>
                   </div>
                 </div>
@@ -365,18 +365,18 @@ const Vitrine = () => {
       <Dialog open={!!editingProduct} onOpenChange={open => !open && setEditingProduct(null)}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Editar Produto</DialogTitle>
+            <DialogTitle>{t('ext.vt_edit_title')}</DialogTitle>
           </DialogHeader>
           {editingProduct && (
             <div className="space-y-4">
               <div>
-                <Label>Nome do Produto</Label>
+                <Label>{t('ext.vt_form_name')}</Label>
                 <Input value={editingProduct.name} onChange={e => setEditingProduct({ ...editingProduct, name: e.target.value })} className="mt-1" />
               </div>
               <div>
-                <Label>Foto</Label>
+                <Label>{t('ext.vt_edit_photo')}</Label>
                 <label className="mt-1 flex items-center justify-center h-10 px-4 rounded-md border border-input bg-background text-sm cursor-pointer hover:bg-muted transition-colors">
-                  {editingProduct.photo ? <><CheckCircle2 className="w-3.5 h-3.5" /> Foto selecionada</> : <><Camera className="w-3.5 h-3.5" /> Selecionar foto</>}
+                  {editingProduct.photo ? <><CheckCircle2 className="w-3.5 h-3.5" /> {t('ext.vt_photo_selected')}</> : <><Camera className="w-3.5 h-3.5" /> {t('ext.vt_photo_pick')}</>}
                   <input type="file" accept="image/*" className="hidden" onChange={handleEditPhotoUpload} />
                 </label>
                 {editingProduct.photo && (
@@ -386,26 +386,26 @@ const Vitrine = () => {
               {!config.vitrineOnlyMode && (
                 <div className="grid grid-cols-3 gap-3">
                   <div>
-                    <Label>Preço Original (R$)</Label>
+                    <Label>{t('ext.vt_form_price')}</Label>
                     <Input type="number" step="0.01" min="0" value={editingProduct.originalPrice} onChange={e => setEditingProduct({ ...editingProduct, originalPrice: Math.max(0, parseFloat(e.target.value) || 0) })} className="mt-1" />
                   </div>
                   <div>
-                    <Label>Preço Desconto (R$)</Label>
+                    <Label>{t('ext.vt_edit_price_disc')}</Label>
                     <Input type="number" step="0.01" min="0.01" value={editingProduct.discountPrice} onChange={e => setEditingProduct({ ...editingProduct, discountPrice: parseFloat(e.target.value) || 0 })} className="mt-1" />
                   </div>
                   <div>
-                    <Label>Estoque</Label>
+                    <Label>{t('ext.vt_edit_stock_short')}</Label>
                     <Input type="number" min="0" value={editingProduct.stock} onChange={e => setEditingProduct({ ...editingProduct, stock: parseInt(e.target.value) || 0 })} className="mt-1" />
                   </div>
                 </div>
               )}
               <div>
-                <Label>Descrição Curta</Label>
+                <Label>{t('ext.vt_form_desc')}</Label>
                 <Textarea value={editingProduct.description} onChange={e => setEditingProduct({ ...editingProduct, description: e.target.value })} className="mt-1" rows={2} />
               </div>
               <div className="flex gap-3 pt-2">
-                <button onClick={handleEditSave} className="px-6 py-2.5 rounded-lg gradient-primary text-primary-foreground font-medium text-sm shadow-glow hover:opacity-90 transition-opacity">Salvar</button>
-                <button onClick={() => setEditingProduct(null)} className="px-6 py-2.5 rounded-lg bg-muted text-muted-foreground font-medium text-sm hover:bg-accent transition-colors">Cancelar</button>
+                <button onClick={handleEditSave} className="px-6 py-2.5 rounded-lg gradient-primary text-primary-foreground font-medium text-sm shadow-glow hover:opacity-90 transition-opacity">{t('ext.vt_edit_save')}</button>
+                <button onClick={() => setEditingProduct(null)} className="px-6 py-2.5 rounded-lg bg-muted text-muted-foreground font-medium text-sm hover:bg-accent transition-colors">{t('ext.vt_cancel')}</button>
               </div>
             </div>
           )}
