@@ -6,10 +6,11 @@ import { useStore } from '@/contexts/StoreContext';
 import { auth, db, FUNCTIONS, callFunction } from '@/integrations/firebase/firebase';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { updatePassword } from 'firebase/auth';
-import { useT } from '@/lib/i18n';
+import { useT, useI18n } from '@/lib/i18n';
 
 const Configuracoes: React.FC = () => {
   const t = useT();
+  const { lang } = useI18n();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { config, updateConfig } = useStore();
@@ -402,7 +403,7 @@ const Configuracoes: React.FC = () => {
         <div className="mt-6">
           <button onClick={handleLogout}
             className="w-full bg-destructive/10 text-destructive py-3 rounded-lg font-semibold hover:bg-destructive/20 transition-all border border-destructive/30 flex items-center justify-center gap-2">
-            <LogOut size={20} /><span>Sair da Conta</span>
+            <LogOut size={20} /><span>{t('configuracoes.logout')}</span>
           </button>
         </div>
       </div>
