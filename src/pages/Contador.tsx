@@ -147,6 +147,7 @@ const I18N: Record<Pais, {
   dreRows: {
     receita: string; cmv: string; cmvSub: string; lucroBruto: string;
     despesaOp: string; despesaOpSub: string; prolabore: string; prolaoreSub: string;
+    folha: string; folhaSub: string;
     resultado: string;
   };
   rodapePDF: string;
@@ -170,7 +171,9 @@ const I18N: Record<Pais, {
     dreRows: {
       receita: '(+) Receita operacional', cmv: '(−) Custo das mercadorias (CMV)', cmvSub: 'Categoria Reposição',
       lucroBruto: '= Lucro bruto', despesaOp: '(−) Despesas operacionais', despesaOpSub: 'Embalagem, Frete, Outros',
-      prolabore: '(−) Pró-labore / retiradas pessoais', prolaoreSub: 'Categoria Pessoal', resultado: '= Resultado líquido',
+      prolabore: '(−) Pró-labore / retiradas pessoais', prolaoreSub: 'Categoria Pessoal',
+      folha: '(−) Folha de pessoal', folhaSub: 'Categoria Funcionário',
+      resultado: '= Resultado líquido',
     },
     rodapePDF: 'Este relatório é auxiliar. A declaração fiscal oficial deve ser feita em gov.br/mei.',
   },
@@ -193,7 +196,9 @@ const I18N: Record<Pais, {
     dreRows: {
       receita: '(+) Ingresos operacionales', cmv: '(−) Coste de ventas (CMV)', cmvSub: 'Categoría Reposición',
       lucroBruto: '= Beneficio bruto', despesaOp: '(−) Gastos operativos', despesaOpSub: 'Embalaje, Flete, Otros',
-      prolabore: '(−) Retiro personal', prolaoreSub: 'Categoría Personal', resultado: '= Resultado neto',
+      prolabore: '(−) Retiro personal', prolaoreSub: 'Categoría Personal',
+      folha: '(−) Nómina / personal contratado', folhaSub: 'Categoría Empleado',
+      resultado: '= Resultado neto',
     },
     rodapePDF: 'Informe auxiliar. Consulta a tu gestor/asesor fiscal para la declaración oficial.',
   },
@@ -216,7 +221,9 @@ const I18N: Record<Pais, {
     dreRows: {
       receita: '(+) Chiffre d\'affaires', cmv: '(−) Coût des marchandises', cmvSub: 'Catégorie Réapprovisionnement',
       lucroBruto: '= Résultat brut', despesaOp: '(−) Charges d\'exploitation', despesaOpSub: 'Emballage, Fret, Autres',
-      prolabore: '(−) Rémunération dirigeant', prolaoreSub: 'Catégorie Personnel', resultado: '= Résultat net',
+      prolabore: '(−) Rémunération dirigeant', prolaoreSub: 'Catégorie Personnel',
+      folha: '(−) Charges salariales', folhaSub: 'Catégorie Employé',
+      resultado: '= Résultat net',
     },
     rodapePDF: 'Rapport auxiliaire. Consultez votre expert-comptable pour la déclaration officielle.',
   },
@@ -239,7 +246,9 @@ const I18N: Record<Pais, {
     dreRows: {
       receita: '(+) Revenue', cmv: '(−) Cost of goods sold (COGS)', cmvSub: 'Restock category',
       lucroBruto: '= Gross profit', despesaOp: '(−) Operating expenses', despesaOpSub: 'Packaging, Shipping, Others',
-      prolabore: '(−) Owner\'s draw', prolaoreSub: 'Personal category', resultado: '= Net income',
+      prolabore: '(−) Owner\'s draw', prolaoreSub: 'Personal category',
+      folha: '(−) Payroll / employees', folhaSub: 'Employee category',
+      resultado: '= Net income',
     },
     rodapePDF: 'Auxiliary report. Consult a CPA for your official tax filings.',
   },
@@ -276,8 +285,11 @@ const Contador = () => {
   const [us1099Clients, setUs1099Clients] = useState<{ name: string; amount: number }[]>(() => {
     try { return JSON.parse(lsGet('biztrivo_us_1099', '[]')); } catch { return []; }
   });
-  const [us1099Name,   setUs1099Name]   = useState('');
-  const [us1099Amount, setUs1099Amount] = useState('');
+  const [us1099Name,    setUs1099Name]    = useState('');
+  const [us1099Amount,  setUs1099Amount]  = useState('');
+  const [usStateTaxRate, setUsStateTaxRate] = useState<number>(
+    () => parseFloat(lsGet('biztrivo_us_state_tax', '0'))
+  );
 
   const now      = new Date();
   const mesAtual = now.getMonth();
@@ -293,19 +305,20 @@ const Contador = () => {
       const d = new Date(tx.date);
       return d.getMonth() === mesAtual && d.getFullYear() === anoAtual;
     });
-    let receita = 0, cmv = 0, despesaOp = 0, prolabore = 0;
+    let receita = 0, cmv = 0, despesaOp = 0, prolabore = 0, folha = 0;
     for (const tx of txMes) {
       if (tx.type === 'entrada') { receita += tx.value; continue; }
       const cat = tx.category ?? '';
-      if (cat === 'Reposição')                             cmv        += tx.value;
-      else if (cat === 'Pessoal')                          prolabore  += tx.value;
+      if (cat === 'Reposição')                               cmv       += tx.value;
+      else if (cat === 'Pessoal')                            prolabore += tx.value;
+      else if (cat === 'Funcionário')                        folha     += tx.value;
       else if (['Embalagem','Frete','Outros'].includes(cat)) despesaOp += tx.value;
-      else                                                 despesaOp  += tx.value;
+      else                                                   despesaOp += tx.value;
     }
     const lucroBruto  = receita - cmv;
-    const ebitda      = lucroBruto - despesaOp;
+    const ebitda      = lucroBruto - despesaOp - folha;
     const margemBruta = receita > 0 ? (lucroBruto / receita) * 100 : 0;
-    return { receita, cmv, lucroBruto, despesaOp, ebitda, prolabore, margemBruta };
+    return { receita, cmv, lucroBruto, despesaOp, folha, ebitda, prolabore, margemBruta };
   }, [config.transactions, mesAtual, anoAtual]);
 
   //impostos por país
@@ -337,27 +350,32 @@ const Contador = () => {
       return { fr_cotisations: cotisations, fr_cfe: cfeMensal, total: cotisations + cfeMensal };
     }
     // US
-    const netAnual    = lucroAntesImposto * 12;
-    const seTaxAnual  = netAnual * US_SE_TAX_FACTOR * US_SE_TAX_RATE;
-    const fedTaxAnual = calcFedTaxAnual(netAnual);
+    const netAnual      = lucroAntesImposto * 12;
+    const seTaxAnual    = netAnual * US_SE_TAX_FACTOR * US_SE_TAX_RATE;
+    const fedTaxAnual   = calcFedTaxAnual(netAnual);
+    const stateTaxAnual = netAnual * (usStateTaxRate / 100);
     return {
-      us_seTaxMensal:  seTaxAnual  / 12,
-      us_fedTaxMensal: fedTaxAnual / 12,
+      us_seTaxMensal:   seTaxAnual    / 12,
+      us_fedTaxMensal:  fedTaxAnual   / 12,
+      us_stateTaxMensal: stateTaxAnual / 12,
       seTaxAnual,
       fedTaxAnual,
+      stateTaxAnual,
       us_seTaxSS:  (netAnual * US_SE_TAX_FACTOR * 0.124) / 12,
       us_seTaxMed: (netAnual * US_SE_TAX_FACTOR * 0.029) / 12,
-      total: (seTaxAnual + fedTaxAnual) / 12,
+      total: (seTaxAnual + fedTaxAnual + stateTaxAnual) / 12,
     };
-  }, [dreBase, pais, frAtividade]);
+  }, [dreBase, pais, frAtividade, usStateTaxRate]);
 
   //DRE final (com imposto do país) 
   const dre = useMemo(() => {
-    const { receita, cmv, lucroBruto, despesaOp, ebitda, prolabore, margemBruta } = dreBase;
-    const lucroLiquido = ebitda - prolabore - impostosMensais.total;
+    const { receita, cmv, lucroBruto, despesaOp, folha, ebitda, prolabore, margemBruta } = dreBase;
+    //provisão férias + 13º sobre pró-labore: 1/12 + 1/12 ≈ 16.67%
+    const provisaoFeriasDecimo = pais === 'BR' ? prolabore * (1 / 12 + 1 / 12) : 0;
+    const lucroLiquido = ebitda - prolabore - provisaoFeriasDecimo - impostosMensais.total;
     const margemLiq    = receita > 0 ? (lucroLiquido / receita) * 100 : 0;
-    return { receita, cmv, lucroBruto, despesaOp, ebitda, prolabore, lucroLiquido, margemBruta, margemLiq };
-  }, [dreBase, impostosMensais]);
+    return { receita, cmv, lucroBruto, despesaOp, folha, ebitda, prolabore, provisaoFeriasDecimo, lucroLiquido, margemBruta, margemLiq };
+  }, [dreBase, impostosMensais, pais]);
 
   //histórico 6 meses 
   const historico6m = useMemo(() => {
@@ -418,7 +436,7 @@ const Contador = () => {
       limiteLabel   = 'Plafond micro-entrepreneur';
       limiteDetalhe = `${pctLimite.toFixed(0)}% du plafond utilisé`;
     } else {
-      const totalTaxAnual = (impostosMensais.seTaxAnual ?? 0) + (impostosMensais.fedTaxAnual ?? 0);
+      const totalTaxAnual = (impostosMensais.seTaxAnual ?? 0) + (impostosMensais.fedTaxAnual ?? 0) + (impostosMensais.stateTaxAnual ?? 0);
       const grossAnual    = dre.receita * 12;
       const effectiveRate = grossAnual > 0 ? (totalTaxAnual / grossAnual) * 100 : 0;
       s5 = effectiveRate < 25 ? 10 : effectiveRate < 35 ? 6 : 0;
@@ -558,10 +576,12 @@ const Contador = () => {
       );
     } else {
       fiscalBody.push(
-        ['SE Tax/month (est.)',       fmtMoeda(impostosMensais.us_seTaxMensal ?? 0,  pais)],
-        ['Federal Income Tax/month',  fmtMoeda(impostosMensais.us_fedTaxMensal ?? 0, pais)],
-        ['Annual SE Tax (est.)',      fmtMoeda(impostosMensais.seTaxAnual ?? 0,    pais)],
-        ['Annual Federal Tax (est.)', fmtMoeda(impostosMensais.fedTaxAnual ?? 0,   pais)],
+        ['SE Tax/month (est.)',        fmtMoeda(impostosMensais.us_seTaxMensal ?? 0,    pais)],
+        ['Federal Income Tax/month',   fmtMoeda(impostosMensais.us_fedTaxMensal ?? 0,   pais)],
+        ...(usStateTaxRate > 0 ? [['State Income Tax/month', fmtMoeda(impostosMensais.us_stateTaxMensal ?? 0, pais)]] : []),
+        ['Annual SE Tax (est.)',       fmtMoeda(impostosMensais.seTaxAnual ?? 0,        pais)],
+        ['Annual Federal Tax (est.)',  fmtMoeda(impostosMensais.fedTaxAnual ?? 0,       pais)],
+        ...(usStateTaxRate > 0 ? [['Annual State Tax (est.)', fmtMoeda(impostosMensais.stateTaxAnual ?? 0, pais)]] : []),
       );
     }
     autoTable(doc, {
@@ -586,6 +606,16 @@ const Contador = () => {
     doc.save(`Contador_${paisLabel}_${mesLabel.replace('/', '_')}_${config.storeName.replace(/\s+/g, '_')}.pdf`);
     toast.success(pais === 'BR' ? 'Relatório contábil exportado' : pais === 'ES' ? 'Informe exportado' : pais === 'FR' ? 'Rapport exporté' : 'Report exported');
   };
+
+  // cobertura de caixa: saldo acumulado ÷ despesas fixas mensais médias
+  const coberturaCaixa = useMemo(() => {
+    const saldoAcumulado = config.transactions.reduce((s, tx) => {
+      return tx.type === 'entrada' ? s + tx.value : s - tx.value;
+    }, 0);
+    const despesasFixasMensais = dre.despesaOp + dre.folha + dre.prolabore + impostosMensais.total;
+    const meses = despesasFixasMensais > 0 ? saldoAcumulado / despesasFixasMensais : null;
+    return { saldoAcumulado, despesasFixasMensais, meses };
+  }, [config.transactions, dre, impostosMensais]);
 
   //para o painel FR (mesmo objeto, nome mais curto no JSX)
   const impostosFF = impostosFR;
@@ -691,9 +721,14 @@ const Contador = () => {
               <DRERow label={t.dreRows.receita}    valor={dre.receita}    pctReceita={100}                                                       cor="text-secondary"   destaque pais={pais} />
               <DRERow label={t.dreRows.cmv}        valor={dre.cmv}        pctReceita={dre.receita > 0 ? (dre.cmv / dre.receita) * 100 : 0}       cor="text-destructive" sub={t.dreRows.cmvSub} pais={pais} />
               <DRERow label={t.dreRows.lucroBruto} valor={dre.lucroBruto} pctReceita={dre.margemBruta}                                           cor={dre.lucroBruto >= 0 ? 'text-primary' : 'text-destructive'} destaque separador pais={pais} />
-              <DRERow label={t.dreRows.despesaOp}  valor={dre.despesaOp}  pctReceita={dre.receita > 0 ? (dre.despesaOp / dre.receita) * 100 : 0} cor="text-destructive" sub={t.dreRows.despesaOpSub} pais={pais} />
-              <DRERow label={t.dreRows.prolabore}  valor={dre.prolabore}  pctReceita={dre.receita > 0 ? (dre.prolabore / dre.receita) * 100 : 0} cor="text-warning"     sub={t.dreRows.prolaoreSub} pais={pais} />
-
+<DRERow label={t.dreRows.despesaOp}  valor={dre.despesaOp}  pctReceita={dre.receita > 0 ? (dre.despesaOp  / dre.receita) * 100 : 0} cor="text-destructive" sub={t.dreRows.despesaOpSub} pais={pais} />
+            {dre.folha > 0 && (
+              <DRERow label={t.dreRows.folha} valor={dre.folha} pctReceita={dre.receita > 0 ? (dre.folha / dre.receita) * 100 : 0} cor="text-destructive" sub={t.dreRows.folhaSub} pais={pais} />
+            )}
+            <DRERow label={t.dreRows.prolabore}   valor={dre.prolabore}  pctReceita={dre.receita > 0 ? (dre.prolabore  / dre.receita) * 100 : 0} cor="text-destructive" sub={t.dreRows.prolaoreSub}  pais={pais} />
+            {pais === 'BR' && dre.provisaoFeriasDecimo > 0 && (
+              <DRERow label="(−) Provisão férias + 13º (estimado)" valor={dre.provisaoFeriasDecimo} pctReceita={dre.receita > 0 ? (dre.provisaoFeriasDecimo / dre.receita) * 100 : 0} cor="text-warning" sub="16,7% sobre pró-labore" pais={pais} />
+            )}
               {/*linha de imposto — varia por país */}
               {pais === 'BR' && (
                 <DRERow label="(−) DAS MEI (estimado)" valor={BR_DAS_MEI_MENSAL} pctReceita={dre.receita > 0 ? (BR_DAS_MEI_MENSAL / dre.receita) * 100 : 0} cor="text-muted-foreground" sub="Valor fixo 2026, confirme em gov.br/mei" pais={pais} />
@@ -826,10 +861,39 @@ const Contador = () => {
               )}
             </div>
           </Card>
+<Card className="p-5 border-none shadow-md">
+              <h3 className="font-semibold font-heading text-sm mb-3 flex items-center gap-2">
+                <Activity className="w-4 h-4 text-primary" />
+                {pais === 'BR' ? 'Cobertura de caixa' : pais === 'ES' ? 'Cobertura de caja' : pais === 'FR' ? 'Couverture de trésorerie' : 'Cash runway'}
+              </h3>
+              {coberturaCaixa.meses === null ? (
+                <p className="text-sm text-muted-foreground">Sem despesas fixas registradas para calcular.</p>
+              ) : (
+                <>
+                  <p className={`text-3xl font-bold font-heading ${coberturaCaixa.meses >= 3 ? 'text-secondary' : coberturaCaixa.meses >= 1 ? 'text-warning' : 'text-destructive'}`}>
+                    {coberturaCaixa.meses > 0 ? `${coberturaCaixa.meses.toFixed(1)} mo` : '< 1 mo'}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {pais === 'BR' ? 'de despesas cobertas pelo saldo acumulado' : pais === 'ES' ? 'de gastos cubiertos por el saldo acumulado' : pais === 'FR' ? 'de charges couvertes par le solde accumulé' : 'of expenses covered by accumulated balance'}
+                  </p>
+                  <div className="mt-3 space-y-1 text-xs text-muted-foreground">
+                    <div className="flex justify-between">
+                      <span>{pais === 'BR' ? 'Saldo acumulado' : pais === 'ES' ? 'Saldo acumulado' : pais === 'FR' ? 'Solde accumulé' : 'Accumulated balance'}</span>
+                      <span className="font-medium text-foreground">{fmtMoeda(coberturaCaixa.saldoAcumulado, pais)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>{pais === 'BR' ? 'Despesas fixas/mês' : pais === 'ES' ? 'Gastos fijos/mes' : pais === 'FR' ? 'Charges fixes/mois' : 'Fixed costs/month'}</span>
+                      <span className="font-medium text-foreground">{fmtMoeda(coberturaCaixa.despesasFixasMensais, pais)}</span>
+                    </div>
+                  </div>
+                </>
+              )}
+            </Card>
+          {/*impostos*/}
         </div>
       )}
 
-      {/*ABA: IMPOSTOS */}
+      {/*ABA:IMPOSTOS */}
       {aba === 'impostos' && (
         <div className="space-y-6">
 
@@ -1157,7 +1221,29 @@ const Contador = () => {
                     <span className="font-medium text-foreground">{fmtMoeda(impostosMensais.fedTaxAnual ?? 0, 'US')}</span>
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground mt-3">State taxes not included. Consult a CPA for your full liability.</p>
+                <div className="mt-3 space-y-1.5">
+                  <p className="text-xs text-muted-foreground">State income tax rate (optional):</p>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number" min="0" max="20" step="0.1"
+                      value={usStateTaxRate || ''}
+                      onChange={e => {
+                        const v = parseFloat(e.target.value) || 0;
+                        setUsStateTaxRate(v);
+                        lsSet('biztrivo_us_state_tax', String(v));
+                      }}
+                      placeholder="e.g. 5.0"
+                      className="w-24 h-8 px-2 rounded-md border border-input bg-background text-sm text-center"
+                    />
+                    <span className="text-sm text-muted-foreground">%</span>
+                    {usStateTaxRate > 0 && (
+                      <span className="text-xs text-primary font-medium">
+                        +{fmtMoeda(impostosMensais.us_stateTaxMensal ?? 0, 'US')}/mo
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">CA: 13.3% · NY: 10.9% · TX/FL: 0% · Consult a CPA.</p>
+                </div>
               </Card>  </div>
             <Card className="p-6 border-none shadow-md">
               <h2 className="text-lg font-semibold font-heading mb-4 flex items-center gap-2">
@@ -1167,7 +1253,7 @@ const Contador = () => {
                 {US_QUARTERLY.map((q, i) => {
                   const trimAtual = q.months.includes(mesAtual);
                   const passed    = mesAtual > Math.max(...q.months);
-                  const totalTaxAnual = (impostosMensais.seTaxAnual ?? 0) + (impostosMensais.fedTaxAnual ?? 0);
+                  const totalTaxAnual = (impostosMensais.seTaxAnual ?? 0) + (impostosMensais.fedTaxAnual ?? 0) + (impostosMensais.stateTaxAnual ?? 0);
                   const qValue    = totalTaxAnual * (q.months.length / 12);
                   return (
                     <div key={i} className={`flex items-center justify-between p-3 rounded-xl ${trimAtual ? 'bg-primary/10 border border-primary/30' : 'bg-muted/30'}`}>
@@ -1183,7 +1269,7 @@ const Contador = () => {
                   ); })}
               </div>
               <p className="text-sm text-muted-foreground mt-3 flex items-start gap-1.5">
-  <Lightbulb className="w-3.5 h-3.5 shrink-0 mt-0.5 text-primary" /> Save <strong className="text-foreground">{fmtMoeda(((impostosMensais.seTaxAnual ?? 0) + (impostosMensais.fedTaxAnual ?? 0)) / 12, 'US')}/month</strong> to cover quarterly payments.
+  <Lightbulb className="w-3.5 h-3.5 shrink-0 mt-0.5 text-primary" /> Save <strong className="text-foreground">{fmtMoeda(((impostosMensais.seTaxAnual ?? 0) + (impostosMensais.fedTaxAnual ?? 0) + (impostosMensais.stateTaxAnual ?? 0)) / 12, 'US')}/month</strong> to cover quarterly payments.
               </p>
             </Card>
             <Card className="p-6 border-none shadow-md">

@@ -111,8 +111,8 @@
     "income": "+ Entrée",
     "expense": "- Sortie",
     "goal_set": "Définissez un objectif pour aujourd'hui !",
-    "set_goal_btn": "🎯 Définir un objectif",
-    "goal_reached": "🏆 Objectif atteint !",
+    "set_goal_btn": "Définir un objectif",
+    "goal_reached": "Objectif atteint !",
     "goal_missing": "Il manque {{amount}}",
     "goal_label": "Objectif : {{amount}}",
     "adjust_goal": "Ajuster l'objectif",
@@ -120,8 +120,8 @@
     "goal_placeholder": "Ex : 500,00",
     "goal_save": "Enregistrer",
     "alert_personal_high": "⚠️ Attention : Vos retraits personnels sont élevés ({{percent}}% des entrées).",
-    "alert_positive": "💰 Bon travail ! Solde positif de {{amount}} aujourd'hui.",
-    "alert_negative": "📉 Attention : Vos dépenses ont dépassé vos entrées aujourd'hui."
+    "alert_positive": "Bon travail ! Solde positif de {{amount}} aujourd'hui.",
+    "alert_negative": "Attention : Vos dépenses ont dépassé vos entrées aujourd'hui."
   },
   "caixa": {
     "title": "Caisse",
@@ -425,6 +425,7 @@
     "cx_cat_embalagem": "Emballage",
     "cx_cat_frete": "Livraison",
     "cx_cat_pessoal": "Personnel",
+    "cx_cat_funcionario": "Employé",
     "cx_cat_outros": "Autres",
     "vt_title": "Ma Vitrine",
     "vt_subtitle": "Configurez votre catalogue professionnel",

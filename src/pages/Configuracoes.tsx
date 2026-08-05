@@ -16,6 +16,7 @@ const Configuracoes: React.FC = () => {
   const { config, updateConfig } = useStore();
 
   const [storeName, setStoreName] = useState('');
+  const [pixKey, setPixKey] = useState('');
   const [profileImage, setProfileImage] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -30,8 +31,9 @@ const Configuracoes: React.FC = () => {
 
   useEffect(() => {
     setStoreName(config.storeName);
+    setPixKey(config.pixKey ?? '');
     setProfileImage(config.profileImage);
-  }, [config.storeName, config.profileImage]);
+  }, [config.storeName, config.pixKey, config.profileImage]);
 
   useEffect(() => {
     if (!user) return;
@@ -105,7 +107,7 @@ const Configuracoes: React.FC = () => {
     setLoading(true);
     setMessage(null);
     try {
-      await updateConfig({ storeName, profileImage });
+      await updateConfig({ storeName, pixKey, profileImage });
       setMessage({ type: 'success', text: t('configuracoes.success_profile') });
     } catch {
       setMessage({ type: 'error', text: t('configuracoes.error_profile') });
@@ -224,6 +226,23 @@ const Configuracoes: React.FC = () => {
                   <input id="storeName" type="text" value={storeName} onChange={(e) => setStoreName(e.target.value)}
                     className="w-full px-4 py-3 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent transition-all bg-background text-foreground"
                     placeholder={t('configuracoes.store_name_placeholder')} required />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Chave PIX
+                  </label>
+                  <input
+                    type="text"
+                    value={pixKey}
+                    onChange={(e) => setPixKey(e.target.value)}
+                    className="w-full px-4 py-3 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent transition-all bg-background text-foreground"
+                    placeholder="CPF, e-mail, telefone ou chave aleatória"
+                    maxLength={140}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Aparece pré-preenchida na mensagem do WhatsApp quando o cliente clicar em "Comprar" na sua vitrine.
+                  </p>
                 </div>
 
                 <div>

@@ -3,13 +3,15 @@ import { useStore } from '@/contexts/StoreContext';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
-import { TrendingUp, Wallet, Download, ArrowUpRight, ArrowDownRight, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { TrendingUp, Wallet, Download, ArrowUpRight, ArrowDownRight, AlertTriangle, CheckCircle2, Calendar, BarChart2, Target, Clock } from 'lucide-react';
+import { LineChart, Line, ReferenceLine } from 'recharts';
 
 const CATEGORY_COLORS: Record<string, string> = {
   'Reposição': 'hsl(217, 91%, 60%)',
   'Embalagem': 'hsl(38, 92%, 50%)',
   'Frete': 'hsl(280, 60%, 55%)',
   'Pessoal': 'hsl(0, 84%, 60%)',
+  'Funcionário': 'hsl(162, 63%, 41%)',
   'Outros': 'hsl(215, 16%, 47%)',
 };
 
@@ -17,19 +19,27 @@ const periods = [
   { label: 'Hoje', value: 'today' },
   { label: '7 dias', value: '7d' },
   { label: '30 dias', value: '30d' },
+  { label: '12 meses', value: '12m' },
 ] as const;
+
+type Period = 'today' | '7d' | '30d' | '12m';
+
+const MESES_PT = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
 const Relatorios = () => {
   const { config } = useStore();
-  const [period, setPeriod] = useState<'today' | '7d' | '30d'>('30d');
+  const [period, setPeriod] = useState<Period>('30d');
+  const [anoComparacao, setAnoComparacao] = useState<number>(new Date().getFullYear());
 
   const now = new Date();
+  const anoAtual = now.getFullYear();
 
   const filteredTransactions = useMemo(() => {
     return config.transactions.filter(t => {
       const d = new Date(t.date);
       if (period === 'today') return d.toISOString().split('T')[0] === now.toISOString().split('T')[0];
       if (period === '7d') return (now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24) <= 7;
+      if (period === '12m') return (now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24) <= 365;
       return (now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24) <= 30;
     });
   }, [config.transactions, period, now]);
@@ -62,6 +72,115 @@ const Relatorios = () => {
     return months;
   }, [config.transactions, now]);
 
+  //dados dos últimos 12 meses (para o gráfico anual)
+  const last12MonthsData = useMemo(() => {
+    return Array.from({ length: 12 }, (_, i) => {
+      const target = new Date(anoAtual, now.getMonth() - (11 - i), 1);
+      const m = target.getMonth();
+      const a = target.getFullYear();
+      const txs = config.transactions.filter(t => {
+        const d = new Date(t.date);
+        return d.getMonth() === m && d.getFullYear() === a;
+      });
+      return {
+        name: MESES_PT[m],
+        Entradas: txs.filter(t => t.type === 'entrada').reduce((s, t) => s + t.value, 0),
+        Saídas: txs.filter(t => t.type === 'saida').reduce((s, t) => s + t.value, 0),
+      };
+    });
+  }, [config.transactions, anoAtual, now]);
+
+  //comparativo anual — ano selecionado vs ano anterior
+  const comparativoAnual = useMemo(() => {
+    const anoAnt = anoComparacao - 1;
+    return Array.from({ length: 12 }, (_, i) => {
+      const txAtual = config.transactions.filter(t => {
+        const d = new Date(t.date);
+        return d.getMonth() === i && d.getFullYear() === anoComparacao;
+      });
+      const txAnt = config.transactions.filter(t => {
+        const d = new Date(t.date);
+        return d.getMonth() === i && d.getFullYear() === anoAnt;
+      });
+      const recAtual = txAtual.filter(t => t.type === 'entrada').reduce((s, t) => s + t.value, 0);
+      const recAnt   = txAnt.filter(t => t.type === 'entrada').reduce((s, t) => s + t.value, 0);
+      return {
+        name: MESES_PT[i],
+        [String(anoComparacao)]: recAtual,
+        [String(anoAnt)]: recAnt,
+      };
+    });
+  }, [config.transactions, anoComparacao]);
+
+  //totais anuais para o card de comparação
+  const totaisAnuais = useMemo(() => {
+    const anoAnt = anoComparacao - 1;
+    const somaAno = (ano: number) => config.transactions
+      .filter(t => t.type === 'entrada' && new Date(t.date).getFullYear() === ano)
+      .reduce((s, t) => s + t.value, 0);
+    const atual = somaAno(anoComparacao);
+    const anterior = somaAno(anoAnt);
+    const diff = anterior > 0 ? ((atual - anterior) / anterior) * 100 : 0;
+    return { atual, anterior, diff, anoAnt };
+  }, [config.transactions, anoComparacao]);
+
+  //saldo diário acumulado nos últimos 30 dias (curva de caixa)
+  const saldoDiario = useMemo(() => {
+    const days: { dia: string; saldo: number }[] = [];
+    let saldoAcum = 0;
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      const dStr = d.toISOString().split('T')[0];
+      const txsDia = config.transactions.filter(t => t.date.startsWith(dStr));
+      txsDia.forEach(t => { saldoAcum += t.type === 'entrada' ? t.value : -t.value; });
+      days.push({ dia: `${d.getDate()}/${d.getMonth() + 1}`, saldo: saldoAcum });
+    }
+    return days;
+  }, [config.transactions, now]);
+
+  //ticket médio e dias sem receita
+  const insights = useMemo(() => {
+    const entradasPeriodo = filteredTransactions.filter(t => t.type === 'entrada');
+    const diasComVenda = new Set(entradasPeriodo.map(t => t.date.split('T')[0])).size;
+    const totalEntradas = entradasPeriodo.reduce((s, t) => s + t.value, 0);
+    const ticketMedio = diasComVenda > 0 ? totalEntradas / diasComVenda : 0;
+
+    //dias sem receita no período
+    let diasNoPeriodo = period === 'today' ? 1 : period === '7d' ? 7 : period === '12m' ? 365 : 30;
+    const diasSemReceita = diasNoPeriodo - diasComVenda;
+
+    //meta diária
+    const metaDiaria = config.dailyGoal ?? 0;
+    const diasBatiuMeta = metaDiaria > 0
+      ? [...new Set(entradasPeriodo.map(t => t.date.split('T')[0]))].filter(dia => {
+          const totalDia = entradasPeriodo.filter(t => t.date.startsWith(dia)).reduce((s, t) => s + t.value, 0);
+          return totalDia >= metaDiaria;
+        }).length
+      : 0;
+
+    //projeção do mês
+    const diasDecorridos = now.getDate();
+    const receitaMes = config.transactions
+      .filter(t => t.type === 'entrada' && new Date(t.date).getMonth() === now.getMonth() && new Date(t.date).getFullYear() === anoAtual)
+      .reduce((s, t) => s + t.value, 0);
+    const diasNoMes = new Date(anoAtual, now.getMonth() + 1, 0).getDate();
+    const projecaoMes = diasDecorridos > 0 ? (receitaMes / diasDecorridos) * diasNoMes : 0;
+
+    //ranking de gastos por categoria
+    const rankingGastos: { categoria: string; total: number; pct: number }[] = [];
+    const mapGastos: Record<string, number> = {};
+    filteredTransactions.filter(t => t.type === 'saida').forEach(t => {
+      mapGastos[t.category] = (mapGastos[t.category] || 0) + t.value;
+    });
+    const totalGastos = Object.values(mapGastos).reduce((s, v) => s + v, 0);
+    Object.entries(mapGastos)
+      .sort((a, b) => b[1] - a[1])
+      .forEach(([cat, total]) => rankingGastos.push({ categoria: cat, total, pct: totalGastos > 0 ? (total / totalGastos) * 100 : 0 }));
+
+    return { ticketMedio, diasComVenda, diasSemReceita, diasBatiuMeta, metaDiaria, projecaoMes, receitaMes, diasDecorridos, diasNoMes, rankingGastos };
+  }, [filteredTransactions, period, config.dailyGoal, config.transactions, now, anoAtual]);
+
   const entradas = filteredTransactions.filter(t => t.type === 'entrada').reduce((s, t) => s + t.value, 0);
   const saidasBusiness = filteredTransactions.filter(t => t.type === 'saida' && ['Reposição', 'Embalagem', 'Frete'].includes(t.category)).reduce((s, t) => s + t.value, 0);
   const personalTotal = filteredTransactions.filter(t => t.isPersonal).reduce((s, t) => s + t.value, 0);
@@ -75,6 +194,21 @@ const Relatorios = () => {
   }, [filteredTransactions]);
 
   const totalSaidas = categoryData.reduce((s, d) => s + d.value, 0);
+  const topProdutos = useMemo(() => {
+    const map = new Map<string, { total: number; qty: number }>();
+    filteredTransactions
+      .filter(t => t.type === 'entrada')
+      .forEach(t => {
+        const key = t.description.trim();
+        const prev = map.get(key) ?? { total: 0, qty: 0 };
+        map.set(key, { total: prev.total + t.value, qty: prev.qty + 1 });
+      });
+    return [...map.entries()]
+      .map(([name, v]) => ({ name, ...v }))
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 5);
+  }, [filteredTransactions]);
+
   const formatCurrency = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
   const exportToCSV = () => {
@@ -167,6 +301,54 @@ const Relatorios = () => {
         <Progress value={Math.min(margem, 100)} className="h-3" />
       </Card>
 
+{/*cards insights */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <Card className="p-4 border-none shadow-md">
+          <div className="flex items-center gap-2 mb-2">
+<Target className="w-4 h-4 text-primary" />
+<p className="text-xs text-muted-foreground">Ticket médio/dia</p>
+          </div>
+          <p className="text-xl font-bold font-heading text-primary">{formatCurrency(insights.ticketMedio)}</p>
+          <p className="text-xs text-muted-foreground mt-1">{insights.diasComVenda} dias com venda</p>
+        </Card>
+        <Card className="p-4 border-none shadow-md">
+          <div className="flex items-center gap-2 mb-2">
+            <Clock className="w-4 h-4 text-warning" />
+            <p className="text-xs text-muted-foreground">Dias sem receita</p>
+          </div>
+          <p className={`text-xl font-bold font-heading ${insights.diasSemReceita > 10 ? 'text-destructive' : insights.diasSemReceita > 5 ? 'text-warning' : 'text-secondary'}`}>
+            {insights.diasSemReceita}
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">no período selecionado</p>
+        </Card>
+        <Card className="p-4 border-none shadow-md">
+          <div className="flex items-center gap-2 mb-2">
+            <TrendingUp className="w-4 h-4 text-secondary" />
+            <p className="text-xs text-muted-foreground">Projeção do mês</p>
+          </div>
+          <p className="text-xl font-bold font-heading text-secondary">{formatCurrency(insights.projecaoMes)}</p>
+          <p className="text-xs text-muted-foreground mt-1">base: {insights.diasDecorridos}/{insights.diasNoMes} dias</p>
+        </Card>
+        {insights.metaDiaria > 0 ? (
+          <Card className="p-4 border-none shadow-md">
+            <div className="flex items-center gap-2 mb-2">
+              <BarChart2 className="w-4 h-4 text-primary" />
+              <p className="text-xs text-muted-foreground">Meta diária</p>
+            </div>
+            <p className="text-xl font-bold font-heading text-primary">{insights.diasBatiuMeta} dias</p>
+            <p className="text-xs text-muted-foreground mt-1">bateu {formatCurrency(insights.metaDiaria)}/dia</p>
+          </Card>
+        ) : (
+          <Card className="p-4 border-none shadow-md opacity-50">
+            <div className="flex items-center gap-2 mb-2">
+              <BarChart2 className="w-4 h-4 text-muted-foreground" />
+              <p className="text-xs text-muted-foreground">Meta diária</p>
+            </div>
+            <p className="text-sm text-muted-foreground">Configure em Painel</p>
+          </Card>
+        )}
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="p-6 border-none shadow-md">
           <h2 className="text-lg font-semibold font-heading mb-4">Distribuição de Gastos</h2>
@@ -184,12 +366,13 @@ const Relatorios = () => {
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              <div className="flex flex-wrap gap-3 mt-4">
-                {categoryData.map(d => (
-                  <div key={d.name} className="flex items-center gap-2 text-sm">
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: d.color }} />
-                    <span className="text-muted-foreground">{d.name}</span>
-                    <span className="font-semibold">{totalSaidas > 0 ? ((d.value / totalSaidas) * 100).toFixed(0) : 0}%</span>
+              <div className="space-y-2 mt-4">
+                {insights.rankingGastos.map(d => (
+                  <div key={d.categoria} className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: CATEGORY_COLORS[d.categoria] || CATEGORY_COLORS['Outros'] }} />
+                    <span className="text-xs text-muted-foreground flex-1">{d.categoria}</span>
+                    <span className="text-xs font-semibold">{formatCurrency(d.total)}</span>
+                    <span className="text-xs text-muted-foreground w-10 text-right">{d.pct.toFixed(0)}%</span>
                   </div>
                 ))}
               </div>
@@ -218,13 +401,35 @@ const Relatorios = () => {
         </Card>
       </div>
 
+{/*curva de saldo acumulado */}
       <Card className="p-6 border-none shadow-md">
-        <h2 className="text-lg font-semibold font-heading mb-4">Entradas vs Saídas - 3 Meses</h2>
+        <h2 className="text-lg font-semibold font-heading mb-4 flex items-center gap-2">
+          <TrendingUp className="w-5 h-5 text-primary" /> Curva de Caixa — 30 dias
+        </h2>
+        <div className="h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={saldoDiario}>
+              <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+              <XAxis dataKey="dia" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} tickLine={false} interval={4} />
+              <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} tickLine={false} tickFormatter={(v) => `R$${(v / 1000).toFixed(0)}k`} />
+              <Tooltip formatter={(value: number) => formatCurrency(value)} labelFormatter={(l) => `Dia ${l}`} contentStyle={{ borderRadius: '0.75rem', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', backgroundColor: 'hsl(var(--background))' }} />
+              <ReferenceLine y={0} stroke="hsl(var(--destructive))" strokeDasharray="4 4" />
+              <Line type="monotone" dataKey="saldo" stroke="hsl(142, 76%, 36%)" strokeWidth={2} dot={false} name="Saldo acumulado" />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+        <p className="text-xs text-muted-foreground mt-2">Linha vermelha tracejada = zero. Abaixo dela indica saldo negativo acumulado.</p>
+      </Card>
+
+      <Card className="p-6 border-none shadow-md">
+        <h2 className="text-lg font-semibold font-heading mb-4">
+          {period === '12m' ? 'Entradas vs Saídas — 12 Meses' : 'Entradas vs Saídas — 3 Meses'}
+        </h2>
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={last3MonthsData}>
+            <BarChart data={period === '12m' ? last12MonthsData : last3MonthsData}>
               <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-              <XAxis dataKey="name" tick={{ fill: 'hsl(var(--muted-foreground))' }} tickLine={false} />
+              <XAxis dataKey="name" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: period === '12m' ? 10 : 12 }} tickLine={false} />
               <YAxis tick={{ fill: 'hsl(var(--muted-foreground))' }} tickLine={false} tickFormatter={(v) => `R$ ${(v / 1000).toFixed(0)}k`} />
               <Tooltip formatter={(value: number) => formatCurrency(value)} contentStyle={{ borderRadius: '0.75rem', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', backgroundColor: 'hsl(var(--background))' }} />
               <Legend wrapperStyle={{ paddingTop: '20px' }} iconType="circle" />
@@ -234,6 +439,87 @@ const Relatorios = () => {
           </ResponsiveContainer>
         </div>
       </Card>
+
+      {/* Comparativo anual */}
+      <Card className="p-6 border-none shadow-md">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <h2 className="text-lg font-semibold font-heading flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-primary" /> Comparativo Anual
+          </h2>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Ano:</span>
+            <select
+              value={anoComparacao}
+              onChange={e => setAnoComparacao(Number(e.target.value))}
+              className="h-8 px-2 rounded-md border border-input bg-background text-sm"
+            >
+              {[anoAtual, anoAtual - 1, anoAtual - 2].map(a => (
+                <option key={a} value={a}>{a}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+{/*card resumo */}
+        <div className="grid grid-cols-3 gap-3 mb-5">
+          <div className="p-3 rounded-xl bg-muted/40 text-center">
+            <p className="text-xs text-muted-foreground mb-1">{totaisAnuais.anoAnt}</p>
+            <p className="text-lg font-bold font-heading">{formatCurrency(totaisAnuais.anterior)}</p>
+          </div>
+          <div className="p-3 rounded-xl bg-primary/5 text-center">
+            <p className="text-xs text-muted-foreground mb-1">Variação</p>
+            <p className={`text-lg font-bold font-heading ${totaisAnuais.diff >= 0 ? 'text-secondary' : 'text-destructive'}`}>
+              {totaisAnuais.diff >= 0 ? '+' : ''}{totaisAnuais.diff.toFixed(1)}%
+            </p>
+          </div>
+          <div className="p-3 rounded-xl bg-muted/40 text-center">
+            <p className="text-xs text-muted-foreground mb-1">{anoComparacao}</p>
+            <p className="text-lg font-bold font-heading">{formatCurrency(totaisAnuais.atual)}</p>
+          </div>
+        </div>
+
+        <div className="h-72">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={comparativoAnual}>
+              <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+              <XAxis dataKey="name" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} tickLine={false} />
+              <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} tickLine={false} tickFormatter={(v) => `R$${(v / 1000).toFixed(0)}k`} />
+              <Tooltip formatter={(value: number) => formatCurrency(value)} contentStyle={{ borderRadius: '0.75rem', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', backgroundColor: 'hsl(var(--background))' }} />
+              <Legend wrapperStyle={{ paddingTop: '20px' }} iconType="circle" />
+              <Bar dataKey={String(totaisAnuais.anoAnt)} fill="hsl(215, 16%, 47%)" radius={[6, 6, 0, 0]} maxBarSize={40} />
+              <Bar dataKey={String(anoComparacao)} fill="hsl(217, 91%, 60%)" radius={[6, 6, 0, 0]} maxBarSize={40} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </Card>
+
+      {topProdutos.length > 0 && (
+        <Card className="p-6 border-none shadow-md">
+          <h2 className="text-lg font-semibold font-heading mb-1 flex items-center gap-2">
+            <Target className="w-5 h-5 text-primary" /> Top Produtos por Receita
+          </h2>
+          <p className="text-xs text-muted-foreground mb-4">Baseado nas descrições dos lançamentos no período selecionado.</p>
+          <div className="space-y-3">
+            {topProdutos.map((p, i) => {
+              const maxVal = topProdutos[0].total;
+              const pct = (p.total / maxVal) * 100;
+              return (
+                <div key={p.name}>
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-muted-foreground w-4">{i + 1}.</span>
+                      <span className="text-sm font-medium truncate max-w-[200px]">{p.name}</span>
+                      <span className="text-xs text-muted-foreground">({p.qty}x)</span>
+                    </div>
+                    <span className="text-sm font-bold text-secondary">{formatCurrency(p.total)}</span>
+                  </div>
+                  <Progress value={pct} className="h-1.5" />
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+      )}
     </div>
   );
 };

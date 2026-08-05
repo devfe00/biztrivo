@@ -13,6 +13,7 @@ const LIMITE_MEI_ANUAL = 81000;
 const COMERCIO_INDUSTRIA = new Set([
   'vendas', 'venda', 'produtos', 'produto', 'mercadoria', 'comércio', 'comercio',
   'revenda', 'fabricação', 'fabricacao', 'indústria', 'industria',
+  'venda direta', 'venda online', 'loja',
 ]);
 const SERVICOS = new Set([
   'serviço', 'servico', 'serviços', 'servicos', 'consultoria', 'manutenção',
@@ -74,9 +75,18 @@ const MEI = () => {
     const acimaLimite = totalAno > LIMITE_MEI_ANUAL;
     const percentLimite = (totalAno / LIMITE_MEI_ANUAL) * 100;
 
+    const totalFuncionario = config.transactions
+      .filter(t => {
+        if (t.type !== 'saida') return false;
+        const d = new Date(t.date);
+        return t.category === 'Funcionário' && d >= start && d < end;
+      })
+      .reduce((s, t) => s + Number(t.value), 0);
+
     return {
       months, totalAno, totalComercio, totalServicos, totalDesconhecido,
       mesesSemReceita, acimaLimite, percentLimite, qtdTransacoes: entradas.length,
+      totalFuncionario,
     };
   }, [config.transactions, year]);
 
@@ -215,6 +225,19 @@ const MEI = () => {
           </p>
         </div>
       </Card>
+
+      {report.totalFuncionario > 0 && (
+        <Card className="p-4 border-none shadow-md border-l-4 border-l-primary bg-primary/5">
+          <div className="flex items-start gap-3">
+            <Info className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+            <p className="text-sm">
+              Detectamos <strong>{fmt(report.totalFuncionario)}</strong> em lançamentos de categoria "Funcionário" no ano.
+              O MEI pode ter no máximo <strong>1 funcionário</strong> com salário mínimo ou piso da categoria.
+              Se houver mais de um vínculo, é obrigatório migrar para ME.
+            </p>
+          </div>
+        </Card>
+      )}
 
       {report.acimaLimite && (
         <Card className="p-4 border-none shadow-md border-l-4 border-l-destructive bg-destructive/5">

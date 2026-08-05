@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { WifiOff, Wifi, Upload, Trash2, CheckCircle2, Plus } from 'lucide-react';
@@ -73,7 +73,7 @@ const Offline = () => {
     persist(queue.filter(s => s.id !== id));
   };
 
-  const sync = async () => {
+const sync = useCallback(async () => {
     if (!online) { toast.error('Sem conexão. Conecte-se à internet para sincronizar.'); return; }
     if (queue.length === 0) return;
     setSyncing(true);
@@ -98,7 +98,14 @@ const Offline = () => {
     setSyncing(false);
     if (ok > 0) toast.success(`${ok} venda(s) sincronizada(s)`);
     if (failed.length > 0) toast.error(`${failed.length} falharam, tente novamente`);
-  };
+  }, [online, queue, addTransaction, user]);
+
+  useEffect(() => {
+    if (online && queue.length > 0) {
+      toast.info('Conexão restaurada! Sincronizando vendas pendentes…');
+      sync();
+    }
+  }, [online]); 
 
   const total = queue.reduce((s, q) => s + q.value, 0);
   const fmt = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });

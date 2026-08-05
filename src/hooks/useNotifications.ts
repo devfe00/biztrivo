@@ -1,8 +1,9 @@
+import { useCallback } from "react";
 import { toast } from "sonner";
 
 export const useNotifications = () => {
   
-  const checkStockAlert = (productName: string, quantity: number) => {
+  const checkStockAlert = useCallback((productName: string, quantity: number) => {
     if (quantity <= 3 && quantity > 0) {
       toast.warning(`Estoque baixo: ${productName}`, {
         description: `Restam apenas ${quantity} unidades no seu estoque.`,
@@ -14,20 +15,20 @@ export const useNotifications = () => {
         duration: 5000,
       });
     }
-  };
+  }, []);
 
-  const notifySale = (amount: number) => {
+  const notifySale = useCallback((amount: number) => {
     toast.success("💰 Venda registrada!", {
       description: `Mais ${amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} para o seu caixa.`,
     });
-  };
+  }, []);
 
-  const notifyPersonalExpense = () => {
+  const notifyPersonalExpense = useCallback(() => {
     toast.info("Aviso de Gasto Pessoal", {
       description: "Lembre-se: retirar muito lucro da loja pode travar seu crescimento.",
       icon: "⚠️",
     });
-  };
+  }, []);
 
   return { checkStockAlert, notifySale, notifyPersonalExpense };
 };

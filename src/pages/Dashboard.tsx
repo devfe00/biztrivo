@@ -1,6 +1,6 @@
 import { useStore } from '@/contexts/StoreContext';
 import { Card } from '@/components/ui/card';
-import { TrendingUp, TrendingDown, Store, ExternalLink, Wallet, ShoppingBag, AlertTriangle, Trophy, Target } from 'lucide-react';
+import { TrendingUp, TrendingDown, Store, ExternalLink, Wallet, ShoppingBag, AlertTriangle, Trophy, Target, ShoppingCart, Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useMemo, useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
@@ -10,12 +10,13 @@ import { useT } from '@/lib/i18n';
 
 const Dashboard = () => {
   const t = useT();
-  const { config, updateConfig } = useStore();
+  const { config, updateConfig, addTransaction } = useStore();
 
   const [dailyGoal, setDailyGoal] = useState(config.dailyGoal);
   const [isEditingGoal, setIsEditingGoal] = useState(false);
   const [goalInput, setGoalInput] = useState('');
   const [goalReached, setGoalReached] = useState(false);
+  const [confirmedSaleId, setConfirmedSaleId] = useState<string | null>(null);
 
   useEffect(() => {
     setDailyGoal(config.dailyGoal);
@@ -208,6 +209,60 @@ const Dashboard = () => {
         </Card>
       </div>
 
+      {config.products.length > 0 && !config.vitrineOnlyMode && (
+        <Card className="p-6 border-none shadow-md">
+          <div className="flex items-center gap-3 mb-1">
+            <ShoppingCart className="w-5 h-5 text-primary" />
+            <h2 className="text-lg font-semibold font-heading">Confirmar venda recebida</h2>
+          </div>
+          <p className="text-sm text-muted-foreground mb-4">
+            Recebeu o pagamento pelo WhatsApp ou PIX? Toque no produto para lançar no Caixa.
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+            {config.products.filter(p => p.stock !== 0).map(p => {
+              const price = p.discountPrice > 0 ? p.discountPrice : p.originalPrice;
+              const isConfirmed = confirmedSaleId === p.id;
+              return (
+                <button
+                  key={p.id}
+                  disabled={isConfirmed}
+                  onClick={async () => {
+                    await addTransaction({
+                      type: 'entrada',
+                      value: price,
+                      description: p.name,
+                      category: 'Venda',
+                      isPersonal: false,
+                      date: new Date().toISOString(),
+                    });
+                    setConfirmedSaleId(p.id);
+                    setTimeout(() => setConfirmedSaleId(null), 2000);
+                  }}
+                  className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all text-left ${
+                    isConfirmed
+                      ? 'border-secondary bg-secondary/10'
+                      : 'border-border hover:border-primary/40 hover:bg-muted/50'
+                  }`}
+                >
+                  {p.photo
+                    ? <img src={p.photo} alt={p.name} className="w-10 h-10 object-cover rounded-lg" />
+                    : <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center"><ShoppingBag className="w-5 h-5 text-muted-foreground/40" /></div>
+                  }
+                  <div className="w-full">
+                    <p className="text-xs font-medium line-clamp-2 leading-tight">{p.name}</p>
+                    <p className="text-xs font-bold text-secondary mt-0.5">
+                      {isConfirmed
+                        ? <span className="flex items-center gap-1 text-secondary"><Check className="w-3 h-3" /> Lançado!</span>
+                        : `R$ ${price.toFixed(2).replace('.', ',')}`
+                      }
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </Card>
+      )}
       <CashflowForecast />
     </div>
   );

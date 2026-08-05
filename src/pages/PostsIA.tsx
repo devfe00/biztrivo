@@ -551,7 +551,9 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
                       : <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center"><ImageIcon className="w-6 h-6 text-muted-foreground/40" /></div>
                     }
                     <span className="text-xs font-medium text-center line-clamp-2 w-full">{p.name}</span>
-                    <span className="text-xs text-secondary font-semibold">R$ {p.discountPrice?.toFixed(2).replace('.', ',') ?? p.originalPrice.toFixed(2).replace('.', ',')}</span>
+                    {!config.vitrineOnlyMode && (
+                      <span className="text-xs text-secondary font-semibold">R$ {p.discountPrice?.toFixed(2).replace('.', ',') ?? p.originalPrice.toFixed(2).replace('.', ',')}</span>
+                    )}
                   </button>
                 ))}
               </div>

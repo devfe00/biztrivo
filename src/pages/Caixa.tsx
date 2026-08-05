@@ -9,13 +9,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { TrendingUp, TrendingDown, Trash2, Search, Wallet } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 
-const CATEGORY_KEYS = ['Venda', 'Reposição', 'Embalagem', 'Frete', 'Pessoal', 'Outros'] as const;
+const CATEGORY_KEYS = ['Venda', 'Reposição', 'Embalagem', 'Frete', 'Pessoal', 'Funcionário', 'Outros'] as const;
 const CAT_LABEL_KEY: Record<string, string> = {
   'Venda': 'ext.cx_cat_venda',
   'Reposição': 'ext.cx_cat_reposicao',
   'Embalagem': 'ext.cx_cat_embalagem',
   'Frete': 'ext.cx_cat_frete',
   'Pessoal': 'ext.cx_cat_pessoal',
+  'Funcionário': 'ext.cx_cat_funcionario',
   'Outros': 'ext.cx_cat_outros',
 };
 

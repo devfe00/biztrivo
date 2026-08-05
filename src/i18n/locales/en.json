@@ -111,8 +111,8 @@
     "income": "+ Income",
     "expense": "- Expense",
     "goal_set": "Set a goal for today!",
-    "set_goal_btn": "🎯 Set Goal",
-    "goal_reached": "🏆 Goal reached!",
+    "set_goal_btn": "Set Goal",
+    "goal_reached": "Goal reached!",
     "goal_missing": "{{amount}} remaining",
     "goal_label": "Goal: {{amount}}",
     "adjust_goal": "Adjust goal",
@@ -120,8 +120,8 @@
     "goal_placeholder": "e.g. 500.00",
     "goal_save": "Save",
     "alert_personal_high": "⚠️ Warning: Your personal withdrawals are high ({{percent}}% of income).",
-    "alert_positive": "💰 Great work! Positive balance of {{amount}} today.",
-    "alert_negative": "📉 Warning: Your expenses exceeded your income today."
+    "alert_positive": "Great work! Positive balance of {{amount}} today.",
+    "alert_negative": "Warning: Your expenses exceeded your income today."
   },
   "caixa": {
     "title": "Cash Register",
@@ -425,6 +425,7 @@
     "cx_cat_embalagem": "Packaging",
     "cx_cat_frete": "Shipping",
     "cx_cat_pessoal": "Personal",
+    "cx_cat_funcionario": "Employee",
     "cx_cat_outros": "Others",
     "vt_title": "My Storefront",
     "vt_subtitle": "Set up your professional catalog",

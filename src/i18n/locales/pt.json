@@ -111,8 +111,8 @@
     "income": "+ Entrada",
     "expense": "- Saída",
     "goal_set": "Defina uma meta para hoje!",
-    "set_goal_btn": "🎯 Definir Meta",
-    "goal_reached": "🏆 Meta batida!",
+    "set_goal_btn": "Definir Meta",
+    "goal_reached": "Meta batida!",
     "goal_missing": "Faltam {{amount}}",
     "goal_label": "Meta: {{amount}}",
     "adjust_goal": "Ajustar meta",
@@ -120,8 +120,8 @@
     "goal_placeholder": "Ex: 500,00",
     "goal_save": "Salvar",
     "alert_personal_high": "⚠️ Atenção: Suas retiradas pessoais estão altas ({{percent}}% das entradas).",
-    "alert_positive": "💰 Ótimo trabalho! Saldo positivo de {{amount}} hoje.",
-    "alert_negative": "📉 Atenção: Suas saídas superaram as entradas hoje."
+    "alert_positive": "Ótimo trabalho! Saldo positivo de {{amount}} hoje.",
+    "alert_negative": "Atenção: Suas saídas superaram as entradas hoje."
   },
   "caixa": {
     "title": "Caixa",
@@ -425,6 +425,7 @@
     "cx_cat_embalagem": "Embalagem",
     "cx_cat_frete": "Frete",
     "cx_cat_pessoal": "Pessoal",
+    "cx_cat_funcionario": "Funcionário",
     "cx_cat_outros": "Outros",
     "vt_title": "Minha Vitrine",
     "vt_subtitle": "Configure seu catálogo profissional",

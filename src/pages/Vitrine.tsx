@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, Trash2, ExternalLink, Copy, Check, Image as ImageIcon, AlertCircle, Download, Rocket, Share2, Pencil, Instagram, FileText, CheckCircle2, Camera } from 'lucide-react';
+import { Plus, Trash2, ExternalLink, Copy, Check, Image as ImageIcon, AlertCircle, Download, Rocket, Share2, Pencil, Instagram, FileText, CheckCircle2, Camera, ShoppingCart } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { QRCodeCanvas } from 'qrcode.react';
@@ -16,15 +16,19 @@ import InstagramPostGenerator from '@/components/InstagramPostGenerator';
 import InvoiceComparator from '@/components/InvoiceComparator';
 import { useT } from '@/lib/i18n';
 
+const shownAlertsRef = new Set<string>();
+
 const Vitrine = () => {
   const t = useT();
-  const { config, updateConfig, addProduct, removeProduct, updateProduct } = useStore();
+  const { config, updateConfig, addProduct, removeProduct, updateProduct, addTransaction } = useStore();
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [igProduct, setIgProduct] = useState<Product | null>(null);
   const [invoiceOpen, setInvoiceOpen] = useState(false);
   const { checkStockAlert } = useNotifications();
-  const [showForm, setShowForm] = useState(false);
-  const [copied, setCopied] = useState(false);
+const [showForm, setShowForm] = useState(false);
+const [copied, setCopied] = useState(false);
+const [registeringSaleFor, setRegisteringSaleFor] = useState<string | null>(null);
+const [saleQty, setSaleQty] = useState('1');
   const qrRef = useRef<HTMLDivElement>(null);
 
   const slug = config.slug || config.storeName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -48,16 +52,20 @@ const Vitrine = () => {
   const [description, setDescription] = useState('');
   const [stock, setStock] = useState('');
 
-  useEffect(() => {
-    if (config.vitrineOnlyMode) return;
+useEffect(() => {
+    if (config.vitrineOnlyMode) {
+      shownAlertsRef.clear();
+      return;
+    }
     config.products.forEach(product => {
-      const hasShown = sessionStorage.getItem(`stock-alert-${product.id}`);
-      if (!hasShown) {
+      if (product.stock === 0) return;
+      const alertKey = `${product.id}-${product.stock}`;
+      if (!shownAlertsRef.has(alertKey)) {
+        shownAlertsRef.add(alertKey);
         checkStockAlert(product.name, product.stock);
-        if (product.stock <= 3) sessionStorage.setItem(`stock-alert-${product.id}`, 'true');
       }
     });
-  }, [config.products, config.vitrineOnlyMode, checkStockAlert]);
+  }, [config.products, config.vitrineOnlyMode]);
 
   const handleAddProduct = async () => {
   if (!name.trim() || (!config.vitrineOnlyMode && !originalPrice)) return;
@@ -300,11 +308,24 @@ const Vitrine = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {config.products.map(p => (
               <Card key={p.id} className="border-none shadow-md overflow-hidden relative">
-                {p.stock === 0 && !config.vitrineOnlyMode && (
-                  <div className="absolute top-2 right-2 z-10 px-2 py-1 rounded-md bg-destructive text-destructive-foreground text-xs font-semibold flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" /> {t('ext.vt_out_of_stock')}
-                  </div>
-                )}
+{p.stock === 0 && !config.vitrineOnlyMode && (
+  <div className="absolute top-2 right-2 z-10 px-2 py-1 rounded-md bg-destructive text-destructive-foreground text-xs font-semibold flex items-center gap-1">
+    <AlertCircle className="w-3 h-3" /> {t('ext.vt_out_of_stock')}
+  </div>
+)}
+{p.stock > 0 && p.stock <= 3 && !config.vitrineOnlyMode && (
+  <div className="absolute top-2 right-2 z-10 flex flex-col items-end gap-1">
+    <span className="px-2 py-1 rounded-md bg-warning text-warning-foreground text-xs font-semibold">
+      ⚡ {p.stock} restante{p.stock > 1 ? 's' : ''}
+    </span>
+    <button
+      onClick={() => setIgProduct(p)}
+      className="px-2 py-1 rounded-md bg-pink-500 text-white text-xs font-semibold flex items-center gap-1 shadow"
+    >
+      <Instagram className="w-3 h-3" /> Post urgência
+    </button>
+  </div>
+)}
                 {p.photo ? (
                   <div className="aspect-square bg-muted"><img src={p.photo} alt={p.name} className="w-full h-full object-cover" /></div>
                 ) : (
@@ -328,17 +349,72 @@ const Vitrine = () => {
                   {!config.vitrineOnlyMode && (
                     <p className="text-xs text-muted-foreground mt-1">{t('ext.vt_stock', { n: p.stock ?? 0 })}</p>
                   )}
-                  <div className="mt-3 flex items-center gap-3">
-                    <button onClick={() => setEditingProduct({ ...p })} className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1 transition-colors">
-                      <Pencil className="w-3 h-3" /> {t('ext.vt_edit')}
-                    </button>
-                    <button onClick={() => setIgProduct(p)} className="text-xs text-muted-foreground hover:text-pink-500 flex items-center gap-1 transition-colors">
-                      <Instagram className="w-3 h-3" /> {t('ext.vt_ig_post')}
-                    </button>
-                    <button onClick={() => removeProduct(p.id)} className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-1 transition-colors">
-                      <Trash2 className="w-3 h-3" /> {t('ext.vt_remove')}
-                    </button>
-                  </div>
+<div className="mt-3 flex items-center gap-3 flex-wrap">
+  <button onClick={() => setEditingProduct({ ...p })} className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1 transition-colors">
+    <Pencil className="w-3 h-3" /> {t('ext.vt_edit')}
+  </button>
+  <button onClick={() => setIgProduct(p)} className="text-xs text-muted-foreground hover:text-pink-500 flex items-center gap-1 transition-colors">
+    <Instagram className="w-3 h-3" /> {t('ext.vt_ig_post')}
+  </button>
+{!config.vitrineOnlyMode && p.stock > 0 && (
+<button
+onClick={() => { setRegisteringSaleFor(p.id); setSaleQty('1'); }}
+className="text-xs text-muted-foreground hover:text-secondary flex items-center gap-1 transition-colors"
+>
+<ShoppingCart className="w-3 h-3" /> Registrar venda
+</button>
+)}
+  <button onClick={() => removeProduct(p.id)} className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-1 transition-colors">
+    <Trash2 className="w-3 h-3" /> {t('ext.vt_remove')}
+  </button>
+</div>
+
+{registeringSaleFor === p.id && !config.vitrineOnlyMode && (
+<div className="mt-3 p-3 rounded-lg bg-secondary/5 border border-secondary/20 space-y-2">
+    <p className="text-xs font-medium text-secondary">Registrar venda de "{p.name}"</p>
+    <div className="flex items-center gap-2">
+      <input
+        type="number"
+        min="1"
+        value={saleQty}
+        onChange={e => setSaleQty(e.target.value)}
+        className="w-16 h-8 px-2 rounded-md border border-input bg-background text-sm text-center"
+        placeholder="Qtd"
+      />
+      <span className="text-xs text-muted-foreground">×</span>
+      <span className="text-xs font-semibold text-secondary">
+        R$ {((p.discountPrice > 0 ? p.discountPrice : p.originalPrice) * (parseInt(saleQty) || 1)).toFixed(2).replace('.', ',')}
+      </span>
+    </div>
+    <div className="flex gap-2">
+      <button
+        onClick={async () => {
+          const qty = Math.max(1, parseInt(saleQty) || 1);
+          const unitPrice = p.discountPrice > 0 ? p.discountPrice : p.originalPrice;
+          await addTransaction({
+            type: 'entrada',
+            value: unitPrice * qty,
+            description: qty > 1 ? `${p.name} (${qty}x)` : p.name,
+            category: 'Venda',
+            isPersonal: false,
+            date: new Date().toISOString(),
+          });
+          toast.success(`Venda de "${p.name}" registrada no Caixa!`);
+          setRegisteringSaleFor(null);
+        }}
+        className="flex-1 py-1.5 rounded-lg bg-secondary text-secondary-foreground text-xs font-medium hover:opacity-90"
+      >
+        Confirmar
+      </button>
+      <button
+        onClick={() => setRegisteringSaleFor(null)}
+        className="px-3 py-1.5 rounded-lg bg-muted text-muted-foreground text-xs font-medium hover:bg-accent"
+      >
+        Cancelar
+      </button>
+    </div>
+  </div>
+)}
                 </div>
               </Card>
             ))}

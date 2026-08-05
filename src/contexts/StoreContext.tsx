@@ -84,6 +84,7 @@ export interface StoreConfig {
   profileImage: string;
   dailyGoal: number;
   slug: string;
+  pixKey: string;
   isMei: boolean;
   cnpj: string;
   paisBase: 'BR' | 'outros';
@@ -114,6 +115,7 @@ const defaultConfig: StoreConfig = {
   profileImage: '',
   dailyGoal: 0,
   slug: '',
+  pixKey: '',
   isMei: false,
   cnpj: '',
   paisBase: navigator.language?.startsWith('pt-BR') ? 'BR' : 'outros',
@@ -189,6 +191,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
         vitrineOnlyMode: profile?.vitrineOnlyMode ?? false,
         profileImage: profile?.profileImage ?? '',
         slug: profile?.slug ?? '',
+        pixKey: profile?.pixKey ?? '',
         // dados privados
         vitrineClicks: Number(priv?.vitrineClicks) || 0,
         dailyGoal: Number(priv?.dailyGoal) || 0,
@@ -231,6 +234,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
     if (partial.whatsapp !== undefined) publicUpdate.whatsapp = partial.whatsapp;
     if (partial.vitrineActive !== undefined) publicUpdate.vitrineActive = partial.vitrineActive;
     if (partial.vitrineOnlyMode !== undefined) publicUpdate.vitrineOnlyMode = partial.vitrineOnlyMode;
+    if (partial.pixKey !== undefined) publicUpdate.pixKey = partial.pixKey;
     if (partial.profileImage !== undefined) {
       profileImageUrl = await uploadImageIfNeeded(partial.profileImage, `profiles/${user.uid}/profile.jpg`);
       publicUpdate.profileImage = profileImageUrl;

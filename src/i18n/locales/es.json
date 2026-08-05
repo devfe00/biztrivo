@@ -111,8 +111,8 @@
     "income": "+ Ingreso",
     "expense": "- Gasto",
     "goal_set": "¡Define una meta para hoy!",
-    "set_goal_btn": "🎯 Definir Meta",
-    "goal_reached": "🏆 ¡Meta alcanzada!",
+    "set_goal_btn": "Definir Meta",
+    "goal_reached": "¡Meta alcanzada!",
     "goal_missing": "Faltan {{amount}}",
     "goal_label": "Meta: {{amount}}",
     "adjust_goal": "Ajustar meta",
@@ -120,8 +120,8 @@
     "goal_placeholder": "Ej: 500,00",
     "goal_save": "Guardar",
     "alert_personal_high": "⚠️ Atención: Tus retiros personales son altos ({{percent}}% de los ingresos).",
-    "alert_positive": "💰 ¡Buen trabajo! Saldo positivo de {{amount}} hoy.",
-    "alert_negative": "📉 Atención: Tus gastos superaron tus ingresos hoy."
+    "alert_positive": "¡Buen trabajo! Saldo positivo de {{amount}} hoy.",
+    "alert_negative": "Atención: Tus gastos superaron tus ingresos hoy."
   },
   "caixa": {
     "title": "Caja",
@@ -425,6 +425,7 @@
     "cx_cat_embalagem": "Embalaje",
     "cx_cat_frete": "Envío",
     "cx_cat_pessoal": "Personal",
+    "cx_cat_funcionario": "Empleado",
     "cx_cat_outros": "Otros",
     "vt_title": "Mi Escaparate",
     "vt_subtitle": "Configura tu catálogo profesional",

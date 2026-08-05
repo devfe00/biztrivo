@@ -18,6 +18,7 @@ interface StoreData {
   logo: string;
   primaryColor: string;
   whatsapp: string;
+  pixKey?: string;
   vitrineOnlyMode: boolean;
   products: StoreProduct[];
 }
@@ -147,21 +148,24 @@ const [viewingProduct, setViewingProduct] = useState<StoreProduct | null>(null);
     return () => { document.title = 'Biztrivo'; };
   }, [store]);
 
-  const handleBuy = useCallback((productId: string, productName: string, price: number, stock: number) => {
-    if (!store?.whatsapp || stock === 0) return;
-    setBuyingProductId(productId);
-    setTimeout(() => {
-      const phone = store.whatsapp.replace(/\D/g, '');
-      if (!/^\d{10,13}$/.test(phone)) return;
-      const priceStr = price.toFixed(2).replace('.', ',');
-      const orderCode = generateOrderCode();
-      const message = encodeURIComponent(
-        `Olá! Vi o *${productName}* por *R$ ${priceStr}* na vitrine e quero garantir o meu!\n\nCódigo do pedido: ${orderCode}`
-      );
-      window.open(`https://wa.me/55${phone}?text=${message}`, '_blank');
-      setTimeout(() => setBuyingProductId(null), 1500);
-    }, 800);
-  }, [store]);
+const handleBuy = useCallback((productId: string, productName: string, price: number, stock: number) => {
+  if (!store?.whatsapp || stock === 0) return;
+  setBuyingProductId(productId);
+  setTimeout(() => {
+    const phone = store.whatsapp.replace(/\D/g, '');
+    if (!/^\d{10,13}$/.test(phone)) return;
+    const priceStr = price.toFixed(2).replace('.', ',');
+    const orderCode = generateOrderCode();
+    const pixLine = store.pixKey
+      ? `\n\n💳 *Chave PIX:* ${store.pixKey}`
+      : '';
+    const message = encodeURIComponent(
+      `Olá! Vi o *${productName}* por *R$ ${priceStr}* na vitrine e quero garantir o meu!\n\nCódigo do pedido: ${orderCode}${pixLine}\n\n_Confirme o recebimento do pagamento para liberar o pedido._ ✅`
+    );
+    window.open(`https://wa.me/55${phone}?text=${message}`, '_blank');
+    setTimeout(() => setBuyingProductId(null), 1500);
+  }, 800);
+}, [store]);
 
   const handleWhatsAppContact = () => {
     if (!store?.whatsapp) return;
