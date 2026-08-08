@@ -393,7 +393,7 @@ const translations = {
       badge: 'ONE PLAN',
       planName: 'Biztrivo Pro',
       planDesc: 'Full access to everything',
-      price: '$ 5.00',
+      price: '$ 8.90',
       period: '/month',
       items: [
         'Daily Cash Register',
@@ -586,7 +586,7 @@ const translations = {
       badge: 'ÚNICO PLAN',
       planName: 'Biztrivo Pro',
       planDesc: 'Acceso completo a todo',
-      price: '$ 5.00',
+      price: '$ 8.90',
       period: '/mes',
       items: [
         'Caja Diaria',
@@ -780,7 +780,7 @@ const translations = {
       badge: 'PLAN UNIQUE',
       planName: 'Biztrivo Pro',
       planDesc: 'Accès complet à tout',
-     price: '$ 5.00',
+     price: '$ 8.90',
       period: '/mois',
       items: [
         'Caisse Journalière',

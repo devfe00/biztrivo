@@ -29,8 +29,8 @@ const AuthCallback = () => {
        const isBrazil = navigator.language?.startsWith('pt-BR') ||
   Intl.DateTimeFormat().resolvedOptions().timeZone === 'America/Sao_Paulo';
 const paymentLink = isBrazil
-  ? 'https://buy.stripe.com/00w5kEbOLdj35OmfwpgEg00'
-  : 'https://buy.stripe.com/5kQ8wQcSPa6Ra4CfwpgEg01';
+? 'https://buy.stripe.com/dRm9AT25ccwKejpdkp00002'
+: 'https://buy.stripe.com/cNi5kD11854idfldkp00003'
 window.location.href = `${paymentLink}?prefilled_email=${encodeURIComponent(email)}`;
       }
     });
