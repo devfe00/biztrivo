@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { FUNCTIONS, callFunction } from '@/integrations/firebase/firebase';
+import { useT } from '@/lib/i18n';
 
 interface PostRecord {
   id: string;
@@ -105,6 +106,7 @@ const saveBio = (b: string) => localStorage.setItem(BIO_KEY, b);
 
 export default function PostsIA() {
   const { config } = useStore();
+  const t = useT();
 
   // Tab
   const [activeTab, setActiveTab] = useState<Tab>('gerar');
@@ -221,11 +223,11 @@ export default function PostsIA() {
   })();
 
   const generate = async () => {
-    if (!selectedProduct) { toast.error('Selecione um produto primeiro.'); return; }
+    if (!selectedProduct) { toast.error(t('posts_ia.toast.select_product')); return; }
     const last = Number(localStorage.getItem(RATE_KEY) || 0);
     if (Date.now() - last < RATE_LIMIT_MS) {
       const wait = Math.ceil((RATE_LIMIT_MS - (Date.now() - last)) / 1000);
-      toast.error(`Aguarde ${wait}s antes de gerar outro post.`);
+      toast.error(t('posts_ia.toast.wait_seconds', { seconds: wait }));
       return;
     }
     setLoading(true);
@@ -242,7 +244,7 @@ export default function PostsIA() {
         whatsapp: config.whatsapp,
         tone,
       });
-      if (!data?.imageUrl) throw new Error(data?.error || 'Falha ao gerar imagem');
+      if (!data?.imageUrl) throw new Error(data?.error || t('posts_ia.toast.gen_error_image'));
       const record: PostRecord = {
         id: crypto.randomUUID(),
         productName: selectedProduct.name,
@@ -257,10 +259,10 @@ export default function PostsIA() {
       setHistory(updated);
       saveHistory(updated);
       localStorage.setItem(RATE_KEY, String(Date.now()));
-      toast.success('Post gerado e salvo no histórico!');
+      toast.success(t('posts_ia.toast.post_generated'));
       setActiveTab('historico');
     } catch (e: any) {
-      toast.error(e?.message || 'Erro ao gerar post. Tente novamente.');
+      toast.error(e?.message || t('posts_ia.toast.gen_error'));
     } finally {
       setLoading(false);
     }
@@ -273,42 +275,42 @@ export default function PostsIA() {
   const deleteRecord = (id: string) => {
     const updated = history.filter(r => r.id !== id);
     setHistory(updated); saveHistory(updated);
-    toast.success('Post removido do histórico.');
+    toast.success(t('posts_ia.toast.post_removed'));
   };
   const downloadImage = (record: PostRecord) => {
     const a = document.createElement('a');
     a.href = record.imageUrl;
     a.download = `${record.productName.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-instagram.png`;
     a.click();
-    toast.success('Imagem baixada!');
+    toast.success(t('posts_ia.toast.image_downloaded'));
   };
   const copyCaption = async (record: PostRecord) => {
     const text = `${record.caption}\n\n${record.hashtags.join(' ')}`;
     await navigator.clipboard.writeText(text);
     setCopiedId(record.id);
-    toast.success('Legenda copiada!');
+    toast.success(t('posts_ia.toast.caption_copied'));
     setTimeout(() => setCopiedId(null), 2000);
   };
 
   const saveStats = (id: string) => {
     const reach = parseInt(statsInput.reach);
     const likes = parseInt(statsInput.likes);
-    if (isNaN(reach) || isNaN(likes)) { toast.error('Digite números válidos.'); return; }
+    if (isNaN(reach) || isNaN(likes)) { toast.error(t('posts_ia.toast.invalid_numbers')); return; }
     const updated = history.map(r => r.id === id ? { ...r, reach, likes } : r);
     setHistory(updated); saveHistory(updated);
     setEditingStats(null);
-    toast.success('Métricas salvas!');
+    toast.success(t('posts_ia.toast.stats_saved'));
   };
 
   const copyTemplate = async (id: string) => {
     await navigator.clipboard.writeText(templateTexts[id]);
     setCopiedId(id);
-    toast.success('Template copiado!');
+    toast.success(t('posts_ia.toast.template_copied'));
     setTimeout(() => setCopiedId(null), 2000);
   };
 
   const gerarPlano = async () => {
-    if (config.products.length === 0) { toast.error('Cadastre produtos na Vitrine primeiro.'); return; }
+    if (config.products.length === 0) { toast.error(t('posts_ia.toast.register_products_first')); return; }
     setGerandoPlano(true);
     try {
       const nomes = config.products.map(p => p.name).join(', ');
@@ -324,17 +326,17 @@ Varie os tipos de conteúdo e tons ao longo do mês. Distribua os produtos de fo
       setPlano(parsed);
       savePlano(parsed);
       setPlanoChecked({});
-      toast.success('Plano mensal gerado!');
+      toast.success(t('posts_ia.toast.plan_generated'));
     } catch (e: any) {
       if (e?.message?.includes('Limite')) updateUsage(100, true);
-      toast.error(e?.message || 'Erro ao gerar plano. Tente novamente.');
+      toast.error(e?.message || t('posts_ia.toast.plan_error'));
     } finally {
       setGerandoPlano(false);
     }
   };
 
   const gerarHashtags = async () => {
-    if (config.products.length === 0) { toast.error('Cadastre produtos primeiro.'); return; }
+    if (config.products.length === 0) { toast.error(t('posts_ia.toast.register_products')); return; }
     setGerandoHashtags(true);
     try {
       const nomes = config.products.map(p => p.name).join(', ');
@@ -349,10 +351,10 @@ Todas em português, sem o símbolo #.`;
       const parsed: HashtagSet = JSON.parse(clean);
       setHashtags(parsed);
       saveHashtags(parsed);
-      toast.success('Sets de hashtags gerados!');
+      toast.success(t('posts_ia.toast.hashtags_generated'));
     } catch (e: any) {
       if (e?.message?.includes('Limite')) updateUsage(100, true);
-      toast.error(e?.message || 'Erro ao gerar hashtags. Tente novamente.');
+      toast.error(e?.message || t('posts_ia.toast.hashtags_error'));
     } finally {
       setGerandoHashtags(false);
     }
@@ -362,12 +364,12 @@ Todas em português, sem o símbolo #.`;
     const text = set.map(h => `#${h}`).join(' ');
     await navigator.clipboard.writeText(text);
     setCopiedHashSet(key);
-    toast.success('Hashtags copiadas!');
+    toast.success(t('posts_ia.toast.hashtags_copied'));
     setTimeout(() => setCopiedHashSet(null), 2000);
   };
 
   const gerarBio = async () => {
-    if (!config.storeName) { toast.error('Configure o nome da loja primeiro.'); return; }
+    if (!config.storeName) { toast.error(t('posts_ia.toast.configure_store_name')); return; }
     setGerandoBio(true);
     try {
       const nomes = config.products.slice(0, 5).map(p => p.name).join(', ');
@@ -381,10 +383,10 @@ Responda APENAS com o texto da bio, sem aspas, sem explicações.`;
       const bioTexto = result.trim();
       setBio(bioTexto);
       saveBio(bioTexto);
-      toast.success('Bio gerada!');
+      toast.success(t('posts_ia.toast.bio_generated'));
     } catch (e: any) {
       if (e?.message?.includes('Limite')) updateUsage(100, true);
-      toast.error(e?.message || 'Erro ao gerar bio. Tente novamente.');
+      toast.error(e?.message || t('posts_ia.toast.bio_error'));
     } finally {
       setGerandoBio(false);
     }
@@ -393,12 +395,12 @@ Responda APENAS com o texto da bio, sem aspas, sem explicações.`;
   const copyBio = async () => {
     await navigator.clipboard.writeText(bio);
     setBioCopiado(true);
-    toast.success('Bio copiada!');
+    toast.success(t('posts_ia.toast.bio_copied'));
     setTimeout(() => setBioCopiado(false), 2000);
   };
 
   const reescreverLegenda = async () => {
-    if (!textoOriginal.trim()) { toast.error('Cole um texto para reescrever.'); return; }
+    if (!textoOriginal.trim()) { toast.error(t('posts_ia.toast.paste_text')); return; }
     setReescrevendo(true);
     setLegendaReescrita('');
     try {
@@ -415,7 +417,7 @@ ${textoOriginal}`;
       setLegendaReescrita(result.trim());
     } catch (e: any) {
       if (e?.message?.includes('Limite')) updateUsage(100, true);
-      toast.error(e?.message || 'Erro ao reescrever. Tente novamente.');
+      toast.error(e?.message || t('posts_ia.toast.rewrite_error'));
     } finally {
       setReescrevendo(false);
     }
@@ -424,7 +426,7 @@ ${textoOriginal}`;
   const copyRewrite = async () => {
     await navigator.clipboard.writeText(legendaReescrita);
     setCopiedRewrite(true);
-    toast.success('Legenda copiada!');
+    toast.success(t('posts_ia.toast.caption_copied'));
     setTimeout(() => setCopiedRewrite(false), 2000);
   };
 
@@ -432,7 +434,7 @@ ${textoOriginal}`;
 
   const gerarStories = async () => {
     const product = config.products.find(p => p.id === selectedProductStories);
-    if (!product) { toast.error('Selecione um produto.'); return; }
+    if (!product) { toast.error(t('posts_ia.toast.select_product_short')); return; }
     setGerandoStories(true);
     setStories(null);
     try {
@@ -451,10 +453,10 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
       const clean = raw.replace(/```json|```/g, '').trim();
       const parsed = JSON.parse(clean);
       setStories(parsed);
-      toast.success('Sequência de Stories gerada!');
+      toast.success(t('posts_ia.toast.stories_generated'));
     } catch (e: any) {
       if (e?.message?.includes('Limite')) updateUsage(100, true);
-      toast.error(e?.message || 'Erro ao gerar Stories. Tente novamente.');
+      toast.error(e?.message || t('posts_ia.toast.stories_error'));
     } finally {
       setGerandoStories(false);
     }
@@ -463,7 +465,7 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
   const copyStory = async (texto: string, idx: number) => {
     await navigator.clipboard.writeText(texto);
     setCopiedStory(idx);
-    toast.success('Texto copiado!');
+    toast.success(t('posts_ia.toast.text_copied'));
     setTimeout(() => setCopiedStory(null), 2000);
   };
 
