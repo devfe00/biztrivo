@@ -5,6 +5,7 @@ import { Progress } from '@/components/ui/progress';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
 import { TrendingUp, Wallet, Download, ArrowUpRight, ArrowDownRight, AlertTriangle, CheckCircle2, Calendar, BarChart2, Target, Clock } from 'lucide-react';
 import { LineChart, Line, ReferenceLine } from 'recharts';
+import { useT } from '@/lib/i18n';
 
 const CATEGORY_COLORS: Record<string, string> = {
   'Reposição': 'hsl(217, 91%, 60%)',
@@ -15,21 +16,22 @@ const CATEGORY_COLORS: Record<string, string> = {
   'Outros': 'hsl(215, 16%, 47%)',
 };
 
-const periods = [
-  { label: 'Hoje', value: 'today' },
-  { label: '7 dias', value: '7d' },
-  { label: '30 dias', value: '30d' },
-  { label: '12 meses', value: '12m' },
-] as const;
-
 type Period = 'today' | '7d' | '30d' | '12m';
 
 const MESES_PT = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
 const Relatorios = () => {
+  const t = useT();
   const { config } = useStore();
   const [period, setPeriod] = useState<Period>('30d');
   const [anoComparacao, setAnoComparacao] = useState<number>(new Date().getFullYear());
+
+  const periods: { label: string; value: Period }[] = [
+    { label: t('relatorios.period_today'), value: 'today' },
+    { label: t('relatorios.period_7d'), value: '7d' },
+    { label: t('relatorios.period_30d'), value: '30d' },
+    { label: t('relatorios.period_12m'), value: '12m' },
+  ];
 
   const now = new Date();
   const anoAtual = now.getFullYear();
@@ -193,7 +195,6 @@ const Relatorios = () => {
     return Object.entries(map).map(([name, value]) => ({ name, value, color: CATEGORY_COLORS[name] || CATEGORY_COLORS['Outros'] }));
   }, [filteredTransactions]);
 
-  const totalSaidas = categoryData.reduce((s, d) => s + d.value, 0);
   const topProdutos = useMemo(() => {
     const map = new Map<string, { total: number; qty: number }>();
     filteredTransactions
@@ -212,27 +213,28 @@ const Relatorios = () => {
   const formatCurrency = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
   const exportToCSV = () => {
-    if (filteredTransactions.length === 0) { alert('Sem transações.'); return; }
-    const rows = filteredTransactions.map(t => [new Date(t.date).toLocaleDateString('pt-BR'), t.type === 'entrada' ? 'Entrada' : 'Saída', t.category, t.description, t.value.toFixed(2).replace('.', ','), t.isPersonal ? 'Sim' : 'Não']);
-    const csv = ['Data;Tipo;Categoria;Descrição;Valor;Pessoal', ...rows.map(r => r.join(';'))].join('\n');
+    if (filteredTransactions.length === 0) { alert(t('relatorios.alert_no_transactions')); return; }
+    const rows = filteredTransactions.map(tx => [new Date(tx.date).toLocaleDateString('pt-BR'), tx.type === 'entrada' ? t('relatorios.csv_type_income') : t('relatorios.csv_type_expense'), tx.category, tx.description, tx.value.toFixed(2).replace('.', ','), tx.isPersonal ? t('relatorios.csv_yes') : t('relatorios.csv_no')]);
+    const header = [t('relatorios.csv_col_date'), t('relatorios.csv_col_type'), t('relatorios.csv_col_category'), t('relatorios.csv_col_description'), t('relatorios.csv_col_value'), t('relatorios.csv_col_personal')].join(';');
+    const csv = [header, ...rows.map(r => r.join(';'))].join('\n');
     const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `relatorio_${period}_${new Date().toISOString().split('T')[0]}.csv`;
+    link.download = t('relatorios.csv_filename', { period, date: new Date().toISOString().split('T')[0] });
     link.click();
   };
 
   const exportToPDF = () => {
-    if (filteredTransactions.length === 0) { alert('Sem transações.'); return; }
-    const periodLabel = period === 'today' ? 'Hoje' : period === '7d' ? '7 dias' : '30 dias';
-    const totalE = filteredTransactions.filter(t => t.type === 'entrada').reduce((s, t) => s + t.value, 0);
-    const totalS = filteredTransactions.filter(t => t.type === 'saida').reduce((s, t) => s + t.value, 0);
+    if (filteredTransactions.length === 0) { alert(t('relatorios.alert_no_transactions')); return; }
+    const periodLabel = period === 'today' ? t('relatorios.period_today') : period === '7d' ? t('relatorios.period_7d') : t('relatorios.period_30d');
+    const totalE = filteredTransactions.filter(tx => tx.type === 'entrada').reduce((s, tx) => s + tx.value, 0);
+    const totalS = filteredTransactions.filter(tx => tx.type === 'saida').reduce((s, tx) => s + tx.value, 0);
     let rows = '';
-    filteredTransactions.forEach(t => {
-      const color = t.type === 'entrada' ? '#22c55e' : t.isPersonal ? '#f59e0b' : '#ef4444';
-      rows += `<tr><td style="padding:8px;border-bottom:1px solid #e5e7eb;">${new Date(t.date).toLocaleDateString('pt-BR')}</td><td style="padding:8px;border-bottom:1px solid #e5e7eb;color:${color};font-weight:600;">${t.type === 'entrada' ? 'Entrada' : 'Saída'}</td><td style="padding:8px;border-bottom:1px solid #e5e7eb;">${t.category}</td><td style="padding:8px;border-bottom:1px solid #e5e7eb;">${t.description}</td><td style="padding:8px;border-bottom:1px solid #e5e7eb;text-align:right;color:${color};">${formatCurrency(t.value)}</td></tr>`;
+    filteredTransactions.forEach(tx => {
+      const color = tx.type === 'entrada' ? '#22c55e' : tx.isPersonal ? '#f59e0b' : '#ef4444';
+      rows += `<tr><td style="padding:8px;border-bottom:1px solid #e5e7eb;">${new Date(tx.date).toLocaleDateString('pt-BR')}</td><td style="padding:8px;border-bottom:1px solid #e5e7eb;color:${color};font-weight:600;">${tx.type === 'entrada' ? t('relatorios.pdf_type_income') : t('relatorios.pdf_type_expense')}</td><td style="padding:8px;border-bottom:1px solid #e5e7eb;">${tx.category}</td><td style="padding:8px;border-bottom:1px solid #e5e7eb;">${tx.description}</td><td style="padding:8px;border-bottom:1px solid #e5e7eb;text-align:right;color:${color};">${formatCurrency(tx.value)}</td></tr>`;
     });
-    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Relatório</title><style>body{font-family:system-ui;padding:40px;color:#1a1a2e;}table{width:100%;border-collapse:collapse;}th{text-align:left;padding:10px 8px;border-bottom:2px solid #3b82f6;color:#64748b;font-size:13px;}.footer{margin-top:40px;text-align:center;color:#94a3b8;font-size:12px;}</style></head><body><h1>Relatório — ${periodLabel}</h1><p>Entradas: ${formatCurrency(totalE)} | Saídas: ${formatCurrency(totalS)} | Saldo: ${formatCurrency(totalE - totalS)} | Margem: ${margem.toFixed(1)}%</p><table><thead><tr><th>Data</th><th>Tipo</th><th>Categoria</th><th>Descrição</th><th style="text-align:right;">Valor</th></tr></thead><tbody>${rows}</tbody></table><div class="footer">Biztrivo</div></body></html>`;
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${t('relatorios.pdf_filename_title')}</title><style>body{font-family:system-ui;padding:40px;color:#1a1a2e;}table{width:100%;border-collapse:collapse;}th{text-align:left;padding:10px 8px;border-bottom:2px solid #3b82f6;color:#64748b;font-size:13px;}.footer{margin-top:40px;text-align:center;color:#94a3b8;font-size:12px;}</style></head><body><h1>${t('relatorios.pdf_title', { period: periodLabel })}</h1><p>${t('relatorios.pdf_summary', { income: formatCurrency(totalE), expense: formatCurrency(totalS), balance: formatCurrency(totalE - totalS), margin: margem.toFixed(1) })}</p><table><thead><tr><th>${t('relatorios.pdf_col_date')}</th><th>${t('relatorios.pdf_col_type')}</th><th>${t('relatorios.pdf_col_category')}</th><th>${t('relatorios.pdf_col_description')}</th><th style="text-align:right;">${t('relatorios.pdf_col_value')}</th></tr></thead><tbody>${rows}</tbody></table><div class="footer">Biztrivo</div></body></html>`;
     const w = window.open('', '_blank');
     if (w) { w.document.write(html); w.document.close(); w.onload = () => w.print(); }
   };
@@ -241,15 +243,15 @@ const Relatorios = () => {
     <div className="space-y-8">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold font-heading">Relatórios</h1>
-          <p className="text-muted-foreground mt-1">Análise financeira do seu negócio</p>
+          <h1 className="text-3xl font-bold font-heading">{t('relatorios.title')}</h1>
+          <p className="text-muted-foreground mt-1">{t('relatorios.subtitle')}</p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           <button onClick={exportToPDF} className="flex items-center gap-2 px-4 py-2 rounded-lg gradient-primary text-primary-foreground hover:opacity-90 transition-all font-medium shadow-glow">
-            <Download className="w-4 h-4" /> PDF
+            <Download className="w-4 h-4" /> {t('relatorios.pdf')}
           </button>
           <button onClick={exportToCSV} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-all font-medium shadow-sm">
-            <Download className="w-4 h-4" /> CSV
+            <Download className="w-4 h-4" /> {t('relatorios.csv')}
           </button>
           <div className="flex gap-1 bg-muted rounded-lg p-1">
             {periods.map(p => (
@@ -269,15 +271,17 @@ const Relatorios = () => {
               {performanceSummary.isPositive ? <ArrowUpRight className="w-5 h-5 text-secondary" /> : <ArrowDownRight className="w-5 h-5 text-destructive" />}
             </div>
             <div className="flex-1">
-              <p className="text-sm font-medium text-muted-foreground">Performance do Mês</p>
+              <p className="text-sm font-medium text-muted-foreground">{t('relatorios.performance_month_title')}</p>
               <p className="text-lg font-semibold font-heading">
                 <span className={performanceSummary.isPositive ? 'text-secondary' : 'text-destructive'}>
-                  Faturamento {Math.abs(performanceSummary.percentChange).toFixed(1)}% {performanceSummary.isPositive ? 'maior' : 'menor'} que o mês passado
+                  {performanceSummary.isPositive
+                    ? t('relatorios.performance_higher', { pct: Math.abs(performanceSummary.percentChange).toFixed(1) })
+                    : t('relatorios.performance_lower', { pct: Math.abs(performanceSummary.percentChange).toFixed(1) })}
                 </span>
               </p>
             </div>
             <div className="text-right">
-              <p className="text-xs text-muted-foreground">Este mês</p>
+              <p className="text-xs text-muted-foreground">{t('relatorios.this_month')}</p>
               <p className="text-lg font-bold">{formatCurrency(performanceSummary.currentRevenue)}</p>
             </div>
           </div>
@@ -290,13 +294,13 @@ const Relatorios = () => {
             <TrendingUp className="w-5 h-5 text-primary-foreground" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold font-heading">Margem de Lucro Real</h2>
-            <p className="text-xs text-muted-foreground">Exclui gastos pessoais do cálculo</p>
+            <h2 className="text-lg font-semibold font-heading">{t('relatorios.margin_title')}</h2>
+            <p className="text-xs text-muted-foreground">{t('relatorios.margin_subtitle')}</p>
           </div>
         </div>
         <div className="flex items-end gap-4 mb-4">
           <p className={`text-4xl font-bold font-heading ${margem >= 50 ? 'text-secondary' : margem >= 20 ? 'text-warning' : 'text-destructive'}`}>{margem.toFixed(1)}%</p>
-          <p className="text-sm text-muted-foreground pb-1">{formatCurrency(entradas)} entradas — {formatCurrency(saidasBusiness)} custos</p>
+          <p className="text-sm text-muted-foreground pb-1">{t('relatorios.margin_summary', { income: formatCurrency(entradas), expense: formatCurrency(saidasBusiness) })}</p>
         </div>
         <Progress value={Math.min(margem, 100)} className="h-3" />
       </Card>
@@ -306,54 +310,54 @@ const Relatorios = () => {
         <Card className="p-4 border-none shadow-md">
           <div className="flex items-center gap-2 mb-2">
 <Target className="w-4 h-4 text-primary" />
-<p className="text-xs text-muted-foreground">Ticket médio/dia</p>
+<p className="text-xs text-muted-foreground">{t('relatorios.ticket_medio')}</p>
           </div>
           <p className="text-xl font-bold font-heading text-primary">{formatCurrency(insights.ticketMedio)}</p>
-          <p className="text-xs text-muted-foreground mt-1">{insights.diasComVenda} dias com venda</p>
+          <p className="text-xs text-muted-foreground mt-1">{t('relatorios.days_with_sale', { count: insights.diasComVenda })}</p>
         </Card>
         <Card className="p-4 border-none shadow-md">
           <div className="flex items-center gap-2 mb-2">
             <Clock className="w-4 h-4 text-warning" />
-            <p className="text-xs text-muted-foreground">Dias sem receita</p>
+            <p className="text-xs text-muted-foreground">{t('relatorios.days_without_revenue')}</p>
           </div>
           <p className={`text-xl font-bold font-heading ${insights.diasSemReceita > 10 ? 'text-destructive' : insights.diasSemReceita > 5 ? 'text-warning' : 'text-secondary'}`}>
             {insights.diasSemReceita}
           </p>
-          <p className="text-xs text-muted-foreground mt-1">no período selecionado</p>
+          <p className="text-xs text-muted-foreground mt-1">{t('relatorios.in_selected_period')}</p>
         </Card>
         <Card className="p-4 border-none shadow-md">
           <div className="flex items-center gap-2 mb-2">
             <TrendingUp className="w-4 h-4 text-secondary" />
-            <p className="text-xs text-muted-foreground">Projeção do mês</p>
+            <p className="text-xs text-muted-foreground">{t('relatorios.month_projection')}</p>
           </div>
           <p className="text-xl font-bold font-heading text-secondary">{formatCurrency(insights.projecaoMes)}</p>
-          <p className="text-xs text-muted-foreground mt-1">base: {insights.diasDecorridos}/{insights.diasNoMes} dias</p>
+          <p className="text-xs text-muted-foreground mt-1">{t('relatorios.base_days', { elapsed: insights.diasDecorridos, total: insights.diasNoMes })}</p>
         </Card>
         {insights.metaDiaria > 0 ? (
           <Card className="p-4 border-none shadow-md">
             <div className="flex items-center gap-2 mb-2">
               <BarChart2 className="w-4 h-4 text-primary" />
-              <p className="text-xs text-muted-foreground">Meta diária</p>
+              <p className="text-xs text-muted-foreground">{t('relatorios.daily_goal')}</p>
             </div>
-            <p className="text-xl font-bold font-heading text-primary">{insights.diasBatiuMeta} dias</p>
-            <p className="text-xs text-muted-foreground mt-1">bateu {formatCurrency(insights.metaDiaria)}/dia</p>
+            <p className="text-xl font-bold font-heading text-primary">{t('relatorios.days_count', { count: insights.diasBatiuMeta })}</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('relatorios.hit_goal_value', { value: formatCurrency(insights.metaDiaria) })}</p>
           </Card>
         ) : (
           <Card className="p-4 border-none shadow-md opacity-50">
             <div className="flex items-center gap-2 mb-2">
               <BarChart2 className="w-4 h-4 text-muted-foreground" />
-              <p className="text-xs text-muted-foreground">Meta diária</p>
+              <p className="text-xs text-muted-foreground">{t('relatorios.daily_goal')}</p>
             </div>
-            <p className="text-sm text-muted-foreground">Configure em Painel</p>
+            <p className="text-sm text-muted-foreground">{t('relatorios.configure_in_panel')}</p>
           </Card>
         )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="p-6 border-none shadow-md">
-          <h2 className="text-lg font-semibold font-heading mb-4">Distribuição de Gastos</h2>
+          <h2 className="text-lg font-semibold font-heading mb-4">{t('relatorios.expense_distribution')}</h2>
           {categoryData.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">Sem saídas no período</p>
+            <p className="text-sm text-muted-foreground text-center py-8">{t('relatorios.no_expenses_period')}</p>
           ) : (
             <>
               <div className="h-64">
@@ -385,18 +389,18 @@ const Relatorios = () => {
             <div className="w-10 h-10 rounded-xl bg-warning/10 flex items-center justify-center">
               <Wallet className="w-5 h-5 text-warning" />
             </div>
-            <h2 className="text-lg font-semibold font-heading">Monitor de Sangria</h2>
+            <h2 className="text-lg font-semibold font-heading">{t('relatorios.bleed_monitor')}</h2>
           </div>
           <p className="text-4xl font-bold font-heading text-warning mb-2">{formatCurrency(personalTotal)}</p>
-          <p className="text-sm text-muted-foreground mb-4">retirado para uso pessoal</p>
+          <p className="text-sm text-muted-foreground mb-4">{t('relatorios.withdrawn_personal')}</p>
           {personalPercent > 30 && (
             <div className="flex items-start gap-3 p-4 rounded-xl bg-warning/10 border border-warning/20">
               <AlertTriangle className="w-5 h-5 text-warning shrink-0 mt-0.5" />
-              <p className="text-sm font-medium text-warning">Cuidado, suas retiradas representam {personalPercent.toFixed(0)}% das entradas.</p>
+              <p className="text-sm font-medium text-warning">{t('relatorios.warning_withdrawals', { pct: personalPercent.toFixed(0) })}</p>
             </div>
           )}
           {personalPercent <= 30 && personalTotal > 0 && (
-            <p className="text-sm text-muted-foreground flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-green-500" /> Retiradas em {personalPercent.toFixed(0)}% — saudável.</p>
+            <p className="text-sm text-muted-foreground flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-green-500" /> {t('relatorios.healthy_withdrawals', { pct: personalPercent.toFixed(0) })}</p>
           )}
         </Card>
       </div>
@@ -404,7 +408,7 @@ const Relatorios = () => {
 {/*curva de saldo acumulado */}
       <Card className="p-6 border-none shadow-md">
         <h2 className="text-lg font-semibold font-heading mb-4 flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-primary" /> Curva de Caixa — 30 dias
+          <TrendingUp className="w-5 h-5 text-primary" /> {t('relatorios.cash_curve_title')}
         </h2>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
@@ -412,18 +416,18 @@ const Relatorios = () => {
               <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
               <XAxis dataKey="dia" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} tickLine={false} interval={4} />
               <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} tickLine={false} tickFormatter={(v) => `R$${(v / 1000).toFixed(0)}k`} />
-              <Tooltip formatter={(value: number) => formatCurrency(value)} labelFormatter={(l) => `Dia ${l}`} contentStyle={{ borderRadius: '0.75rem', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', backgroundColor: 'hsl(var(--background))' }} />
+              <Tooltip formatter={(value: number) => formatCurrency(value)} labelFormatter={(l) => t('relatorios.day_label', { day: l })} contentStyle={{ borderRadius: '0.75rem', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', backgroundColor: 'hsl(var(--background))' }} />
               <ReferenceLine y={0} stroke="hsl(var(--destructive))" strokeDasharray="4 4" />
-              <Line type="monotone" dataKey="saldo" stroke="hsl(142, 76%, 36%)" strokeWidth={2} dot={false} name="Saldo acumulado" />
+              <Line type="monotone" dataKey="saldo" stroke="hsl(142, 76%, 36%)" strokeWidth={2} dot={false} name={t('relatorios.balance_accumulated')} />
             </LineChart>
           </ResponsiveContainer>
         </div>
-        <p className="text-xs text-muted-foreground mt-2">Linha vermelha tracejada = zero. Abaixo dela indica saldo negativo acumulado.</p>
+        <p className="text-xs text-muted-foreground mt-2">{t('relatorios.cash_curve_note')}</p>
       </Card>
 
       <Card className="p-6 border-none shadow-md">
         <h2 className="text-lg font-semibold font-heading mb-4">
-          {period === '12m' ? 'Entradas vs Saídas — 12 Meses' : 'Entradas vs Saídas — 3 Meses'}
+          {period === '12m' ? t('relatorios.income_vs_expense_12m') : t('relatorios.income_vs_expense_3m')}
         </h2>
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
@@ -433,8 +437,8 @@ const Relatorios = () => {
               <YAxis tick={{ fill: 'hsl(var(--muted-foreground))' }} tickLine={false} tickFormatter={(v) => `R$ ${(v / 1000).toFixed(0)}k`} />
               <Tooltip formatter={(value: number) => formatCurrency(value)} contentStyle={{ borderRadius: '0.75rem', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', backgroundColor: 'hsl(var(--background))' }} />
               <Legend wrapperStyle={{ paddingTop: '20px' }} iconType="circle" />
-              <Bar dataKey="Entradas" fill="hsl(142, 76%, 36%)" radius={[8, 8, 0, 0]} maxBarSize={60} />
-              <Bar dataKey="Saídas" fill="hsl(0, 84%, 60%)" radius={[8, 8, 0, 0]} maxBarSize={60} />
+              <Bar dataKey="Entradas" name={t('relatorios.income_label')} fill="hsl(142, 76%, 36%)" radius={[8, 8, 0, 0]} maxBarSize={60} />
+              <Bar dataKey="Saídas" name={t('relatorios.expense_label')} fill="hsl(0, 84%, 60%)" radius={[8, 8, 0, 0]} maxBarSize={60} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -444,10 +448,10 @@ const Relatorios = () => {
       <Card className="p-6 border-none shadow-md">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
           <h2 className="text-lg font-semibold font-heading flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-primary" /> Comparativo Anual
+            <Calendar className="w-5 h-5 text-primary" /> {t('relatorios.annual_comparison')}
           </h2>
           <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Ano:</span>
+            <span className="text-sm text-muted-foreground">{t('relatorios.year_label')}</span>
             <select
               value={anoComparacao}
               onChange={e => setAnoComparacao(Number(e.target.value))}
@@ -467,7 +471,7 @@ const Relatorios = () => {
             <p className="text-lg font-bold font-heading">{formatCurrency(totaisAnuais.anterior)}</p>
           </div>
           <div className="p-3 rounded-xl bg-primary/5 text-center">
-            <p className="text-xs text-muted-foreground mb-1">Variação</p>
+            <p className="text-xs text-muted-foreground mb-1">{t('relatorios.variation')}</p>
             <p className={`text-lg font-bold font-heading ${totaisAnuais.diff >= 0 ? 'text-secondary' : 'text-destructive'}`}>
               {totaisAnuais.diff >= 0 ? '+' : ''}{totaisAnuais.diff.toFixed(1)}%
             </p>
@@ -496,9 +500,9 @@ const Relatorios = () => {
       {topProdutos.length > 0 && (
         <Card className="p-6 border-none shadow-md">
           <h2 className="text-lg font-semibold font-heading mb-1 flex items-center gap-2">
-            <Target className="w-5 h-5 text-primary" /> Top Produtos por Receita
+            <Target className="w-5 h-5 text-primary" /> {t('relatorios.top_products')}
           </h2>
-          <p className="text-xs text-muted-foreground mb-4">Baseado nas descrições dos lançamentos no período selecionado.</p>
+          <p className="text-xs text-muted-foreground mb-4">{t('relatorios.top_products_subtitle')}</p>
           <div className="space-y-3">
             {topProdutos.map((p, i) => {
               const maxVal = topProdutos[0].total;
