@@ -470,11 +470,11 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
   };
 
   const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
-    { id: 'gerar', label: 'Gerar Post', icon: <Sparkles className="w-3.5 h-3.5" /> },
-    { id: 'historico', label: history.length ? `Histórico (${history.length})` : 'Histórico', icon: <Clock className="w-3.5 h-3.5" /> },
-    { id: 'templates', label: 'Templates', icon: <PenLine className="w-3.5 h-3.5" /> },
-    { id: 'plano', label: 'Plano Mensal', icon: <Calendar className="w-3.5 h-3.5" /> },
-    { id: 'ferramentas', label: 'Ferramentas IA', icon: <Sparkles className="w-3.5 h-3.5" /> },
+    { id: 'gerar', label: t('posts_ia.tabs.generate'), icon: <Sparkles className="w-3.5 h-3.5" /> },
+    { id: 'historico', label: history.length ? t('posts_ia.tabs.history_count', { count: history.length }) : t('posts_ia.tabs.history'), icon: <Clock className="w-3.5 h-3.5" /> },
+    { id: 'templates', label: t('posts_ia.tabs.templates'), icon: <PenLine className="w-3.5 h-3.5" /> },
+    { id: 'plano', label: t('posts_ia.tabs.plan'), icon: <Calendar className="w-3.5 h-3.5" /> },
+    { id: 'ferramentas', label: t('posts_ia.tabs.tools'), icon: <Sparkles className="w-3.5 h-3.5" /> },
   ];
 
   return (
@@ -484,16 +484,16 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
       <div>
         <h1 className="text-3xl font-bold font-heading flex items-center gap-2">
           <Instagram className="w-7 h-7 text-pink-500" />
-          Posts IA
+          {t('posts_ia.title')}
         </h1>
-        <p className="text-muted-foreground mt-1">Crie, planeje e publique posts para o seu Instagram</p>
+        <p className="text-muted-foreground mt-1">{t('posts_ia.subtitle')}</p>
       </div>
 
       {/* Aviso localStorage */}
       <div className="flex items-start gap-3 rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-4 py-3 text-sm text-yellow-700 dark:text-yellow-300">
         <Info className="w-4 h-4 mt-0.5 shrink-0" />
         <span>
-          Histórico e plano salvos <strong>apenas neste navegador</strong>. Em breve serão sincronizados na nuvem para acesso em qualquer dispositivo.
+          {t('posts_ia.storage_notice', { b1: (c: string) => <strong>{c}</strong> })}
         </span>
       </div>
       {dicaSmartMsg && (
@@ -521,12 +521,12 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
 
       {isBlocked && (
         <div className="flex items-center gap-3 rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-          🚫 Limite de IA atingido. Disponível novamente às {new Date(aiUsage.resetAt!).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}.
+          {t('posts_ia.limit_reached', { time: new Date(aiUsage.resetAt!).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) })}
         </div>
       )}
       {!isBlocked && aiUsage.percent >= 90 && (
         <div className="flex items-center gap-3 rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-4 py-3 text-sm text-yellow-700 dark:text-yellow-300">
-          ⚠️ {aiUsage.percent}% dos créditos de IA usados. Recarregam em até 5h.
+          {t('posts_ia.credits_warning', { percent: aiUsage.percent })}
         </div>
       )}
 
