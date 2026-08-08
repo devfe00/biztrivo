@@ -5,6 +5,7 @@ import { WifiOff, Wifi, Upload, Trash2, CheckCircle2, Plus } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext';
 import { useStore } from '@/contexts/StoreContext';
 import { toast } from 'sonner';
+import { useT } from '@/lib/i18n';
 
 interface OfflineSale {
   id: string;
@@ -17,6 +18,7 @@ interface OfflineSale {
 const queueKey = (uid: string) => `biztrivo:offline_queue:${uid}`;
 
 const Offline = () => {
+  const t = useT();
   const { user } = useAuth();
   const { addTransaction, config } = useStore();
   const [online, setOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
@@ -54,7 +56,7 @@ const Offline = () => {
     e.preventDefault();
     const v = parseFloat(value.replace(',', '.'));
     if (!product.trim() || !v || v <= 0) {
-      toast.error('Preencha produto e valor válido');
+      toast.error(t('offline.fill_valid_fields'));
       return;
     }
     const sale: OfflineSale = {
@@ -66,7 +68,7 @@ const Offline = () => {
     };
     persist([sale, ...queue]);
     setProduct(''); setValue('');
-    toast.success('Venda salva offline');
+    toast.success(t('offline.sale_saved'));
   };
 
   const removeSale = (id: string) => {
@@ -74,7 +76,7 @@ const Offline = () => {
   };
 
 const sync = useCallback(async () => {
-    if (!online) { toast.error('Sem conexão. Conecte-se à internet para sincronizar.'); return; }
+    if (!online) { toast.error(t('offline.no_connection')); return; }
     if (queue.length === 0) return;
     setSyncing(true);
     const failed: OfflineSale[] = [];
@@ -96,13 +98,13 @@ const sync = useCallback(async () => {
     }
     persist(failed);
     setSyncing(false);
-    if (ok > 0) toast.success(`${ok} venda(s) sincronizada(s)`);
-    if (failed.length > 0) toast.error(`${failed.length} falharam, tente novamente`);
+    if (ok > 0) toast.success(t('offline.sales_synced', { count: ok }));
+    if (failed.length > 0) toast.error(t('offline.sync_failed', { count: failed.length }));
   }, [online, queue, addTransaction, user]);
 
   useEffect(() => {
     if (online && queue.length > 0) {
-      toast.info('Conexão restaurada! Sincronizando vendas pendentes…');
+      toast.info(t('offline.connection_restored'));
       sync();
     }
   }, [online]); 
@@ -113,41 +115,41 @@ const sync = useCallback(async () => {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold font-heading">Offline</h1>
-        <p className="text-muted-foreground mt-1">Registre vendas sem internet e sincronize depois.</p>
+        <h1 className="text-3xl font-bold font-heading">{t('offline.page_title')}</h1>
+        <p className="text-muted-foreground mt-1">{t('offline.page_subtitle')}</p>
       </div>
 
       <Card className={`p-4 border-none shadow-md border-l-4 ${online ? 'border-l-secondary bg-secondary/5' : 'border-l-warning bg-warning/5'}`}>
         <div className="flex items-center gap-3">
           {online ? <Wifi className="w-5 h-5 text-secondary" /> : <WifiOff className="w-5 h-5 text-warning" />}
           <div className="flex-1">
-            <p className="text-sm font-medium">{online ? 'Você está online' : 'Você está offline'}</p>
+            <p className="text-sm font-medium">{online ? t('offline.online_status') : t('offline.offline_status')}</p>
             <p className="text-xs text-muted-foreground">
               {online
-                ? 'Pode sincronizar suas vendas pendentes a qualquer momento.'
-                : 'Suas vendas serão salvas neste aparelho e sincronizadas quando voltar a conexão.'}
+                ? t('offline.online_hint')
+                : t('offline.offline_hint')}
             </p>
           </div>
         </div>
       </Card>
 
       <Card className="p-6 border-none shadow-md">
-        <h2 className="text-lg font-semibold font-heading mb-4 flex items-center gap-2"><Plus className="w-5 h-5 text-primary" /> Registrar venda offline</h2>
+        <h2 className="text-lg font-semibold font-heading mb-4 flex items-center gap-2"><Plus className="w-5 h-5 text-primary" /> {t('offline.register_sale_title')}</h2>
         <form onSubmit={addSale} className="space-y-3">
-          <Input list="prod-list" placeholder="Produto vendido" value={product} onChange={e => setProduct(e.target.value)} />
+          <Input list="prod-list" placeholder={t('offline.product_placeholder')} value={product} onChange={e => setProduct(e.target.value)} />
           <datalist id="prod-list">
             {config.products.map(p => <option key={p.id} value={p.name} />)}
           </datalist>
-          <Input type="text" inputMode="decimal" placeholder="Valor (R$)" value={value} onChange={e => setValue(e.target.value)} />
+          <Input type="text" inputMode="decimal" placeholder={t('offline.value_placeholder')} value={value} onChange={e => setValue(e.target.value)} />
           <select value={payment} onChange={e => setPayment(e.target.value)} className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm">
-            <option>Dinheiro</option>
-            <option>PIX</option>
-            <option>Cartão Débito</option>
-            <option>Cartão Crédito</option>
-            <option>Outro</option>
+            <option value="Dinheiro">{t('offline.payment_cash')}</option>
+            <option value="PIX">{t('offline.payment_pix')}</option>
+            <option value="Cartão Débito">{t('offline.payment_debit')}</option>
+            <option value="Cartão Crédito">{t('offline.payment_credit')}</option>
+            <option value="Outro">{t('offline.payment_other')}</option>
           </select>
           <button type="submit" className="w-full py-2.5 rounded-lg gradient-primary text-primary-foreground font-medium text-sm shadow-glow">
-            Salvar venda
+            {t('offline.save_sale')}
           </button>
         </form>
       </Card>
@@ -155,8 +157,8 @@ const sync = useCallback(async () => {
       <Card className="p-6 border-none shadow-md">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-lg font-semibold font-heading">Pendentes</h2>
-            <p className="text-xs text-muted-foreground">{queue.length} venda(s) • Total {fmt(total)}</p>
+            <h2 className="text-lg font-semibold font-heading">{t('offline.pending_title')}</h2>
+            <p className="text-xs text-muted-foreground">{t('offline.pending_summary', { count: queue.length, total: fmt(total) })}</p>
           </div>
           <button
             onClick={sync}
@@ -164,14 +166,14 @@ const sync = useCallback(async () => {
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium disabled:opacity-40 hover:opacity-90"
           >
             <Upload className={`w-4 h-4 ${syncing ? 'animate-pulse' : ''}`} />
-            Sincronizar
+            {t('offline.sync_button')}
           </button>
         </div>
 
         {queue.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <CheckCircle2 className="w-10 h-10 mx-auto mb-2 text-secondary/60" />
-            <p className="text-sm">Nenhuma venda pendente</p>
+            <p className="text-sm">{t('offline.no_pending')}</p>
           </div>
         ) : (
           <div className="space-y-2">

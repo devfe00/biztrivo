@@ -1,137 +1,53 @@
 import { Card } from '@/components/ui/card';
 import { BookOpen, Download } from 'lucide-react';
+import { useT, useI18n } from '@/lib/i18n';
 
-// --- LISTA EM PORTUGUÊS ---
-const resourcesPT = [
-  {
-    title: 'Como Precificar seus Produtos',
-    desc: 'Checklist completo para não errar no preço',
-    file: '/guides/guia1_precificacao.html',
-  },
-  {
-    title: 'Guia de Fotos para Catálogo',
-    desc: 'Tire fotos profissionais com o celular',
-    file: '/guides/guia2_fotos_catalogo.html',
-  },
-  {
-    title: 'Planilha de Controle de Estoque',
-    desc: 'Template pronto para usar',
-    file: '/guides/guia3_controle_estoque.html',
-  },
-  {
-    title: 'Script de Vendas no WhatsApp',
-    desc: 'Mensagens prontas que convertem',
-    file: '/guides/guia4_script_whatsapp.html',
-  },
-  {
-    title: 'Como Criar Promoções Inteligentes',
-    desc: 'Estratégias para aumentar suas vendas',
-    file: '/guides/guia5_promocoes_inteligentes.html',
-  },
-  {
-    title: 'Como Fidelizar Clientes e Gerar Recompra',
-    desc: 'Faça o cliente comprar de novo sempre',
-    file: '/guides/guia6_fidelizar_clientes.html',
-  },
-  {
-    title: 'Como Definir seu Público-Alvo',
-    desc: 'Pare de vender pra todo mundo',
-    file: '/guides/guia7_publico_alvo.html',
-  },
-  {
-    title: 'Como Atender Reclamações',
-    desc: 'Reverta clientes insatisfeitos e fidelize',
-    file: '/guides/guia8_reclamacoes.html',
-  },
-  {
-    title: 'Guia do Modo Contador',
-    desc: 'DRE automática, Score Financeiro e impostos',
-    file: '/guides/guia9_modo_contador.html',
-  },
-  {
-    title: 'Guia MEI Inteligente',
-    desc: 'Controle de limite anual, DAS e desenquadramento',
-    file: '/guides/guia10_mei.html',
-  },
-  {
-    title: 'Guia PostsAI para Instagram',
-    desc: 'Gere posts profissionais com IA em segundos',
-    file: '/guides/guia11_posts_ia.html',
-  },
-];
-
-// --- LISTA EM INGLÊS ---
-const resourcesEN = [
-  {
-    title: 'How to Price Your Products',
-    desc: 'Complete checklist to set the right price',
-    file: '/guides/en_guide1_pricing.html',
-  },
-  {
-    title: 'Catalog Photo Guide',
-    desc: 'Take professional photos using your phone',
-    file: '/guides/en_guide2_photos.html',
-  },
-  {
-    title: 'Inventory Control Spreadsheet',
-    desc: 'Ready to use template',
-    file: '/guides/en_guide3_inventory.html',
-  },
-  {
-    title: 'WhatsApp Sales Script',
-    desc: 'Ready to use messages that convert',
-    file: '/guides/en_guide4_sales_script.html',
-  },
-  {
-    title: 'How to Create Smart Promotions',
-    desc: 'Strategies to increase your sales',
-    file: '/guides/en_guide5_promotions.html',
-  },
-  {
-    title: 'Customer Loyalty and Retention',
-    desc: 'Get customers to keep coming back',
-    file: '/guides/en_guide6_retention.html',
-  },
-  {
-    title: 'How to Define Your Target Audience',
-    desc: 'Stop trying to sell to everyone',
-    file: '/guides/en_guide7_target_audience.html',
-  },
-  {
-    title: 'Handling Customer Complaints',
-    desc: 'Turn unhappy customers into loyal fans',
-    file: '/guides/en_guide8_complaints.html',
-  },
-  {
-    title: 'Accountant Mode Guide',
-    desc: 'Automatic P&L, Financial Score and taxes',
-    file: '/guides/en_guide9_accountant.html',
-  },
-  {
-    title: 'Smart MEI Guide',
-    desc: 'Annual limit control, DAS and risk alerts',
-    file: '/guides/en_guide10_mei.html',
-  },
-  {
-    title: 'PostsAI for Instagram Guide',
-    desc: 'Generate professional posts with AI in seconds',
-    file: '/guides/en_guide11_posts_ai.html',
-  },
-];
+const guideFiles = {
+  pt: [
+    '/guides/guia1_precificacao.html',
+    '/guides/guia2_fotos_catalogo.html',
+    '/guides/guia3_controle_estoque.html',
+    '/guides/guia4_script_whatsapp.html',
+    '/guides/guia5_promocoes_inteligentes.html',
+    '/guides/guia6_fidelizar_clientes.html',
+    '/guides/guia7_publico_alvo.html',
+    '/guides/guia8_reclamacoes.html',
+    '/guides/guia9_modo_contador.html',
+    '/guides/guia10_mei.html',
+    '/guides/guia11_posts_ia.html',
+  ],
+  en: [
+    '/guides/en_guide1_pricing.html',
+    '/guides/en_guide2_photos.html',
+    '/guides/en_guide3_inventory.html',
+    '/guides/en_guide4_sales_script.html',
+    '/guides/en_guide5_promotions.html',
+    '/guides/en_guide6_retention.html',
+    '/guides/en_guide7_target_audience.html',
+    '/guides/en_guide8_complaints.html',
+    '/guides/en_guide9_accountant.html',
+    '/guides/en_guide10_mei.html',
+    '/guides/en_guide11_posts_ai.html',
+  ],
+};
 
 const Academy = () => {
-  const isBrazilian = navigator.language === 'pt-BR' || navigator.languages.includes('pt-BR');
-  
-  const resources = isBrazilian ? resourcesPT : resourcesEN;
-  const title = isBrazilian ? "Academy" : "Academy"; 
-  const subtitle = isBrazilian ? "Aprenda a vender mais e melhor" : "Learn how to sell more and better";
-  const downloadText = isBrazilian ? "Baixar" : "Download";
+  const t = useT();
+  const { lang } = useI18n();
+
+  const files = lang === 'pt' ? guideFiles.pt : guideFiles.en;
+
+  const resources = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((n, i) => ({
+    title: t(`academy.resource${n}_title`),
+    desc: t(`academy.resource${n}_desc`),
+    file: files[i],
+  }));
 
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold font-heading">{title}</h1>
-        <p className="text-muted-foreground mt-1">{subtitle}</p>
+        <h1 className="text-3xl font-bold font-heading">{t('academy_shared.title')}</h1>
+        <p className="text-muted-foreground mt-1">{t('academy.subtitle')}</p>
       </div>
 
       <div className="space-y-3">
@@ -151,7 +67,7 @@ const Academy = () => {
               download
               className="px-4 py-2 rounded-lg bg-secondary/10 text-secondary text-sm font-medium flex items-center gap-2 hover:bg-secondary/20 transition-colors"
             >
-              <Download className="w-4 h-4" /> {downloadText}
+              <Download className="w-4 h-4" /> {t('academy.download')}
             </a>
           </Card>
         ))}
