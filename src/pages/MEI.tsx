@@ -7,6 +7,7 @@ import { callFunction, FUNCTIONS } from '@/integrations/firebase/firebase';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { toast } from 'sonner';
+import { useT } from '@/lib/i18n';
 
 const LIMITE_MEI_ANUAL = 81000;
 
@@ -28,6 +29,7 @@ const classify = (cat: string): 'comercio' | 'servicos' | 'desconhecido' => {
 };
 
 const MEI = () => {
+  const t = useT();
   const { config, updateConfig } = useStore();
   const [year, setYear] = useState(new Date().getFullYear());
   const [cnpjInput, setCnpjInput] = useState('');
@@ -95,14 +97,14 @@ const MEI = () => {
 
   const handleActivarMei = async () => {
     setCnpjError(null);
-    if (!cnpjInput.trim()) { setCnpjError('Informe o CNPJ.'); return; }
+    if (!cnpjInput.trim()) { setCnpjError(t('mei.cnpj_required')); return; }
     setCheckingCnpj(true);
     try {
       await callFunction(FUNCTIONS.activateMei, { cnpj: cnpjInput });
       await updateConfig({ isMei: true, cnpj: cnpjInput });
-      toast.success('MEI ativado com sucesso!');
+      toast.success(t('mei.activated_success'));
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Não foi possível validar o CNPJ.';
+      const msg = err instanceof Error ? err.message : t('mei.cnpj_invalid_generic');
       setCnpjError(msg);
     } finally {
       setCheckingCnpj(false);
@@ -112,25 +114,25 @@ const MEI = () => {
   const exportPDF = () => {
     const doc = new jsPDF();
     doc.setFontSize(16);
-    doc.text(`Relatório Anual MEI — ${year}`, 14, 18);
+    doc.text(t('mei.pdf_title', { year }), 14, 18);
     doc.setFontSize(10);
     doc.setTextColor(100);
-    doc.text(`${config.storeName} • Gerado em ${new Date().toLocaleDateString('pt-BR')}`, 14, 25);
+    doc.text(t('mei.pdf_generated_on', { store: config.storeName, date: new Date().toLocaleDateString('pt-BR') }), 14, 25);
     doc.setTextColor(0);
     doc.setFontSize(11);
-    doc.text(`Receita Bruta Total: ${fmt(report.totalAno)}`, 14, 36);
-    doc.text(`Comércio/Indústria: ${fmt(report.totalComercio)}`, 14, 43);
-    doc.text(`Serviços: ${fmt(report.totalServicos)}`, 14, 50);
+    doc.text(t('mei.pdf_gross_revenue', { value: fmt(report.totalAno) }), 14, 36);
+    doc.text(t('mei.pdf_commerce', { value: fmt(report.totalComercio) }), 14, 43);
+    doc.text(t('mei.pdf_services', { value: fmt(report.totalServicos) }), 14, 50);
     if (report.totalDesconhecido > 0) {
       doc.setTextColor(180, 100, 0);
-      doc.text(`Não classificadas: ${fmt(report.totalDesconhecido)} (revisar)`, 14, 57);
+      doc.text(t('mei.pdf_unclassified', { value: fmt(report.totalDesconhecido) }), 14, 57);
       doc.setTextColor(0);
     }
     autoTable(doc, {
       startY: 65,
-      head: [['Mês', 'Comércio/Indústria', 'Serviços', 'Não classif.', 'Total Mês']],
+      head: [[t('mei.pdf_col_month'), t('mei.pdf_col_commerce'), t('mei.pdf_col_services'), t('mei.pdf_col_unclassified'), t('mei.pdf_col_total_month')]],
       body: report.months.map((m, i) => [meses[i], fmt(m.comercio), fmt(m.servicos), fmt(m.desconhecido), fmt(m.total)]),
-      foot: [['Total', fmt(report.totalComercio), fmt(report.totalServicos), fmt(report.totalDesconhecido), fmt(report.totalAno)]],
+      foot: [[t('mei.table_total'), fmt(report.totalComercio), fmt(report.totalServicos), fmt(report.totalDesconhecido), fmt(report.totalAno)]],
       styles: { fontSize: 9 },
       headStyles: { fillColor: [59, 130, 246] },
       footStyles: { fillColor: [240, 240, 240], textColor: 0, fontStyle: 'bold' },
@@ -138,22 +140,20 @@ const MEI = () => {
     const finalY = (doc as any).lastAutoTable.finalY + 10;
     doc.setFontSize(9);
     doc.setTextColor(120);
-    doc.text('Este relatório consolida os seus dados registrados no Biztrivo.', 14, finalY);
-    doc.text('A DASN-SIMEI oficial deve ser feita em gov.br/mei até 31/maio do ano seguinte.', 14, finalY + 5);
+    doc.text(t('mei.pdf_footer_1'), 14, finalY);
+    doc.text(t('mei.pdf_footer_2'), 14, finalY + 5);
     doc.save(`MEI_${year}_${config.storeName.replace(/\s+/g, '_')}.pdf`);
-    toast.success('PDF gerado');
+    toast.success(t('mei.pdf_generated_toast'));
   };
 
   if (config.paisBase !== 'BR') {
   return (
     <div className="space-y-8">
-      <h1 className="text-3xl font-bold font-heading">Declaração MEI</h1>
+      <h1 className="text-3xl font-bold font-heading">{t('mei.title')}</h1>
       <Card className="p-10 border-none shadow-md flex flex-col items-center text-center gap-4">
         <FileText className="w-14 h-14 text-muted-foreground/30" />
-        <p className="text-lg font-semibold font-heading">Módulo disponível apenas no Brasil</p>
-        <p className="text-sm text-muted-foreground max-w-sm">
-          O MEI é um regime exclusivo brasileiro. Se você opera no Brasil, altere seu país de operação em <strong>Configurações → Perfil</strong>.
-        </p>
+        <p className="text-lg font-semibold font-heading">{t('mei.brazil_only_title')}</p>
+        <p className="text-sm text-muted-foreground max-w-sm" dangerouslySetInnerHTML={{ __html: t('mei.brazil_only_desc') }} />
       </Card>
     </div>
   );
@@ -163,15 +163,15 @@ const MEI = () => {
     return (
       <div className="space-y-8">
         <div>
-          <h1 className="text-3xl font-bold font-heading">Declaração MEI</h1>
-          <p className="text-muted-foreground mt-1">Consolidação anual da sua receita bruta para a DASN-SIMEI.</p>
+          <h1 className="text-3xl font-bold font-heading">{t('mei.title')}</h1>
+          <p className="text-muted-foreground mt-1">{t('mei.subtitle')}</p>
         </div>
         <Card className="p-10 border-none shadow-md flex flex-col items-center text-center gap-5">
           <FileText className="w-14 h-14 text-muted-foreground/30" />
           <div>
-            <p className="text-lg font-semibold font-heading">Esta área é para MEI</p>
+            <p className="text-lg font-semibold font-heading">{t('mei.not_mei_title')}</p>
             <p className="text-sm text-muted-foreground mt-1 max-w-sm">
-              Informe seu CNPJ para validarmos a situação cadastral na Receita Federal antes de liberar esta área.
+              {t('mei.not_mei_desc')}
             </p>
           </div>
           <div className="w-full max-w-xs space-y-2">
@@ -179,7 +179,7 @@ const MEI = () => {
               type="text"
               value={cnpjInput}
               onChange={e => setCnpjInput(formatCNPJ(e.target.value))}
-              placeholder="00.000.000/0000-00"
+              placeholder={t('mei.cnpj_placeholder')}
               maxLength={18}
               className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm text-center"
             />
@@ -190,7 +190,7 @@ const MEI = () => {
             disabled={checkingCnpj}
             className="px-6 py-2.5 rounded-xl gradient-primary text-primary-foreground font-medium text-sm shadow-glow hover:opacity-90 transition-opacity disabled:opacity-60"
           >
-            {checkingCnpj ? 'Verificando CNPJ...' : 'Sim, sou MEI — Ativar'}
+            {checkingCnpj ? t('mei.checking_cnpj') : t('mei.activate_confirm')}
           </button>
         </Card>
       </div>
@@ -201,16 +201,16 @@ const MEI = () => {
     <div className="space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold font-heading">Declaração MEI</h1>
-          <p className="text-muted-foreground mt-1">Consolidação anual da sua receita bruta para a DASN-SIMEI.</p>
+          <h1 className="text-3xl font-bold font-heading">{t('mei.title')}</h1>
+          <p className="text-muted-foreground mt-1">{t('mei.subtitle')}</p>
         </div>
         <div className="flex items-center gap-2">
-          <label className="text-sm text-muted-foreground">Ano:</label>
+          <label className="text-sm text-muted-foreground">{t('mei.year')}</label>
           <select value={year} onChange={e => setYear(Number(e.target.value))} className="h-9 px-3 rounded-md border border-input bg-background text-sm">
             {[year + 0, year - 1, year - 2].map(y => <option key={y} value={y}>{y}</option>)}
           </select>
           <button onClick={exportPDF} className="flex items-center gap-2 px-4 py-2 rounded-lg gradient-primary text-primary-foreground text-sm font-medium shadow-glow">
-            <Download className="w-4 h-4" /> Baixar PDF
+            <Download className="w-4 h-4" /> {t('mei.download_pdf')}
           </button>
         </div>
       </div>
@@ -218,11 +218,10 @@ const MEI = () => {
       <Card className="p-4 border-none shadow-md border-l-4 border-l-primary bg-primary/5">
         <div className="flex items-start gap-3">
           <Info className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-          <p className="text-sm">
-            Este relatório é uma <strong>consolidação dos seus dados</strong> no Biztrivo. A declaração oficial deve ser entregue em
-            {' '}<a href="https://www.gov.br/empresas-e-negocios/pt-br/empreendedor" target="_blank" rel="noopener noreferrer" className="underline text-primary">gov.br/mei</a>{' '}
-            até 31/maio do ano seguinte. Limite MEI: {fmt(LIMITE_MEI_ANUAL)}/ano.
-          </p>
+          <p className="text-sm" dangerouslySetInnerHTML={{ __html: t('mei.info_disclaimer', {
+            link: '<a href="https://www.gov.br/empresas-e-negocios/pt-br/empreendedor" target="_blank" rel="noopener noreferrer" class="underline text-primary">gov.br/mei</a>',
+            limit: fmt(LIMITE_MEI_ANUAL),
+          }) }} />
         </div>
       </Card>
 
@@ -230,11 +229,7 @@ const MEI = () => {
         <Card className="p-4 border-none shadow-md border-l-4 border-l-primary bg-primary/5">
           <div className="flex items-start gap-3">
             <Info className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-            <p className="text-sm">
-              Detectamos <strong>{fmt(report.totalFuncionario)}</strong> em lançamentos de categoria "Funcionário" no ano.
-              O MEI pode ter no máximo <strong>1 funcionário</strong> com salário mínimo ou piso da categoria.
-              Se houver mais de um vínculo, é obrigatório migrar para ME.
-            </p>
+            <p className="text-sm" dangerouslySetInnerHTML={{ __html: t('mei.employee_warning', { value: fmt(report.totalFuncionario) }) }} />
           </div>
         </Card>
       )}
@@ -244,8 +239,8 @@ const MEI = () => {
           <div className="flex items-start gap-3">
             <AlertTriangle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
             <div className="text-sm">
-              <p className="font-semibold text-destructive">Você ultrapassou o limite anual do MEI ({report.percentLimite.toFixed(0)}%).</p>
-              <p className="text-muted-foreground mt-1">Se passou em até 20% (até R$ 97.200), você pode continuar como MEI mas pagará DAS adicional. Acima disso é obrigatório migrar para ME.</p>
+              <p className="font-semibold text-destructive">{t('mei.over_limit_title', { pct: report.percentLimite.toFixed(0) })}</p>
+              <p className="text-muted-foreground mt-1">{t('mei.over_limit_desc')}</p>
             </div>
           </div>
         </Card>
@@ -255,9 +250,7 @@ const MEI = () => {
         <Card className="p-4 border-none shadow-md border-l-4 border-l-warning bg-warning/5">
           <div className="flex items-start gap-3">
             <AlertTriangle className="w-5 h-5 text-warning shrink-0 mt-0.5" />
-            <p className="text-sm">
-              <strong>{fmt(report.totalDesconhecido)}</strong> em entradas com categoria não classificada. Revise na aba Caixa e use categorias como "Vendas", "Serviço", "Mercadoria" para classificar corretamente.
-            </p>
+            <p className="text-sm" dangerouslySetInnerHTML={{ __html: t('mei.unclassified_warning', { value: fmt(report.totalDesconhecido) }) }} />
           </div>
         </Card>
       )}
@@ -266,42 +259,40 @@ const MEI = () => {
         <Card className="p-4 border-none shadow-md border-l-4 border-l-warning bg-warning/5">
           <div className="flex items-start gap-3">
             <AlertTriangle className="w-5 h-5 text-warning shrink-0 mt-0.5" />
-            <p className="text-sm">
-              Sem nenhum registro nos meses: <strong>{report.mesesSemReceita.map(m => meses[m-1]).join(', ')}</strong>. Verifique se faltam lançamentos.
-            </p>
+            <p className="text-sm" dangerouslySetInnerHTML={{ __html: t('mei.no_records_warning', { months: report.mesesSemReceita.map(m => meses[m-1]).join(', ') }) }} />
           </div>
         </Card>
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="p-5 border-none shadow-md">
-          <p className="text-sm text-muted-foreground">Receita Bruta {year}</p>
+          <p className="text-sm text-muted-foreground">{t('mei.gross_revenue_year', { year })}</p>
           <p className="text-2xl font-bold font-heading mt-1">{fmt(report.totalAno)}</p>
-          <p className="text-xs text-muted-foreground mt-1">{report.qtdTransacoes} lançamento(s)</p>
+          <p className="text-xs text-muted-foreground mt-1">{t('mei.entries_count', { count: report.qtdTransacoes })}</p>
         </Card>
         <Card className="p-5 border-none shadow-md">
-          <p className="text-sm text-muted-foreground">Comércio / Indústria</p>
+          <p className="text-sm text-muted-foreground">{t('mei.commerce_industry')}</p>
           <p className="text-2xl font-bold font-heading mt-1 text-secondary">{fmt(report.totalComercio)}</p>
         </Card>
         <Card className="p-5 border-none shadow-md">
-          <p className="text-sm text-muted-foreground">Serviços</p>
+          <p className="text-sm text-muted-foreground">{t('mei.services')}</p>
           <p className="text-2xl font-bold font-heading mt-1 text-primary">{fmt(report.totalServicos)}</p>
         </Card>
       </div>
 
       <Card className="p-6 border-none shadow-md">
         <h2 className="text-lg font-semibold font-heading mb-4 flex items-center gap-2">
-          <FileText className="w-5 h-5 text-primary" /> Detalhamento mensal
+          <FileText className="w-5 h-5 text-primary" /> {t('mei.monthly_breakdown')}
         </h2>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-muted-foreground border-b border-border">
-                <th className="py-2 px-2">Mês</th>
-                <th className="py-2 px-2 text-right">Comércio</th>
-                <th className="py-2 px-2 text-right">Serviços</th>
-                <th className="py-2 px-2 text-right">Não classif.</th>
-                <th className="py-2 px-2 text-right">Total</th>
+                <th className="py-2 px-2">{t('mei.table_month')}</th>
+                <th className="py-2 px-2 text-right">{t('mei.table_commerce')}</th>
+                <th className="py-2 px-2 text-right">{t('mei.table_services')}</th>
+                <th className="py-2 px-2 text-right">{t('mei.table_unclassified')}</th>
+                <th className="py-2 px-2 text-right">{t('mei.table_total')}</th>
               </tr>
             </thead>
             <tbody>
@@ -315,7 +306,7 @@ const MEI = () => {
                 </tr>
               ))}
               <tr className="font-bold bg-muted/30">
-                <td className="py-2 px-2">Total</td>
+                <td className="py-2 px-2">{t('mei.table_total')}</td>
                 <td className="py-2 px-2 text-right">{fmt(report.totalComercio)}</td>
                 <td className="py-2 px-2 text-right">{fmt(report.totalServicos)}</td>
                 <td className="py-2 px-2 text-right">{fmt(report.totalDesconhecido)}</td>
@@ -328,20 +319,20 @@ const MEI = () => {
 
       <Card className="p-6 border-none shadow-md border-l-4 border-l-secondary bg-secondary/5">
         <h2 className="text-lg font-semibold font-heading mb-3 flex items-center gap-2">
-          <CheckCircle2 className="w-5 h-5 text-secondary" /> Campos prontos para o portal gov.br
+          <CheckCircle2 className="w-5 h-5 text-secondary" /> {t('mei.gov_fields_title')}
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
           <div className="p-3 rounded-lg bg-background">
-            <p className="text-xs text-muted-foreground">Receita com comércio, indústria e transporte</p>
+            <p className="text-xs text-muted-foreground">{t('mei.revenue_commerce_desc')}</p>
             <p className="text-lg font-bold font-heading">{fmt(report.totalComercio)}</p>
-            <p className="text-[10px] text-muted-foreground">(apenas categorias classificadas)</p>
+            <p className="text-[10px] text-muted-foreground">{t('mei.revenue_commerce_note')}</p>
           </div>
           <div className="p-3 rounded-lg bg-background">
-            <p className="text-xs text-muted-foreground">Receita com serviços</p>
+            <p className="text-xs text-muted-foreground">{t('mei.revenue_services_desc')}</p>
             <p className="text-lg font-bold font-heading">{fmt(report.totalServicos)}</p>
           </div>
           <div className="p-3 rounded-lg bg-background sm:col-span-2">
-            <p className="text-xs text-muted-foreground">Receita Bruta Total</p>
+            <p className="text-xs text-muted-foreground">{t('mei.gross_revenue_total')}</p>
             <p className="text-xl font-bold font-heading text-primary">{fmt(report.totalAno)}</p>
           </div>
         </div>
@@ -351,7 +342,7 @@ const MEI = () => {
         onClick={() => updateConfig({ isMei: false, cnpj: '' })}
         className="text-xs text-muted-foreground hover:text-destructive transition-colors mx-auto block"
       >
-        Não sou mais MEI — desativar esta área
+        {t('mei.deactivate')}
       </button>
     </div>
   );

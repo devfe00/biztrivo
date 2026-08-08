@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Sparkles, RefreshCw, TrendingUp, AlertTriangle } from 'lucide-react';
 import { FUNCTIONS, callFunction } from '@/integrations/firebase/firebase';
 import { useAuth } from '@/contexts/AuthContext';
+import { useT, useI18n } from '@/lib/i18n';
 
 interface Forecast {
   previsao_7_dias: number;
@@ -16,6 +17,8 @@ interface Forecast {
 const SIX_HOURS = 6 * 60 * 60 * 1000;
 
 const CashflowForecast = () => {
+  const t = useT();
+  const { lang } = useI18n();
   const { user } = useAuth();
   const cacheKey = user ? `biztrivo:forecast:${user.uid}` : '';
   const [forecast, setForecast] = useState<Forecast | null>(null);
@@ -51,13 +54,14 @@ const CashflowForecast = () => {
         if (cacheKey) localStorage.setItem(cacheKey, JSON.stringify(data));
       }
     } catch (e: any) {
-      setError(e?.message || 'Erro ao gerar previsão');
+      setError(e?.message || t('cashflow_forecast.generic_error'));
     } finally {
       setLoading(false);
     }
   };
 
   const fmt = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
 
   const riskColor = forecast?.risco === 'alto' ? 'border-l-destructive bg-destructive/5'
     : forecast?.risco === 'medio' ? 'border-l-warning bg-warning/5'
@@ -68,16 +72,16 @@ const CashflowForecast = () => {
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-primary" />
-          <h2 className="text-lg font-semibold font-heading">Previsão de Caixa (IA)</h2>
+          <h2 className="text-lg font-semibold font-heading">{t('cashflow_forecast.ai_title')}</h2>
         </div>
         <button
           onClick={fetchForecast}
           disabled={loading || (forecast !== null && !canRefresh())}
           className="text-xs flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-40 transition"
-          title={!canRefresh() ? 'Atualize novamente em algumas horas' : 'Gerar previsão'}
+          title={!canRefresh() ? t('cashflow_forecast.refresh_tooltip') : t('cashflow_forecast.generate_tooltip')}
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-          {forecast ? 'Atualizar' : 'Gerar previsão'}
+          {forecast ? t('cashflow_forecast.refresh_button') : t('cashflow_forecast.generate_button')}
         </button>
       </div>
 
@@ -89,20 +93,20 @@ const CashflowForecast = () => {
       )}
 
       {!forecast && !insufficient && !error && !loading && (
-        <p className="text-sm text-muted-foreground">Clique em "Gerar previsão" para analisar seus últimos 60 dias e ver projeção dos próximos 7 e 30 dias.</p>
+        <p className="text-sm text-muted-foreground">{t('cashflow_forecast.empty_state')}</p>
       )}
 
       {forecast && (
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <p className="text-xs text-muted-foreground">Próximos 7 dias</p>
+              <p className="text-xs text-muted-foreground">{t('cashflow_forecast.next_7_days')}</p>
               <p className={`text-xl font-bold font-heading ${forecast.previsao_7_dias >= 0 ? 'text-secondary' : 'text-destructive'}`}>
                 {fmt(forecast.previsao_7_dias)}
               </p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Próximos 30 dias</p>
+              <p className="text-xs text-muted-foreground">{t('cashflow_forecast.next_30_days')}</p>
               <p className={`text-xl font-bold font-heading ${forecast.previsao_30_dias >= 0 ? 'text-secondary' : 'text-destructive'}`}>
                 {fmt(forecast.previsao_30_dias)}
               </p>
@@ -119,7 +123,7 @@ const CashflowForecast = () => {
             </p>
           </div>
           <p className="text-[10px] text-muted-foreground text-right">
-            Gerado por IA • {new Date(forecast.generated_at).toLocaleString('pt-BR')} • Estimativa, não garantia
+            {t('cashflow_forecast.generated_by_ai', { date: new Date(forecast.generated_at).toLocaleString(lang) })}
           </p>
         </div>
       )}

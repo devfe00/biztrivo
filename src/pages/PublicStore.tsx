@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { MessageCircle, ShoppingBag, AlertCircle, Search, Phone, X, Loader2, Eye, Sun, Moon } from 'lucide-react';
 import { FUNCTIONS, callFunction } from '@/integrations/firebase/firebase';
+import { useT } from '@/lib/i18n';
 
 interface StoreProduct {
   id: string;
@@ -42,6 +43,7 @@ const setMetaTag = (property: string, content: string, isOg = false) => {
 };
 
 const PublicStore = () => {
+  const t = useT();
   const { slug } = useParams();
   const [store, setStore] = useState<StoreData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -65,7 +67,7 @@ const [viewingProduct, setViewingProduct] = useState<StoreProduct | null>(null);
     });
   };
 
-  const t = darkMode
+  const theme = darkMode
     ? {
         bg: '#0f172a',
         headerBg: 'linear-gradient(to right, #15803d, #1e40af)',
@@ -129,8 +131,8 @@ const [viewingProduct, setViewingProduct] = useState<StoreProduct | null>(null);
   // Dynamic SEO meta tags
   useEffect(() => {
     if (!store) return;
-    const title = `Confira a vitrine de ${store.storeName} no Biztrivo`;
-    const description = `Veja os produtos de ${store.storeName}. Compre direto pelo WhatsApp!`;
+    const title = t('public_store.seo_title', { name: store.storeName });
+    const description = t('public_store.seo_description', { name: store.storeName });
     const url = window.location.href;
 
     document.title = title;
@@ -157,10 +159,10 @@ const handleBuy = useCallback((productId: string, productName: string, price: nu
     const priceStr = price.toFixed(2).replace('.', ',');
     const orderCode = generateOrderCode();
     const pixLine = store.pixKey
-      ? `\n\n💳 *Chave PIX:* ${store.pixKey}`
+      ? t('public_store.whatsapp_pix_line', { pixKey: store.pixKey })
       : '';
     const message = encodeURIComponent(
-      `Olá! Vi o *${productName}* por *R$ ${priceStr}* na vitrine e quero garantir o meu!\n\nCódigo do pedido: ${orderCode}${pixLine}\n\n_Confirme o recebimento do pagamento para liberar o pedido._ ✅`
+      t('public_store.whatsapp_message', { product: productName, price: priceStr, code: orderCode, pixLine })
     );
     window.open(`https://wa.me/55${phone}?text=${message}`, '_blank');
     setTimeout(() => setBuyingProductId(null), 1500);
@@ -171,7 +173,7 @@ const handleBuy = useCallback((productId: string, productName: string, price: nu
     if (!store?.whatsapp) return;
     const phone = store.whatsapp.replace(/\D/g, '');
     if (!/^\d{10,13}$/.test(phone)) return;
-    const message = encodeURIComponent(`Olá! Estou visitando a vitrine ${store.storeName} e gostaria de mais informações!`);
+    const message = encodeURIComponent(t('public_store.whatsapp_contact_message', { name: store.storeName }));
     window.open(`https://wa.me/55${phone}?text=${message}`, '_blank');
   };
 
@@ -193,16 +195,16 @@ const handleBuy = useCallback((productId: string, productName: string, price: nu
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #15803d, #1e40af)' }}>
         <div className="text-center px-4">
           <ShoppingBag className="w-14 h-14 mx-auto mb-4" style={{ color: 'rgba(255,255,255,0.5)' }} />
-          <h1 className="text-xl font-bold" style={{ color: '#fff' }}>Vitrine não encontrada</h1>
-          <p className="mt-2 text-sm" style={{ color: 'rgba(255,255,255,0.7)' }}>Esta vitrine pode estar inativa ou não existir.</p>
+          <h1 className="text-xl font-bold" style={{ color: '#fff' }}>{t('public_store.not_found_title')}</h1>
+          <p className="mt-2 text-sm" style={{ color: 'rgba(255,255,255,0.7)' }}>{t('public_store.not_found_subtitle')}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen pb-20" style={{ backgroundColor: t.bg }}>
-      <header className="sticky top-0 z-40 border-b" style={{ background: t.headerBg, borderColor: t.headerBorder }}>
+    <div className="min-h-screen pb-20" style={{ backgroundColor: theme.bg }}>
+      <header className="sticky top-0 z-40 border-b" style={{ background: theme.headerBg, borderColor: theme.headerBorder }}>
         <div className="max-w-4xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
@@ -210,21 +212,21 @@ const handleBuy = useCallback((productId: string, productName: string, price: nu
                 <img src={store.logo} alt={store.storeName} className="w-10 h-10 rounded-lg object-cover" style={{ boxShadow: `0 2px 8px ${pc}30` }} />
               )}
               <div>
-                <h1 className="text-lg font-bold leading-tight" style={{ color: t.storeName }}>{store.storeName}</h1>
-                <p className="text-xs" style={{ color: t.storeCount }}>{filteredProducts.length} {filteredProducts.length === 1 ? 'produto' : 'produtos'}</p>
+                <h1 className="text-lg font-bold leading-tight" style={{ color: theme.storeName }}>{store.storeName}</h1>
+                <p className="text-xs" style={{ color: theme.storeCount }}>{filteredProducts.length} {filteredProducts.length === 1 ? t('public_store.products_one') : t('public_store.products_other')}</p>
               </div>
             </div>
-            <button onClick={toggleTheme} className="w-8 h-8 rounded-full flex items-center justify-center transition-all" style={{ backgroundColor: t.toggleBg, color: t.toggleColor }}>
+            <button onClick={toggleTheme} className="w-8 h-8 rounded-full flex items-center justify-center transition-all" style={{ backgroundColor: theme.toggleBg, color: theme.toggleColor }}>
               {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
           </div>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: '#94a3b8' }} />
-            <input type="text" placeholder="Buscar produtos..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+            <input type="text" placeholder={t('public_store.search_placeholder')} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-10 py-2 rounded-lg text-sm outline-none transition-all"
-              style={{ backgroundColor: t.searchBg, border: `1px solid ${t.searchBorder}`, color: t.searchColor }}
-              onFocus={(e) => (e.target.style.borderColor = t.searchBorderFocus)}
-              onBlur={(e) => (e.target.style.borderColor = t.searchBorder)} />
+              style={{ backgroundColor: theme.searchBg, border: `1px solid ${theme.searchBorder}`, color: theme.searchColor }}
+              onFocus={(e) => (e.target.style.borderColor = theme.searchBorderFocus)}
+              onBlur={(e) => (e.target.style.borderColor = theme.searchBorder)} />
             {searchQuery && (
               <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: '#94a3b8' }}>
                 <X className="w-4 h-4" />
@@ -238,7 +240,7 @@ const handleBuy = useCallback((productId: string, productName: string, price: nu
         {filteredProducts.length === 0 ? (
           <div className="text-center py-16">
             <Search className="w-10 h-10 mx-auto mb-3" style={{ color: '#cbd5e1' }} />
-            <p style={{ color: '#94a3b8' }} className="text-sm">{searchQuery ? `Nenhum produto para "${searchQuery}"` : 'Nenhum produto disponível.'}</p>
+            <p style={{ color: '#94a3b8' }} className="text-sm">{searchQuery ? t('public_store.no_products_search', { query: searchQuery }) : t('public_store.no_products')}</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
@@ -246,10 +248,10 @@ const handleBuy = useCallback((productId: string, productName: string, price: nu
               const outOfStock = product.stock === 0;
               const isBuying = buyingProductId === product.id;
               return (
-                <div key={product.id} className="rounded-xl overflow-hidden group relative" style={{ backgroundColor: t.cardBg, boxShadow: t.cardShadow }}>
+                <div key={product.id} className="rounded-xl overflow-hidden group relative" style={{ backgroundColor: theme.cardBg, boxShadow: theme.cardShadow }}>
                   {outOfStock && !store.vitrineOnlyMode && (
                     <div className="absolute top-2 right-2 z-10 px-2 py-0.5 rounded text-xs font-semibold flex items-center gap-1" style={{ backgroundColor: '#ef4444', color: '#fff' }}>
-                      <AlertCircle className="w-3 h-3" /> Esgotado
+                      <AlertCircle className="w-3 h-3" /> {t('public_store.sold_out')}
                     </div>
                   )}
                   {product.photo ? (
@@ -262,7 +264,7 @@ const handleBuy = useCallback((productId: string, productName: string, price: nu
                     </div>
                   )}
                   <div className="p-3">
-                    <h3 className="font-semibold text-sm line-clamp-2" style={{ color: t.productName }}>{product.name}</h3>
+                    <h3 className="font-semibold text-sm line-clamp-2" style={{ color: theme.productName }}>{product.name}</h3>
                     {product.description && <p className="text-xs mt-1 line-clamp-2" style={{ color: '#94a3b8' }}>{product.description}</p>}
                     {!store.vitrineOnlyMode && (
                       <div className="flex items-center gap-2 mt-2">
@@ -277,7 +279,7 @@ const handleBuy = useCallback((productId: string, productName: string, price: nu
                         onClick={() => setViewingProduct(product)}
                         className="mt-3 w-full py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-all active:scale-95"
                         style={{ backgroundColor: pc, color: '#fff' }}>
-                        <Eye className="w-4 h-4" /> Ver Detalhes
+                        <Eye className="w-4 h-4" /> {t('public_store.view_details')}
                       </button>
                     ) : (
                       <button
@@ -285,7 +287,7 @@ const handleBuy = useCallback((productId: string, productName: string, price: nu
                         disabled={outOfStock || isBuying}
                         className="mt-3 w-full py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-all active:scale-95 disabled:cursor-not-allowed"
                         style={{ backgroundColor: outOfStock ? '#94a3b8' : pc, color: '#fff', opacity: outOfStock ? 0.4 : 1 }}>
-                        {isBuying ? <Loader2 className="w-4 h-4 animate-spin" /> : outOfStock ? <><AlertCircle className="w-4 h-4" /> Produto Indisponível</> : <><MessageCircle className="w-4 h-4" /> Comprar</>}
+                        {isBuying ? <Loader2 className="w-4 h-4 animate-spin" /> : outOfStock ? <><AlertCircle className="w-4 h-4" /> {t('public_store.unavailable')}</> : <><MessageCircle className="w-4 h-4" /> {t('public_store.buy')}</>}
                       </button>
                     )}
                   </div>
@@ -300,7 +302,7 @@ const handleBuy = useCallback((productId: string, productName: string, price: nu
         <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-2">
           <button onClick={handleWhatsAppContact}
             className="w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-transform hover:scale-110 active:scale-95"
-            style={{ backgroundColor: '#25D366' }} title="Fale conosco">
+            style={{ backgroundColor: '#25D366' }} title={t('public_store.contact_us')}>
             <Phone className="w-6 h-6 text-white" />
           </button>
           <button onClick={() => setShowWhatsAppButton(false)} className="w-5 h-5 rounded-full flex items-center justify-center opacity-50 hover:opacity-100 transition-opacity" style={{ backgroundColor: '#334155' }}>
@@ -329,15 +331,15 @@ const handleBuy = useCallback((productId: string, productName: string, price: nu
               <p className="text-sm leading-relaxed" style={{ color: darkMode ? '#94a3b8' : '#475569' }}>{viewingProduct.description}</p>
             )}
             <button onClick={() => setViewingProduct(null)} className="w-full py-2.5 rounded-lg text-sm font-semibold transition-all active:scale-95 mt-1" style={{ backgroundColor: darkMode ? '#0f172a' : '#f1f5f9', color: darkMode ? '#94a3b8' : '#475569' }}>
-              Fechar
+              {t('public_store.close')}
             </button>
           </div>
         </div>
         </div>
       )}
 
-      <footer className="py-5 text-center border-t" style={{ borderColor: t.footerBorder }}>
-        <p className="text-xs" style={{ color: t.footerText }}>Vitrine criada com <span className="font-semibold" style={{ color: t.footerBrand }}>Biztrivo</span></p>
+      <footer className="py-5 text-center border-t" style={{ borderColor: theme.footerBorder }}>
+        <p className="text-xs" style={{ color: theme.footerText }}>{t('public_store.footer_made_with')} <span className="font-semibold" style={{ color: theme.footerBrand }}>Biztrivo</span></p>
       </footer>
     </div>
   );

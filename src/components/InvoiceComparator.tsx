@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { useT } from '@/lib/i18n';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Loader2, Upload, FileText, CheckCircle2, AlertTriangle, Sparkles, X } from 'lucide-react';
@@ -47,6 +48,7 @@ const fileToDataUrl = (file: File): Promise<string> =>
   });
 
 export default function InvoiceComparator({ products, open, onOpenChange }: Props) {
+  const t = useT();
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [summary, setSummary] = useState<Summary | null>(null);
@@ -60,9 +62,9 @@ export default function InvoiceComparator({ products, open, onOpenChange }: Prop
 
   const handleFile = (f: File | null) => {
     if (!f) return;
-    if (f.size > MAX_BYTES) { toast.error('Arquivo grande demais (máx 8MB).'); return; }
+    if (f.size > MAX_BYTES) { toast.error(t('invoice_comparator.file_too_large')); return; }
     const ok = f.type.startsWith('image/') || f.type === 'application/pdf';
-    if (!ok) { toast.error('Use imagem (JPG/PNG) ou PDF.'); return; }
+    if (!ok) { toast.error(t('invoice_comparator.invalid_file_type')); return; }
     setFile(f); setSummary(null); setComparisons(null);
   };
 
@@ -75,13 +77,13 @@ export default function InvoiceComparator({ products, open, onOpenChange }: Prop
   fileBase64: dataUrl,
   products: products.map(p => ({ id: p.id, name: p.name, discountPrice: p.discountPrice, stock: p.stock })),
 });
-if (!data?.comparisons) throw new Error(data?.error || 'Falha ao processar');
+if (!data?.comparisons) throw new Error(data?.error || t('invoice_comparator.process_error'));
       setSummary(data.summary);
       setComparisons(data.comparisons);
-      toast.success(`${data.summary.totalItems} itens extraídos da nota.`);
+      toast.success(t('invoice_comparator.items_extracted', { count: data.summary.totalItems }));
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || 'Erro ao analisar nota.');
+      toast.error(e?.message || t('invoice_comparator.analyze_error'));
     } finally {
       setLoading(false);
     }
@@ -93,7 +95,7 @@ if (!data?.comparisons) throw new Error(data?.error || 'Falha ao processar');
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileText className="w-5 h-5 text-primary" />
-            Comparar Nota Fiscal
+            {t('invoice_comparator.dialog_title')}
           </DialogTitle>
         </DialogHeader>
 
@@ -107,9 +109,9 @@ if (!data?.comparisons) throw new Error(data?.error || 'Falha ao processar');
             >
               <Upload className="w-10 h-10 mx-auto text-muted-foreground mb-2" />
               <p className="text-sm font-medium">
-                {file ? file.name : 'Clique ou arraste sua nota fiscal'}
+                {file ? file.name : t('invoice_comparator.drop_placeholder')}
               </p>
-              <p className="text-xs text-muted-foreground mt-1">JPG, PNG ou PDF (até 8MB)</p>
+              <p className="text-xs text-muted-foreground mt-1">{t('invoice_comparator.file_types_hint')}</p>
               <input
                 ref={inputRef}
                 type="file"
@@ -133,13 +135,13 @@ if (!data?.comparisons) throw new Error(data?.error || 'Falha ao processar');
                 className="gradient-primary text-primary-foreground shadow-glow"
               >
                 {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
-                {loading ? 'Analisando nota...' : 'Analisar com IA'}
+                {loading ? t('invoice_comparator.analyzing') : t('invoice_comparator.analyze_button')}
               </Button>
             </div>
 
             {loading && (
               <p className="text-xs text-muted-foreground text-center">
-                A IA está lendo os itens da sua nota. Pode levar até 30 segundos.
+                {t('invoice_comparator.analyzing_hint')}
               </p>
             )}
           </div>
@@ -148,17 +150,17 @@ if (!data?.comparisons) throw new Error(data?.error || 'Falha ao processar');
         {comparisons && summary && (
           <div className="space-y-4 animate-fade-in">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              <Stat label="Itens" value={summary.totalItems} />
-              <Stat label="Encontrados" value={summary.matched} tone="success" />
-              <Stat label="Novos" value={summary.newItems} tone="warning" />
-              <Stat label="Preço mudou" value={summary.priceChanges} tone="danger" />
+              <Stat label={t('invoice_comparator.stat_items')} value={summary.totalItems} />
+              <Stat label={t('invoice_comparator.stat_matched')} value={summary.matched} tone="success" />
+              <Stat label={t('invoice_comparator.stat_new')} value={summary.newItems} tone="warning" />
+              <Stat label={t('invoice_comparator.stat_price_changed')} value={summary.priceChanges} tone="danger" />
             </div>
 
             {(summary.supplier || summary.date || summary.invoiceTotal) && (
               <div className="rounded-lg bg-muted p-3 text-xs text-muted-foreground flex flex-wrap gap-x-4 gap-y-1">
-                {summary.supplier && <span><b>Fornecedor:</b> {summary.supplier}</span>}
-                {summary.date && <span><b>Data:</b> {summary.date}</span>}
-                {summary.invoiceTotal != null && <span><b>Total:</b> {brl(summary.invoiceTotal)}</span>}
+                {summary.supplier && <span><b>{t('invoice_comparator.supplier_label')}</b> {summary.supplier}</span>}
+                {summary.date && <span><b>{t('invoice_comparator.date_label')}</b> {summary.date}</span>}
+                {summary.invoiceTotal != null && <span><b>{t('invoice_comparator.total_label')}</b> {brl(summary.invoiceTotal)}</span>}
               </div>
             )}
 
@@ -166,11 +168,11 @@ if (!data?.comparisons) throw new Error(data?.error || 'Falha ao processar');
               <table className="w-full text-sm">
                 <thead className="bg-muted text-xs uppercase">
                   <tr>
-                    <th className="text-left p-2">Item da nota</th>
-                    <th className="text-right p-2">Qtd</th>
-                    <th className="text-right p-2">Preço nota</th>
-                    <th className="text-right p-2">Seu preço</th>
-                    <th className="text-right p-2">Diferença</th>
+                    <th className="text-left p-2">{t('invoice_comparator.table_item')}</th>
+                    <th className="text-right p-2">{t('invoice_comparator.table_qty')}</th>
+                    <th className="text-right p-2">{t('invoice_comparator.table_invoice_price')}</th>
+                    <th className="text-right p-2">{t('invoice_comparator.table_your_price')}</th>
+                    <th className="text-right p-2">{t('invoice_comparator.table_diff')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -186,7 +188,7 @@ if (!data?.comparisons) throw new Error(data?.error || 'Falha ao processar');
                           </div>
                         ) : (
                           <div className="text-xs text-yellow-600 dark:text-yellow-400 flex items-center gap-1">
-                            <AlertTriangle className="w-3 h-3" /> Não está na vitrine
+                            <AlertTriangle className="w-3 h-3" /> {t('invoice_comparator.not_in_showcase')}
                           </div>
                         )}
                       </td>
@@ -197,7 +199,7 @@ if (!data?.comparisons) throw new Error(data?.error || 'Falha ao processar');
                         {c.priceDiff == null ? (
                           <span className="text-muted-foreground">—</span>
                         ) : Math.abs(c.priceDiff) < 0.01 ? (
-                          <span className="text-green-600 dark:text-green-400">igual</span>
+                          <span className="text-green-600 dark:text-green-400">{t('invoice_comparator.equal')}</span>
                         ) : (
                           <span className={c.priceDiff > 0 ? 'text-destructive' : 'text-green-600 dark:text-green-400'}>
                             {c.priceDiff > 0 ? '+' : ''}{brl(c.priceDiff)}
@@ -212,7 +214,7 @@ if (!data?.comparisons) throw new Error(data?.error || 'Falha ao processar');
             </div>
 
             <div className="flex gap-2">
-              <Button variant="outline" onClick={reset}>Analisar outra nota</Button>
+              <Button variant="outline" onClick={reset}>{t('invoice_comparator.analyze_another')}</Button>
             </div>
           </div>
         )}

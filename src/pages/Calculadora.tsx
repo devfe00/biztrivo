@@ -1,10 +1,12 @@
 import { useState, useMemo } from 'react';
+import { useT } from '@/lib/i18n';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Calculator, TrendingUp, DollarSign, Percent, Package, AlertCircle, AlertTriangle, Lightbulb } from 'lucide-react';
 
 const Calculadora = () => {
+  const t = useT();
   const [custo, setCusto] = useState('');
   const [impostos, setImpostos] = useState('');
   const [margem, setMargem] = useState('');
@@ -15,11 +17,11 @@ const Calculadora = () => {
     const m = parseFloat(margem.replace(',', '.'));
     const i = parseFloat(impostos.replace(',', '.'));
 
-    if (custo && (isNaN(c) || c < 0)) errs.custo = 'O custo não pode ser negativo.';
-    if (impostos && (isNaN(i) || i < 0)) errs.impostos = 'O valor de impostos não pode ser negativo.';
-    if (margem && isNaN(m)) errs.margem = 'Insira um número válido.';
-    else if (margem && m < 0) errs.margem = 'A margem não pode ser negativa.';
-    else if (margem && m >= 100) errs.margem = 'A margem deve ser menor que 100%. Valores ≥ 100% tornam o cálculo impossível.';
+    if (custo && (isNaN(c) || c < 0)) errs.custo = t('calculadora.error_cost_negative');
+    if (impostos && (isNaN(i) || i < 0)) errs.impostos = t('calculadora.error_tax_negative');
+    if (margem && isNaN(m)) errs.margem = t('calculadora.error_margin_invalid');
+    else if (margem && m < 0) errs.margem = t('calculadora.error_margin_negative');
+    else if (margem && m >= 100) errs.margem = t('calculadora.error_margin_too_high');
 
     return errs;
   }, [custo, impostos, margem]);
@@ -54,36 +56,36 @@ const Calculadora = () => {
   return (
     <div className="space-y-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold font-heading">Calculadora de Preço</h1>
-        <p className="text-muted-foreground mt-1">Descubra o preço ideal para lucrar de verdade</p>
+        <h1 className="text-3xl font-bold font-heading">{t('calculadora.title')}</h1>
+        <p className="text-muted-foreground mt-1">{t('calculadora.subtitle')}</p>
       </div>
 
       <Card className="p-6 border-none shadow-md space-y-5">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <Label htmlFor="custo" className="flex items-center gap-2">
-              <Package className="w-4 h-4 text-primary" /> Custo da Peça (R$)
+              <Package className="w-4 h-4 text-primary" /> {t('calculadora.cost_label')}
             </Label>
-            <Input id="custo" placeholder="25,00" value={custo} onChange={e => setCusto(e.target.value)} className={`mt-1 text-lg font-semibold ${errors.custo ? 'border-destructive' : ''}`} inputMode="decimal" />
+            <Input id="custo" placeholder={t('calculadora.cost_placeholder')} value={custo} onChange={e => setCusto(e.target.value)} className={`mt-1 text-lg font-semibold ${errors.custo ? 'border-destructive' : ''}`} inputMode="decimal" />
             {renderFieldError('custo')}
           </div>
           <div>
             <Label htmlFor="impostos" className="flex items-center gap-2">
-              <DollarSign className="w-4 h-4 text-warning" /> Impostos / Taxas (%)
+              <DollarSign className="w-4 h-4 text-warning" /> {t('calculadora.tax_label')}
             </Label>
-            <Input id="impostos" placeholder="10" value={impostos} onChange={e => setImpostos(e.target.value)} className={`mt-1 text-lg font-semibold ${errors.impostos ? 'border-destructive' : ''}`} inputMode="decimal" />
+            <Input id="impostos" placeholder={t('calculadora.tax_placeholder')} value={impostos} onChange={e => setImpostos(e.target.value)} className={`mt-1 text-lg font-semibold ${errors.impostos ? 'border-destructive' : ''}`} inputMode="decimal" />
             {renderFieldError('impostos')}
           </div>
           <div>
             <Label htmlFor="margem" className="flex items-center gap-2">
-              <Percent className="w-4 h-4 text-secondary" /> Margem de Lucro (%)
+              <Percent className="w-4 h-4 text-secondary" /> {t('calculadora.margin_label')}
             </Label>
-            <Input id="margem" placeholder="50" value={margem} onChange={e => setMargem(e.target.value)} className={`mt-1 text-lg font-semibold ${errors.margem ? 'border-destructive' : ''}`} inputMode="decimal" />
+            <Input id="margem" placeholder={t('calculadora.margin_placeholder')} value={margem} onChange={e => setMargem(e.target.value)} className={`mt-1 text-lg font-semibold ${errors.margem ? 'border-destructive' : ''}`} inputMode="decimal" />
             {renderFieldError('margem')}
           </div>
         </div>
         <div className="pt-2 text-xs text-muted-foreground">
-          <p>Fórmula: Preço = Custo com impostos ÷ (1 - Margem/100)</p>
+          <p>{t('calculadora.formula')}</p>
         </div>
       </Card>
 
@@ -91,17 +93,17 @@ const Calculadora = () => {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Card className="p-6 border-none shadow-md text-center gradient-primary text-primary-foreground">
             <Calculator className="w-8 h-8 mx-auto mb-2 opacity-80" />
-            <p className="text-sm opacity-90">Preço de Venda Sugerido</p>
+            <p className="text-sm opacity-90">{t('calculadora.suggested_sale_price')}</p>
             <p className="text-3xl font-bold font-heading mt-1">{formatCurrency(resultado.precoVenda)}</p>
           </Card>
           <Card className="p-6 border-none shadow-md text-center">
             <TrendingUp className="w-8 h-8 mx-auto mb-2 text-secondary" />
-            <p className="text-sm text-muted-foreground">Lucro por Unidade</p>
+            <p className="text-sm text-muted-foreground">{t('calculadora.profit_per_unit')}</p>
             <p className="text-3xl font-bold font-heading mt-1 text-secondary">{formatCurrency(resultado.lucroUnitario)}</p>
           </Card>
           <Card className="p-6 border-none shadow-md text-center">
             <DollarSign className="w-8 h-8 mx-auto mb-2 text-warning" />
-            <p className="text-sm text-muted-foreground">Custo + Impostos</p>
+            <p className="text-sm text-muted-foreground">{t('calculadora.cost_plus_tax')}</p>
             <p className="text-3xl font-bold font-heading mt-1 text-warning">{formatCurrency(resultado.custoComImpostos)}</p>
           </Card>
         </div>
@@ -109,20 +111,17 @@ const Calculadora = () => {
         <Card className="p-10 border-none shadow-md text-center">
           <Calculator className="w-12 h-12 mx-auto mb-3 text-primary/30" />
           <p className="text-lg font-semibold font-heading text-muted-foreground">
-            {hasErrors ? 'Corrija os campos acima' : 'Preencha os campos acima'}
+            {hasErrors ? t('calculadora.fix_fields') : t('calculadora.fill_fields')}
           </p>
           <p className="text-sm text-muted-foreground mt-1">
-            {hasErrors ? <span className="flex items-center gap-1.5"><AlertTriangle className="w-3.5 h-3.5" /> Há valores inválidos que impedem o cálculo</span> : 'O preço ideal aparecerá aqui automaticamente'}
+            {hasErrors ? <span className="flex items-center gap-1.5"><AlertTriangle className="w-3.5 h-3.5" /> {t('calculadora.invalid_values')}</span> : t('calculadora.result_placeholder')}
           </p>
         </Card>
       )}
 
       <Card className="p-5 border-none shadow-md bg-muted/50">
-        <h3 className="font-semibold font-heading text-sm mb-2 flex items-center gap-1.5"><Lightbulb className="w-3.5 h-3.5 text-primary" /> Dica de Precificação</h3>
-        <p className="text-sm text-muted-foreground">
-          Margens entre <strong>40% e 60%</strong> são ideais para revenda. Abaixo de 30% pode não cobrir seus custos operacionais.
-          Lembre-se de incluir embalagem, frete e tempo dedicado no custo!
-        </p>
+        <h3 className="font-semibold font-heading text-sm mb-2 flex items-center gap-1.5"><Lightbulb className="w-3.5 h-3.5 text-primary" /> {t('calculadora.tip_title')}</h3>
+        <p className="text-sm text-muted-foreground" dangerouslySetInnerHTML={{ __html: t('calculadora.tip_text') }} />
       </Card>
     </div>
   );
