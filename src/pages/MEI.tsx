@@ -7,7 +7,14 @@ import { callFunction, FUNCTIONS } from '@/integrations/firebase/firebase';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { toast } from 'sonner';
-import { useT } from '@/lib/i18n';
+import ptDict from '@/i18n/locales/pt.json';
+
+// MEI existe apenas no Brasil: esta tela é sempre exibida em português.
+const tPt = (key: string, vars?: Record<string, string | number>): string => {
+  const v = key.split('.').reduce<any>((acc, k) => (acc == null ? acc : acc[k]), ptDict as any);
+  if (typeof v !== 'string') return key;
+  return vars ? v.replace(/\{\{(\w+)\}\}/g, (_, k) => String(vars[k] ?? '')) : v;
+};
 
 const LIMITE_MEI_ANUAL = 81000;
 
@@ -29,7 +36,7 @@ const classify = (cat: string): 'comercio' | 'servicos' | 'desconhecido' => {
 };
 
 const MEI = () => {
-  const t = useT();
+  const t = tPt;
   const { config, updateConfig } = useStore();
   const [year, setYear] = useState(new Date().getFullYear());
   const [cnpjInput, setCnpjInput] = useState('');
