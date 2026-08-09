@@ -785,7 +785,278 @@
   },
   "privacidade": {
     "title": "Política de Privacidad",
-    "back": "Volver"
+    "back": "Volver",
+    "s1": {
+      "title": "1. Introducción",
+      "p1": "Biztrivo respeta su privacidad y está comprometida en proteger sus datos personales. Esta Política de Privacidad explica cómo recopilamos, usamos, almacenamos y compartimos su información personal en cumplimiento con la Lei Geral de Proteção de Dados (LGPD - Lei 13.709/2018) y demás legislación aplicable.",
+      "p2": "Esta política se aplica a todos los usuarios de la plataforma Biztrivo, incluidos visitantes, usuarios registrados y suscriptores de planes pagos.",
+      "p3": "Al utilizar nuestros servicios, usted acepta las prácticas descritas en esta Política de Privacidad. Si no está de acuerdo con alguna parte de esta política, no utilice nuestros servicios."
+    },
+    "s2": {
+      "title": "2. Definiciones",
+      "p1": "A los efectos de esta Política de Privacidad:",
+      "items": [
+        "<strong>Datos Personales:</strong> Cualquier información relacionada con una persona física identificada o identificable",
+        "<strong>Titular:</strong> Persona física a quien se refieren los datos personales",
+        "<strong>Responsable del Tratamiento:</strong> Biztrivo, responsable de las decisiones sobre el tratamiento de datos personales",
+        "<strong>Tratamiento:</strong> Toda operación realizada con datos personales (recopilación, almacenamiento, uso, intercambio, etc.)",
+        "<strong>Cookies:</strong> Pequeños archivos de texto almacenados en su dispositivo para mejorar su experiencia"
+      ]
+    },
+    "s3": {
+      "title": "3. Datos Recopilados",
+      "s1": {
+        "h": "3.1. Datos Proporcionados Directamente por Usted",
+        "p1": "Recopilamos la siguiente información cuando usted crea una cuenta o utiliza nuestros servicios:",
+        "items": [
+          "<strong>Datos de Registro:</strong> Nombre de la tienda, correo electrónico, contraseña (cifrada), teléfono",
+          "<strong>Datos de Perfil:</strong> Foto de perfil, preferencias de configuración",
+          "<strong>Datos de Pago:</strong> Información de facturación (procesada por terceros seguros)",
+          "<strong>Datos del Negocio:</strong> Productos, precios, transacciones financieras, inventario",
+          "<strong>Comunicaciones:</strong> Mensajes enviados al soporte, comentarios, reseñas"
+        ]
+      },
+      "s2": {
+        "h": "3.2. Datos Recopilados Automáticamente",
+        "p1": "Cuando usted utiliza nuestra plataforma, recopilamos automáticamente:",
+        "items": [
+          "<strong>Datos de Navegación:</strong> Dirección IP, tipo de navegador, sistema operativo, idioma",
+          "<strong>Datos de Uso:</strong> Páginas visitadas, tiempo de uso, clics, funcionalidades utilizadas",
+          "<strong>Datos del Dispositivo:</strong> Identificador único del dispositivo, modelo, resolución de pantalla",
+          "<strong>Datos de Ubicación:</strong> Ubicación aproximada basada en la IP (no recopilamos GPS)",
+          "<strong>Cookies y Tecnologías Similares:</strong> Según se describe en la sección 10"
+        ]
+      },
+      "s3": {
+        "h": "3.3. Datos de Terceros",
+        "p1": "Podemos recibir información sobre usted de procesadores de pago (como Stripe, Inc.) cuando se suscribe a un plan pago, limitada a lo necesario para procesar la transacción."
+      }
+    },
+    "s4": {
+      "title": "4. Base Legal y Finalidades del Tratamiento",
+      "s1": {
+        "h": "4.1. Ejecución de Contrato",
+        "p1": "Tratamos sus datos para:",
+        "items": [
+          "Crear y gestionar su cuenta",
+          "Proporcionar los servicios de la plataforma",
+          "Procesar pagos y gestionar suscripciones",
+          "Permitir la creación y gestión de su vitrina en línea",
+          "Generar informes y análisis de su negocio"
+        ]
+      },
+      "s2": {
+        "h": "4.2. Interés Legítimo",
+        "p1": "Con base en nuestro interés legítimo, usamos sus datos para:",
+        "items": [
+          "Mejorar y personalizar nuestros servicios",
+          "Realizar análisis estadísticos e investigaciones de mercado",
+          "Prevenir fraudes y garantizar la seguridad de la plataforma",
+          "Detectar y corregir errores técnicos",
+          "Enviar comunicaciones sobre actualizaciones importantes del servicio"
+        ]
+      },
+      "s3": {
+        "h": "4.3. Consentimiento",
+        "p1": "Con su consentimiento expreso, podemos:",
+        "items": [
+          "Enviar correos promocionales y ofertas especiales",
+          "Realizar marketing directo",
+          "Utilizar cookies no esenciales",
+          "Compartir información con fines de publicidad dirigida"
+        ],
+        "p2": "Usted puede retirar su consentimiento en cualquier momento a través de la configuración de la cuenta o los enlaces de exclusión en los correos electrónicos."
+      },
+      "s4": {
+        "h": "4.4. Cumplimiento de Obligación Legal",
+        "p1": "Podemos tratar sus datos para:",
+        "items": [
+          "Cumplir obligaciones fiscales y contables",
+          "Atender solicitudes de autoridades competentes",
+          "Ejercer derechos en procesos judiciales"
+        ]
+      }
+    },
+    "s5": {
+      "title": "5. Compartición de Datos",
+      "p1": "No vendemos sus datos personales. Podemos compartir su información solo en las siguientes situaciones:",
+      "s1": {
+        "h": "5.1. Proveedores de Servicios",
+        "p1": "Compartimos datos con terceros que nos ayudan a prestar nuestros servicios:",
+        "items": [
+          "<strong>Procesadores de Pago:</strong> Stripe, Inc. (para procesar transacciones)",
+          "<strong>Servicios de Alojamiento:</strong> Proveedores de infraestructura en la nube",
+          "<strong>Herramientas de Análisis:</strong> Google Analytics (datos anonimizados)",
+          "<strong>Servicios de Correo Electrónico:</strong> Plataformas de envío de correos transaccionales",
+          "<strong>Atención al Cliente:</strong> Herramientas de soporte y helpdesk"
+        ],
+        "p2": "Todos los proveedores de servicios son cuidadosamente seleccionados y están obligados contractualmente a proteger sus datos y usarlos solo según nuestras instrucciones."
+      },
+      "s2": {
+        "h": "5.2. Requisitos Legales",
+        "p1": "Podemos divulgar sus datos cuando lo exija la ley o en respuesta a:",
+        "items": [
+          "Órdenes judiciales o administrativas",
+          "Investigaciones de autoridades competentes",
+          "Protección de nuestros derechos legales",
+          "Prevención de fraudes o actividades ilegales"
+        ]
+      },
+      "s3": {
+        "h": "5.3. Transferencias Corporativas",
+        "p1": "En caso de fusión, adquisición, venta de activos o quiebra, sus datos personales pueden transferirse a la entidad sucesora, que seguirá vinculada a esta Política de Privacidad."
+      },
+      "s4": {
+        "h": "5.4. Con Su Consentimiento",
+        "p1": "Podemos compartir sus datos con terceros para otros fines mediante su consentimiento expreso y específico."
+      }
+    },
+    "s6": {
+      "title": "6. Almacenamiento y Seguridad",
+      "s1": {
+        "h": "6.1. Período de Almacenamiento",
+        "p1": "Mantenemos sus datos personales solo durante el tiempo necesario para las finalidades descritas, incluyendo:",
+        "items": [
+          "<strong>Datos de Cuenta Activa:</strong> Durante toda la vigencia de la cuenta",
+          "<strong>Datos de Cuenta Cerrada:</strong> Hasta 5 años después del cierre (obligaciones legales)",
+          "<strong>Datos Fiscales/Contables:</strong> Por el plazo legal exigido (generalmente 5 años)",
+          "<strong>Datos de Marketing:</strong> Hasta que retire su consentimiento o 2 años de inactividad",
+          "<strong>Registros de Acceso:</strong> Hasta 6 meses (conforme al Marco Civil de Internet de Brasil)"
+        ],
+        "p2": "Después de esos períodos, sus datos son anonimizados o eliminados de forma segura e irreversible."
+      },
+      "s2": {
+        "h": "6.2. Medidas de Seguridad",
+        "p1": "Implementamos medidas técnicas y organizativas apropiadas para proteger sus datos, incluyendo:",
+        "items": [
+          "Cifrado de datos en tránsito (HTTPS/TLS) y en reposo",
+          "Controles de acceso rigurosos y autenticación de dos factores para empleados",
+          "Monitoreo continuo de seguridad y detección de intrusiones",
+          "Copias de seguridad regulares y planes de recuperación ante desastres",
+          "Auditorías de seguridad periódicas",
+          "Capacitación regular del equipo sobre protección de datos",
+          "Contraseñas almacenadas con hash criptográfico (bcrypt)"
+        ],
+        "p2": "A pesar de nuestros esfuerzos, ningún sistema es 100% seguro. Usted también debe proteger sus credenciales y notificarnos de inmediato ante cualquier uso no autorizado de su cuenta."
+      },
+      "s3": {
+        "h": "6.3. Ubicación de los Datos",
+        "p1": "Sus datos se almacenan en servidores ubicados en Brasil. En caso de que sea necesaria una transferencia internacional, garantizaremos que existan salvaguardas adecuadas de protección conforme a la LGPD."
+      }
+    },
+    "s7": {
+      "title": "7. Sus Derechos como Titular de Datos",
+      "p1": "Conforme a la LGPD, usted tiene los siguientes derechos en relación con sus datos personales:",
+      "items": [
+        "<strong>Confirmación y Acceso:</strong> Confirmar si tratamos sus datos y acceder a su información",
+        "<strong>Corrección:</strong> Solicitar la corrección de datos incompletos, inexactos o desactualizados",
+        "<strong>Anonimización, Bloqueo o Eliminación:</strong> Solicitar la anonimización, bloqueo o eliminación de datos innecesarios, excesivos o tratados en incumplimiento",
+        "<strong>Portabilidad:</strong> Solicitar la portabilidad de sus datos a otro proveedor (formato estructurado)",
+        "<strong>Eliminación de Datos:</strong> Solicitar la eliminación de datos tratados con base en el consentimiento",
+        "<strong>Información sobre Compartición:</strong> Saber con qué entidades compartimos sus datos",
+        "<strong>Información sobre la Posibilidad de No Consentir:</strong> Ser informado sobre la posibilidad de no otorgar el consentimiento y sus consecuencias",
+        "<strong>Revocación del Consentimiento:</strong> Revocar el consentimiento en cualquier momento",
+        "<strong>Oposición:</strong> Oponerse al tratamiento realizado con base en el interés legítimo",
+        "<strong>Revisión de Decisiones Automatizadas:</strong> Solicitar la revisión de decisiones tomadas únicamente con base en tratamiento automatizado"
+      ],
+      "h": "Cómo Ejercer Sus Derechos",
+      "p2": "Para ejercer cualquiera de estos derechos:",
+      "items2": [
+        "Acceda a la configuración de su cuenta en la plataforma",
+        "Póngase en contacto a través del correo electrónico: privacidade@biztrivo.com",
+        "Envíe una solicitud por escrito a nuestra dirección física"
+      ],
+      "p3": "Responderemos a su solicitud en un plazo de hasta 15 días. Podemos solicitar información adicional para confirmar su identidad antes de procesar las solicitudes."
+    },
+    "s8": {
+      "title": "8. Datos de Menores de Edad",
+      "p1": "Nuestros servicios no están dirigidos a menores de 18 años. No recopilamos intencionalmente datos personales de menores. Si tenemos conocimiento de que recopilamos datos de un menor sin el consentimiento parental adecuado, tomaremos medidas para eliminar dicha información.",
+      "p2": "Los padres o tutores que crean que sus hijos han proporcionado datos personales deben ponerse en contacto con nosotros de inmediato."
+    },
+    "s9": {
+      "title": "9. Enlaces a Sitios de Terceros",
+      "p1": "Nuestra plataforma puede contener enlaces a sitios de terceros. No somos responsables de las prácticas de privacidad de esos sitios. Le recomendamos leer la política de privacidad de cada sitio que visite."
+    },
+    "s10": {
+      "title": "10. Cookies y Tecnologías Similares",
+      "s1": {
+        "h": "10.1. Qué son las Cookies",
+        "p1": "Las cookies son pequeños archivos de texto almacenados en su dispositivo que nos ayudan a mejorar su experiencia, entender cómo utiliza nuestros servicios y personalizar el contenido."
+      },
+      "s2": {
+        "h": "10.2. Tipos de Cookies que Utilizamos",
+        "items": [
+          "<strong>Cookies Esenciales:</strong> Necesarias para el funcionamiento básico de la plataforma (autenticación, seguridad). No se pueden deshabilitar.",
+          "<strong>Cookies de Rendimiento:</strong> Recopilan información anónima sobre cómo utiliza la plataforma para realizar mejoras.",
+          "<strong>Cookies de Funcionalidad:</strong> Recuerdan sus preferencias y configuraciones.",
+          "<strong>Cookies de Marketing:</strong> Rastrean su navegación para mostrar anuncios relevantes (solo con consentimiento)."
+        ]
+      },
+      "s3": {
+        "h": "10.3. Gestión de Cookies",
+        "p1": "Puede controlar y gestionar las cookies a través de la configuración de su navegador. Tenga en cuenta que deshabilitar las cookies esenciales puede afectar la funcionalidad de la plataforma."
+      }
+    },
+    "s11": {
+      "title": "11. Incidentes de Seguridad",
+      "p1": "En caso de un incidente de seguridad que pueda ocasionar un riesgo o daño relevante a los titulares de datos:",
+      "items": [
+        "Notificaremos a la Autoridad Nacional de Protección de Datos (ANPD) en un plazo adecuado",
+        "Comunicaremos a los titulares afectados sobre el incidente y las medidas adoptadas",
+        "Tomaremos medidas inmediatas para mitigar daños y prevenir nuevos incidentes"
+      ]
+    },
+    "s12": {
+      "title": "12. Cambios en esta Política",
+      "p1": "Podemos actualizar esta Política de Privacidad periódicamente para reflejar cambios en nuestras prácticas o por requisitos legales. Le notificaremos sobre cambios materiales a través de:",
+      "items": [
+        "Correo electrónico enviado a la dirección registrada",
+        "Aviso destacado en la plataforma",
+        "Notificación al iniciar sesión"
+      ],
+      "p2": "La fecha de la última actualización siempre se indicará en la parte superior de esta política. Le recomendamos revisar esta página periódicamente."
+    },
+    "s13": {
+      "title": "13. Encargado de Protección de Datos (DPO)",
+      "p1": "Hemos designado un Encargado de Protección de Datos (Data Protection Officer - DPO) conforme a la LGPD. Nuestro DPO es responsable de recibir reclamaciones y comunicaciones de los titulares, brindar aclaraciones y adoptar medidas.",
+      "p2": "<strong>Contacto del DPO:</strong>",
+      "items": [
+        "<strong>Correo electrónico:</strong> biztrivo@outlook.com",
+        "<strong>Dirección:</strong> Empresa 100% remota, sin sede física"
+      ]
+    },
+    "s14": {
+      "title": "14. Autoridad de Protección de Datos",
+      "p1": "Sin perjuicio de cualquier recurso administrativo o judicial, usted tiene derecho a presentar una reclamación ante la Autoridad Nacional de Protección de Datos (ANPD):",
+      "items": [
+        "<strong>Sitio web:</strong> www.gov.br/anpd",
+        "<strong>Dirección:</strong> SAS, Quadra 6, Conjunto A, Bloco A, Ed. Órgãos Regionais, 1º Andar, Brasília-DF, CEP 70070-600"
+      ]
+    },
+    "s15": {
+      "title": "15. Información de Contacto",
+      "p1": "Para dudas, solicitudes o reclamaciones sobre esta Política de Privacidad o sobre el tratamiento de sus datos personales:",
+      "items": [
+        "<strong>Correo General:</strong> biztrivo@outlook.com",
+        "<strong>Correo de Privacidad:</strong> biztrivo@outlook.com.br",
+        "<strong>Correo del DPO:</strong> biztrivo@outlook.com",
+        "<strong>Dirección:</strong> Empresa 100% remota, sin sede física",
+        "<strong>CNPJ:</strong> 63.526.345/0001-01"
+      ]
+    },
+    "s16": {
+      "title": "16. Política de Cookies (LGPD)",
+      "p1": "De conformidad con la LGPD (Lei 13.709/2018), utilizamos cookies y tecnologías similares solo con su autorización, excepto cuando sean estrictamente necesarias para el funcionamiento del servicio. Al acceder a la plataforma por primera vez, mostramos un banner de consentimiento donde puede <strong>aceptar</strong> o <strong>rechazar</strong> el uso de cookies no esenciales.",
+      "p2": "<strong>Tipos de cookies que utilizamos:</strong>",
+      "items": [
+        "<strong>Esenciales:</strong> Siempre activas. Necesarias para autenticación, sesión, seguridad y preferencias básicas. Sin ellas la plataforma no funciona.",
+        "<strong>Analíticas:</strong> Nos ayudan a entender cómo utiliza Biztrivo (por ejemplo, Google Analytics). Solo se activan tras su consentimiento.",
+        "<strong>Publicidad:</strong> Permiten mostrar contenido y anuncios más relevantes (por ejemplo, Google Ads). Solo se activan tras su consentimiento."
+      ],
+      "p3": "Puede <strong>revocar su consentimiento en cualquier momento</strong> eliminando las cookies de su navegador o poniéndose en contacto a través del correo <strong>biztrivo@outlook.com.br</strong>. El rechazo de cookies no esenciales no impide el uso de la plataforma.",
+      "p4": "Hemos implementado <em>Google Consent Mode v2</em>, garantizando que ningún dato de analítica o publicidad se envíe a terceros sin su autorización expresa."
+    },
+    "commitment": "<strong>Compromiso con la Privacidad:</strong> Biztrivo está comprometida en proteger su privacidad y tratar sus datos personales con total transparencia, seguridad y en cumplimiento con la legislación brasileña de protección de datos. Sus datos son suyos, y usted tiene control total sobre ellos."
   },
   "ext": {
     "cfg_country_br": "Brasil",
