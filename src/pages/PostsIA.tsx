@@ -77,6 +77,8 @@ export default function PostsIA() {
   const { config } = useStore();
   const t = useT();
   const { lang } = useI18n();
+  const LANG_NAMES: Record<string, string> = { pt: 'português do Brasil', en: 'inglês (English)', es: 'espanhol (Español)', fr: 'francês (Français)' };
+  const langInstruction = `\nIMPORTANTE: escreva TODO o conteúdo gerado em ${LANG_NAMES[lang] ?? 'português do Brasil'}.`;
 
   const TEMPLATES = useMemo(() => TEMPLATE_IDS.map(id => ({
     id,
@@ -302,7 +304,7 @@ export default function PostsIA() {
 Crie um plano de conteúdo para 30 dias para a loja "${config.storeName}" que vende: ${nomes}.
 Responda APENAS com um JSON array de 30 objetos, sem texto antes ou depois, sem markdown.
 Cada objeto: { "day": <número 1-30>, "productName": "<nome do produto>", "tone": "<promocional|elegante|divertido>", "type": "<Post no Feed|Stories|Reels|Enquete|Depoimento>", "idea": "<ideia criativa de 1 frase max 80 chars>" }
-Varie os tipos de conteúdo e tons ao longo do mês. Distribua os produtos de forma equilibrada.`;
+Varie os tipos de conteúdo e tons ao longo do mês. Distribua os produtos de forma equilibrada.` + langInstruction;
       const { text: raw, percent } = await callFunction<{ text: string; percent: number }>(FUNCTIONS.postsIA, { action: 'gerarPlano', prompt, lang });
       updateUsage(percent);
       const clean = raw.replace(/```json|```/g, '').trim();
@@ -328,7 +330,7 @@ Varie os tipos de conteúdo e tons ao longo do mês. Distribua os produtos de fo
 A loja "${config.storeName}" vende: ${nomes}.
 Gere 3 sets de hashtags em PT-BR. Responda APENAS com JSON, sem texto, sem markdown:
 { "large": [10 hashtags com +1M posts], "medium": [10 hashtags com 100k-500k posts], "niche": [10 hashtags nichadas com -50k posts, específicas do nicho] }
-Todas em português, sem o símbolo #.`;
+Todas em português, sem o símbolo #.` + langInstruction;
       const { text: raw, percent } = await callFunction<{ text: string; percent: number }>(FUNCTIONS.postsIA, { action: 'gerarHashtags', prompt, lang });
       updateUsage(percent);
       const clean = raw.replace(/```json|```/g, '').trim();
@@ -361,7 +363,7 @@ Todas em português, sem o símbolo #.`;
 Produtos principais: ${nomes || 'produtos variados'}.
 WhatsApp: ${config.whatsapp || 'não informado'}.
 A bio deve ter: emojis estratégicos, palavras-chave do nicho, CTA direto, máximo 150 caracteres.
-Responda APENAS com o texto da bio, sem aspas, sem explicações.`;
+Responda APENAS com o texto da bio, sem aspas, sem explicações.` + langInstruction;
       const { text: result, percent } = await callFunction<{ text: string; percent: number }>(FUNCTIONS.postsIA, { action: 'gerarBio', prompt, lang });
       updateUsage(percent);
       const bioTexto = result.trim();
@@ -395,7 +397,7 @@ Adicione uma linha de CTA no final chamando pro WhatsApp.
 Responda APENAS com a legenda reescrita, sem aspas, sem explicações.
 
 TEXTO ORIGINAL:
-${textoOriginal}`;
+${textoOriginal}` + langInstruction;
       const { text: result, percent } = await callFunction<{ text: string; percent: number }>(FUNCTIONS.postsIA, { action: 'reescreverLegenda', prompt, lang });
       updateUsage(percent);
       setLegendaReescrita(result.trim());
@@ -431,7 +433,7 @@ Slide 1: Teaser (gera curiosidade sem revelar o produto).
 Slide 2: Reveal (mostra o produto com preço e benefício principal).
 Slide 3: CTA (urgência + link WhatsApp ${config.whatsapp || ''}).
 Use emojis. Cada texto deve ter no máximo 80 caracteres. Tom direto e animado.
-Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..."},{"slide":"Slide 2 - Reveal","texto":"..."},{"slide":"Slide 3 - CTA","texto":"..."}]`;
+Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..."},{"slide":"Slide 2 - Reveal","texto":"..."},{"slide":"Slide 3 - CTA","texto":"..."}]` + langInstruction;
       const { text: raw, percent } = await callFunction<{ text: string; percent: number }>(FUNCTIONS.postsIA, { action: 'gerarStories', prompt, lang });
       updateUsage(percent);
       const clean = raw.replace(/```json|```/g, '').trim();
