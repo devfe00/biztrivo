@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { FUNCTIONS, callFunction } from '@/integrations/firebase/firebase';
-import { useT } from '@/lib/i18n';
+import { useT, useI18n } from '@/lib/i18n';
 
 interface PostRecord {
   id: string;
@@ -51,39 +51,8 @@ const PLANO_KEY = 'posts_ia_plano';
 const HASHTAG_KEY = 'posts_ia_hashtags';
 const BIO_KEY = 'posts_ia_bio';
 
-const TEMPLATES = [
-  {
-    id: 'promo',
-    label: '🔥 Promoção Relâmpago',
-    text: `🔥 PROMOÇÃO RELÂMPAGO!\n\n{produto} por apenas R$ {preco}!\n\nNão perca essa oportunidade. Estoque limitado!\n\n👇 Chama no WhatsApp e garante o seu!`,
-  },
-  {
-    id: 'novo',
-    label: '✨ Novidade na Vitrine',
-    text: `✨ NOVIDADE!\n\n{produto} acabou de chegar na nossa vitrine!\n\nQualidade garantida e preço justo. 💚\n\n📲 Acesse o link da bio ou chama no WhatsApp!`,
-  },
-  {
-    id: 'ultimas',
-    label: '⚡ Últimas Unidades',
-    text: `⚡ ÚLTIMAS UNIDADES!\n\n{produto} por R$ {preco} quase acabando...\n\nSe você tava esperando o momento certo, é AGORA! 🚨\n\n📩 Chama antes que acabe!`,
-  },
-  {
-    id: 'destaque',
-    label: '⭐ Produto em Destaque',
-    text: `⭐ DESTAQUE DA SEMANA\n\n{produto}\n\nUm dos mais pedidos aqui da loja. Vem saber por quê! 👀\n\n💬 Chama no WhatsApp pra mais informações.`,
-  },
-];
-
-const DICAS = [
-  { icon: '⏰', text: 'Os melhores horários para postar são entre 18h e 21h nos dias úteis e 10h-12h nos fins de semana.' },
-  { icon: '🏷️', text: 'Use entre 5 e 15 hashtags por post. Muitas hashtags podem parecer spam para o algoritmo.' },
-  { icon: '📅', text: 'Postar 3 a 5 vezes por semana no feed é o ritmo ideal para pequenas lojas. Consistência vale mais que volume.' },
-  { icon: '🎯', text: 'Misture hashtags grandes (+1M), médias (100k-500k) e nichadas (-50k). A combinação aumenta seu alcance.' },
-  { icon: '💬', text: 'Responda todos os comentários em até 1 hora após publicar. O algoritmo valoriza posts com engajamento rápido.' },
-  { icon: '📖', text: 'Stories devem ser postados todos os dias, mesmo que o feed descanse. Stories mantêm você no topo da lista.' },
-  { icon: '🔁', text: 'Reutilize posts que foram bem. Se um produto vendeu muito, crie uma variação do mesmo conteúdo 2 meses depois.' },
-  { icon: '👁️', text: 'A primeira linha da legenda é decisiva. Ela aparece antes do "ver mais", faça ela gerar curiosidade ou urgência.' },
-];
+const TEMPLATE_IDS = ['promo', 'novo', 'ultimas', 'destaque'] as const;
+const DICA_ICONS = ['⏰', '🏷️', '📅', '🎯', '💬', '📖', '🔁', '👁️'];
 
 const loadHistory = (): PostRecord[] => {
   try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch { return []; }
