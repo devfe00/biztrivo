@@ -493,7 +493,7 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
       <div className="flex items-start gap-3 rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-4 py-3 text-sm text-yellow-700 dark:text-yellow-300">
         <Info className="w-4 h-4 mt-0.5 shrink-0" />
         <span>
-          {t('posts_ia.storage_notice', { b1: (c: string) => <strong>{c}</strong> })}
+          {t('posts_ia.storage_notice')}
         </span>
       </div>
       {dicaSmartMsg && (
