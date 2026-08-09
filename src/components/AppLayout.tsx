@@ -35,7 +35,9 @@ const langDropdownRef = useRef<HTMLDivElement>(null);
   const { config } = useStore();
   const { signOut } = useAuth();
   const { t, lang, setLang } = useI18n();
-  const navItems = navItemsBase.map(i => ({ ...i, label: t(i.key) }));
+  const navItems = navItemsBase
+    .filter(i => (i.path === '/mei' ? config.paisBase === 'BR' : true))
+    .map(i => ({ ...i, label: t(i.key) }));
 
   const storeName = config.storeName || 'Minha Loja';
   const profileImage = config.profileImage || '';
