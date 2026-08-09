@@ -108,13 +108,9 @@ export default function PostsIA() {
   const [editingTemplate, setEditingTemplate] = useState<string | null>(null);
   const [templateTexts, setTemplateTexts] = useState<Record<string, string>>({});
   useEffect(() => {
-    setTemplateTexts(prev => {
-      const next = { ...prev };
-      TEMPLATES.forEach(tpl => { if (next[tpl.id] === undefined) next[tpl.id] = tpl.text; });
-      return next;
-    });
+    setTemplateTexts(Object.fromEntries(TEMPLATES.map(tpl => [tpl.id, tpl.text])));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [lang]);
 
   //plano mensal
   const [plano, setPlano] = useState<PlanoItem[]>(loadPlano);
