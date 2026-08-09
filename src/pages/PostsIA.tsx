@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useStore } from '@/contexts/StoreContext';
 import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -76,6 +76,18 @@ const saveBio = (b: string) => localStorage.setItem(BIO_KEY, b);
 export default function PostsIA() {
   const { config } = useStore();
   const t = useT();
+  const { lang } = useI18n();
+
+  const TEMPLATES = useMemo(() => TEMPLATE_IDS.map(id => ({
+    id,
+    label: t(`posts_ia.templates_tab.items.${id}`),
+    text: t(`posts_ia.template_texts.${id}`),
+  })), [t]);
+
+  const DICAS = useMemo(() => DICA_ICONS.map((icon, i) => ({
+    icon,
+    text: t(`posts_ia.tips.${i}`),
+  })), [t]);
 
   // Tab
   const [activeTab, setActiveTab] = useState<Tab>('gerar');
@@ -94,9 +106,15 @@ export default function PostsIA() {
 
   // Templates
   const [editingTemplate, setEditingTemplate] = useState<string | null>(null);
-  const [templateTexts, setTemplateTexts] = useState<Record<string, string>>(
-    () => Object.fromEntries(TEMPLATES.map(t => [t.id, t.text]))
-  );
+  const [templateTexts, setTemplateTexts] = useState<Record<string, string>>({});
+  useEffect(() => {
+    setTemplateTexts(prev => {
+      const next = { ...prev };
+      TEMPLATES.forEach(tpl => { if (next[tpl.id] === undefined) next[tpl.id] = tpl.text; });
+      return next;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   //plano mensal
   const [plano, setPlano] = useState<PlanoItem[]>(loadPlano);
@@ -155,15 +173,15 @@ export default function PostsIA() {
     const postsThisWeek = history.filter(r => Date.now() - r.createdAt < 7 * 24 * 60 * 60 * 1000).length;
 
     if (daysSinceLast > 4 && last > 0) {
-      setDicaSmartMsg(`⚠️ Você não posta há mais de ${Math.floor(daysSinceLast)} dias. O algoritmo penaliza pausas longas — que tal gerar um post agora?`);
+      setDicaSmartMsg(t('posts_ia.smart_tip.no_post_days', { days: Math.floor(daysSinceLast) }));
     } else if (postsThisWeek >= 4) {
-      setDicaSmartMsg(`🏆 Ótimo ritmo! Você já gerou ${postsThisWeek} posts essa semana. Tente uma enquete nos Stories hoje para aumentar o engajamento.`);
+      setDicaSmartMsg(t('posts_ia.smart_tip.great_pace', { count: postsThisWeek }));
     } else if (postsThisWeek === 0 && history.length > 0) {
-      setDicaSmartMsg('📅 Nenhum post essa semana ainda. Comece agora e mantenha o algoritmo trabalhando pra você.');
+      setDicaSmartMsg(t('posts_ia.smart_tip.no_post_week'));
     } else {
       setDicaSmartMsg('');
     }
-  }, [history]);
+  }, [history, t]);
 
   useEffect(() => {
     if (aiUsage.resetAt && Date.now() >= aiUsage.resetAt) {
@@ -212,6 +230,7 @@ export default function PostsIA() {
         storeName: config.storeName,
         whatsapp: config.whatsapp,
         tone,
+        lang,
       });
       if (!data?.imageUrl) throw new Error(data?.error || t('posts_ia.toast.gen_error_image'));
       const record: PostRecord = {
@@ -288,7 +307,7 @@ Crie um plano de conteúdo para 30 dias para a loja "${config.storeName}" que ve
 Responda APENAS com um JSON array de 30 objetos, sem texto antes ou depois, sem markdown.
 Cada objeto: { "day": <número 1-30>, "productName": "<nome do produto>", "tone": "<promocional|elegante|divertido>", "type": "<Post no Feed|Stories|Reels|Enquete|Depoimento>", "idea": "<ideia criativa de 1 frase max 80 chars>" }
 Varie os tipos de conteúdo e tons ao longo do mês. Distribua os produtos de forma equilibrada.`;
-      const { text: raw, percent } = await callFunction<{ text: string; percent: number }>(FUNCTIONS.postsIA, { action: 'gerarPlano', prompt });
+      const { text: raw, percent } = await callFunction<{ text: string; percent: number }>(FUNCTIONS.postsIA, { action: 'gerarPlano', prompt, lang });
       updateUsage(percent);
       const clean = raw.replace(/```json|```/g, '').trim();
       const parsed: PlanoItem[] = JSON.parse(clean);
@@ -314,7 +333,7 @@ A loja "${config.storeName}" vende: ${nomes}.
 Gere 3 sets de hashtags em PT-BR. Responda APENAS com JSON, sem texto, sem markdown:
 { "large": [10 hashtags com +1M posts], "medium": [10 hashtags com 100k-500k posts], "niche": [10 hashtags nichadas com -50k posts, específicas do nicho] }
 Todas em português, sem o símbolo #.`;
-      const { text: raw, percent } = await callFunction<{ text: string; percent: number }>(FUNCTIONS.postsIA, { action: 'gerarHashtags', prompt });
+      const { text: raw, percent } = await callFunction<{ text: string; percent: number }>(FUNCTIONS.postsIA, { action: 'gerarHashtags', prompt, lang });
       updateUsage(percent);
       const clean = raw.replace(/```json|```/g, '').trim();
       const parsed: HashtagSet = JSON.parse(clean);
@@ -347,7 +366,7 @@ Produtos principais: ${nomes || 'produtos variados'}.
 WhatsApp: ${config.whatsapp || 'não informado'}.
 A bio deve ter: emojis estratégicos, palavras-chave do nicho, CTA direto, máximo 150 caracteres.
 Responda APENAS com o texto da bio, sem aspas, sem explicações.`;
-      const { text: result, percent } = await callFunction<{ text: string; percent: number }>(FUNCTIONS.postsIA, { action: 'gerarBio', prompt });
+      const { text: result, percent } = await callFunction<{ text: string; percent: number }>(FUNCTIONS.postsIA, { action: 'gerarBio', prompt, lang });
       updateUsage(percent);
       const bioTexto = result.trim();
       setBio(bioTexto);
@@ -381,7 +400,7 @@ Responda APENAS com a legenda reescrita, sem aspas, sem explicações.
 
 TEXTO ORIGINAL:
 ${textoOriginal}`;
-      const { text: result, percent } = await callFunction<{ text: string; percent: number }>(FUNCTIONS.postsIA, { action: 'reescreverLegenda', prompt });
+      const { text: result, percent } = await callFunction<{ text: string; percent: number }>(FUNCTIONS.postsIA, { action: 'reescreverLegenda', prompt, lang });
       updateUsage(percent);
       setLegendaReescrita(result.trim());
     } catch (e: any) {
@@ -417,7 +436,7 @@ Slide 2: Reveal (mostra o produto com preço e benefício principal).
 Slide 3: CTA (urgência + link WhatsApp ${config.whatsapp || ''}).
 Use emojis. Cada texto deve ter no máximo 80 caracteres. Tom direto e animado.
 Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..."},{"slide":"Slide 2 - Reveal","texto":"..."},{"slide":"Slide 3 - CTA","texto":"..."}]`;
-      const { text: raw, percent } = await callFunction<{ text: string; percent: number }>(FUNCTIONS.postsIA, { action: 'gerarStories', prompt });
+      const { text: raw, percent } = await callFunction<{ text: string; percent: number }>(FUNCTIONS.postsIA, { action: 'gerarStories', prompt, lang });
       updateUsage(percent);
       const clean = raw.replace(/```json|```/g, '').trim();
       const parsed = JSON.parse(clean);
@@ -503,9 +522,9 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
         <Card className="p-6 border-none shadow-md space-y-6">
 
           <div>
-            <Label className="text-sm font-medium mb-3 block">Selecione o produto</Label>
+            <Label className="text-sm font-medium mb-3 block">{t('posts_ia.generate_tab.select_product')}</Label>
             {config.products.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Nenhum produto cadastrado. Adicione na Vitrine primeiro.</p>
+              <p className="text-sm text-muted-foreground">{t('posts_ia.generate_tab.no_products')}</p>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {config.products.map(p => (
@@ -532,7 +551,7 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
           </div>
 
           <div>
-            <Label className="text-sm font-medium mb-2 block">Tom da publicação</Label>
+            <Label className="text-sm font-medium mb-2 block">{t('posts_ia.generate_tab.tone_label')}</Label>
             <div className="flex gap-2 flex-wrap">
               {(['promocional', 'elegante', 'divertido'] as Tone[]).map(t => (
                 <button
@@ -554,12 +573,12 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
             disabled={loading || !selectedProduct}
             className="w-full py-3 rounded-xl gradient-primary text-primary-foreground font-medium text-sm shadow-glow hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Gerando… (~15s)</> : <><Sparkles className="w-4 h-4" /> Gerar Post</>}
+            {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> {t('posts_ia.generate_tab.generating')}</> : <><Sparkles className="w-4 h-4" /> {t('posts_ia.generate_tab.generate_button')}</>}
           </button>
 
           {loading && (
             <p className="text-xs text-center text-muted-foreground animate-pulse">
-              Criando imagem + legenda + hashtags para <strong>{selectedProduct?.name}</strong>…
+              {t('posts_ia.generate_tab.loading_msg', { product: selectedProduct?.name ?? '' })}
             </p>
           )}
 
@@ -567,13 +586,13 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
           <div className="rounded-xl border border-border bg-muted/40 px-4 py-3 space-y-2">
             <div className="flex items-center justify-between">
               <p className="text-xs font-semibold uppercase text-muted-foreground flex items-center gap-1.5">
-                <Lightbulb className="w-3.5 h-3.5" /> Dica do dia
+                <Lightbulb className="w-3.5 h-3.5" /> {t('posts_ia.generate_tab.tip_of_day')}
               </p>
               <button
                 onClick={() => setDicaIdx(i => (i + 1) % DICAS.length)}
                 className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
               >
-                <RefreshCw className="w-3 h-3" /> Próxima
+                <RefreshCw className="w-3 h-3" /> {t('posts_ia.generate_tab.next_tip')}
               </button>
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed">
@@ -590,9 +609,9 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
           {history.length > 0 && (
             <div className="grid grid-cols-3 gap-3">
               {[
-                { label: 'Posts gerados', value: history.length, icon: <ImageIcon className="w-4 h-4" /> },
-                { label: 'Publicados', value: publishedCount, icon: <CheckCircle2 className="w-4 h-4 text-green-500" /> },
-                { label: 'Pendentes', value: pendingCount, icon: <Clock className="w-4 h-4 text-yellow-500" /> },
+                { label: t('posts_ia.history_tab.generated'), value: history.length, icon: <ImageIcon className="w-4 h-4" /> },
+                { label: t('posts_ia.history_tab.published'), value: publishedCount, icon: <CheckCircle2 className="w-4 h-4 text-green-500" /> },
+                { label: t('posts_ia.history_tab.pending'), value: pendingCount, icon: <Clock className="w-4 h-4 text-yellow-500" /> },
               ].map(m => (
                 <Card key={m.label} className="p-3 border-none shadow-sm text-center space-y-1">
                   <div className="flex justify-center text-muted-foreground">{m.icon}</div>
@@ -608,7 +627,7 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
             <Card className="p-4 border-none shadow-md space-y-3">
               <div className="flex items-center gap-2">
                 <BarChart2 className="w-4 h-4 text-primary" />
-                <p className="text-sm font-semibold">Análise de Desempenho</p>
+                <p className="text-sm font-semibold">{t('posts_ia.history_tab.performance_analysis')}</p>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 {postsComStats.slice(0, 4).map(r => (
@@ -625,11 +644,11 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
               {melhorTom && (
                 <div className="flex items-center gap-2 rounded-lg bg-primary/5 border border-primary/20 px-3 py-2">
                   <Star className="w-3.5 h-3.5 text-primary" />
-                  <p className="text-xs">Seu tom com mais curtidas: <strong className="capitalize">{melhorTom}</strong></p>
+                  <p className="text-xs">{t('posts_ia.history_tab.best_tone', { tone: melhorTom ?? '' })}</p>
                 </div>
               )}
               {postsComStats.length < 2 && (
-                <p className="text-xs text-muted-foreground">Registre métricas em mais posts para ver a análise completa.</p>
+                <p className="text-xs text-muted-foreground">{t('posts_ia.history_tab.register_more_stats')}</p>
               )}
             </Card>
           )}
@@ -637,15 +656,15 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
           {pendingCount > 0 && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Clock className="w-4 h-4" />
-              <span>{pendingCount} post{pendingCount > 1 ? 's' : ''} pendente{pendingCount > 1 ? 's' : ''} de publicação</span>
+              <span>{t('posts_ia.history_tab.pending_posts', { count: pendingCount, plural: pendingCount > 1 ? 's' : '' })}</span>
             </div>
           )}
 
           {history.length === 0 ? (
             <Card className="p-10 border-none shadow-md text-center">
               <Instagram className="w-10 h-10 mx-auto mb-3 text-pink-500/30" />
-              <p className="font-semibold font-heading">Nenhum post gerado ainda</p>
-              <p className="text-sm text-muted-foreground mt-1">Vá para <strong>Gerar Post</strong> e crie seu primeiro.</p>
+              <p className="font-semibold font-heading">{t('posts_ia.history_tab.empty_title')}</p>
+              <p className="text-sm text-muted-foreground mt-1">{t('posts_ia.history_tab.empty_subtitle')}</p>
             </Card>
           ) : (
             <>
@@ -654,7 +673,7 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <Grid3x3 className="w-4 h-4 text-muted-foreground" />
-                    <p className="text-xs font-semibold uppercase text-muted-foreground">Preview do Feed</p>
+                    <p className="text-xs font-semibold uppercase text-muted-foreground">{t('posts_ia.history_tab.feed_preview')}</p>
                   </div>
                   <div className="grid grid-cols-3 gap-1 rounded-xl overflow-hidden border border-border">
                     {history.slice(0, 9).map(r => (
@@ -663,7 +682,7 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
                       </div>
                     ))}
                   </div>
-                  <p className="text-xs text-muted-foreground">Simulação de como seu feed ficaria com os últimos {Math.min(history.length, 9)} posts.</p>
+                  <p className="text-xs text-muted-foreground">{t('posts_ia.history_tab.feed_simulation', { count: Math.min(history.length, 9) })}</p>
                 </div>
               )}
 
@@ -689,7 +708,7 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
                               : 'bg-muted text-muted-foreground hover:bg-accent'
                           }`}
                         >
-                          {record.published ? <><CheckCircle2 className="w-3 h-3" /> Publicado</> : <><Circle className="w-3 h-3" /> Pendente</>}
+                          {record.published ? <><CheckCircle2 className="w-3 h-3" /> {t('posts_ia.history_tab.published_badge')}</> : <><Circle className="w-3 h-3" /> {t('posts_ia.history_tab.pending_badge')}</>}
                         </button>
                       </div>
 
@@ -699,14 +718,14 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
                           <div className="flex gap-2">
                             <input
                               type="number"
-                              placeholder="Alcance"
+                              placeholder={t('posts_ia.history_tab.reach_placeholder')}
                               value={statsInput.reach}
                               onChange={e => setStatsInput(s => ({ ...s, reach: e.target.value }))}
                               className="w-full text-xs bg-muted rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
                             />
                             <input
                               type="number"
-                              placeholder="Curtidas"
+                              placeholder={t('posts_ia.history_tab.likes_placeholder')}
                               value={statsInput.likes}
                               onChange={e => setStatsInput(s => ({ ...s, likes: e.target.value }))}
                               className="w-full text-xs bg-muted rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
@@ -716,28 +735,28 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
                             <button
                               onClick={() => saveStats(record.id)}
                               className="flex-1 py-1 rounded-lg gradient-primary text-primary-foreground text-xs font-medium"
-                            >Salvar</button>
+                            >{t('posts_ia.history_tab.save')}</button>
                             <button
                               onClick={() => setEditingStats(null)}
                               className="flex-1 py-1 rounded-lg bg-muted text-xs text-muted-foreground"
-                            >Cancelar</button>
+                            >{t('posts_ia.history_tab.cancel')}</button>
                           </div>
                         </div>
                       ) : record.reach !== undefined ? (
                         <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                          <span className="flex items-center gap-1"><Eye className="w-3 h-3" /> {record.reach.toLocaleString('pt-BR')} alcance</span>
-<span className="flex items-center gap-1"><Heart className="w-3 h-3" /> {record.likes?.toLocaleString('pt-BR')} curtidas</span>
+                          <span className="flex items-center gap-1"><Eye className="w-3 h-3" /> {t('posts_ia.history_tab.reach_value', { value: record.reach.toLocaleString() })}</span>
+<span className="flex items-center gap-1"><Heart className="w-3 h-3" /> {t('posts_ia.history_tab.likes_value', { value: record.likes?.toLocaleString() ?? '' })}</span>
                           <button
                             onClick={() => { setEditingStats(record.id); setStatsInput({ reach: String(record.reach), likes: String(record.likes) }); }}
                             className="text-primary text-xs hover:underline ml-auto"
-                          >Editar</button>
+                          >{t('posts_ia.history_tab.edit')}</button>
                         </div>
                       ) : (
                         <button
                           onClick={() => { setEditingStats(record.id); setStatsInput({ reach: '', likes: '' }); }}
                           className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1.5 transition-colors"
                         >
-                          <BarChart2 className="w-3 h-3" /> Registrar alcance e curtidas
+                          <BarChart2 className="w-3 h-3" /> {t('posts_ia.history_tab.register_reach_likes')}
                         </button>
                       )}
 
@@ -750,7 +769,7 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
                             onClick={() => setExpandedId(expandedId === record.id ? null : record.id)}
                             className="text-[10px] text-primary mt-0.5 flex items-center gap-0.5"
                           >
-                            {expandedId === record.id ? <><ChevronUp className="w-3 h-3" /> Menos</> : <><ChevronDown className="w-3 h-3" /> Ver mais</>}
+                            {expandedId === record.id ? <><ChevronUp className="w-3 h-3" /> {t('posts_ia.history_tab.less')}</> : <><ChevronDown className="w-3 h-3" /> {t('posts_ia.history_tab.see_more')}</>}
                           </button>
                         )}
                       </div>
@@ -760,13 +779,13 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
                           onClick={() => downloadImage(record)}
                           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg gradient-primary text-primary-foreground text-xs font-medium shadow-glow hover:opacity-90 transition-opacity"
                         >
-                          <Download className="w-3 h-3" /> Baixar
+                          <Download className="w-3 h-3" /> {t('posts_ia.history_tab.download')}
                         </button>
                         <button
                           onClick={() => copyCaption(record)}
                           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted text-xs font-medium hover:bg-accent transition-colors"
                         >
-                          {copiedId === record.id ? <><Check className="w-3 h-3" /> Copiado!</> : <><Copy className="w-3 h-3" /> Legenda</>}
+                          {copiedId === record.id ? <><Check className="w-3 h-3" /> {t('posts_ia.history_tab.copied')}</> : <><Copy className="w-3 h-3" /> {t('posts_ia.history_tab.caption')}</>}
                         </button>
                         <button
                           onClick={() => deleteRecord(record.id)}
@@ -787,40 +806,37 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
       {activeTab === 'templates' && (
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Legendas prontas para copiar e adaptar. Substitua{' '}
-            <code className="bg-muted px-1 rounded text-xs">{'{produto}'}</code> e{' '}
-            <code className="bg-muted px-1 rounded text-xs">{'{preco}'}</code> com os dados reais.
-            Nenhum crédito de IA consumido.
+            {t('posts_ia.templates_tab.description')}
           </p>
-          {TEMPLATES.map(t => (
-            <Card key={t.id} className="p-5 border-none shadow-md space-y-3">
+          {TEMPLATES.map(tpl => (
+            <Card key={tpl.id} className="p-5 border-none shadow-md space-y-3">
               <div className="flex items-center justify-between gap-2 flex-wrap">
-                <p className="text-sm font-semibold">{t.label}</p>
+                <p className="text-sm font-semibold">{tpl.label}</p>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => setEditingTemplate(editingTemplate === t.id ? null : t.id)}
+                    onClick={() => setEditingTemplate(editingTemplate === tpl.id ? null : tpl.id)}
                     className="px-3 py-1 rounded-lg bg-muted text-xs font-medium hover:bg-accent transition-colors"
                   >
-                    {editingTemplate === t.id ? 'Fechar' : 'Editar'}
+                    {editingTemplate === tpl.id ? t('posts_ia.templates_tab.close') : t('posts_ia.templates_tab.edit')}
                   </button>
                   <button
-                    onClick={() => copyTemplate(t.id)}
+                    onClick={() => copyTemplate(tpl.id)}
                     className="flex items-center gap-1.5 px-3 py-1 rounded-lg gradient-primary text-primary-foreground text-xs font-medium shadow-glow hover:opacity-90 transition-opacity"
                   >
-                    {copiedId === t.id ? <><Check className="w-3 h-3" /> Copiado!</> : <><Copy className="w-3 h-3" /> Copiar</>}
+                    {copiedId === tpl.id ? <><Check className="w-3 h-3" /> {t('posts_ia.templates_tab.copied')}</> : <><Copy className="w-3 h-3" /> {t('posts_ia.templates_tab.copy')}</>}
                   </button>
                 </div>
               </div>
-              {editingTemplate === t.id ? (
+              {editingTemplate === tpl.id ? (
                 <textarea
-                  value={templateTexts[t.id]}
-                  onChange={e => setTemplateTexts(prev => ({ ...prev, [t.id]: e.target.value }))}
+                  value={templateTexts[tpl.id]}
+                  onChange={e => setTemplateTexts(prev => ({ ...prev, [tpl.id]: e.target.value }))}
                   rows={7}
                   className="w-full text-sm bg-muted rounded-lg p-3 resize-none focus:outline-none focus:ring-2 focus:ring-primary font-sans"
                 />
               ) : (
                 <pre className="text-xs text-muted-foreground whitespace-pre-wrap bg-muted rounded-lg p-3 font-sans leading-relaxed">
-                  {templateTexts[t.id]}
+                  {templateTexts[tpl.id]}
                 </pre>
               )}
             </Card>
@@ -834,15 +850,15 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
             <div className="flex items-start justify-between gap-2">
               <div>
                 <p className="text-sm font-semibold flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-primary" /> Plano de Conteúdo Mensal
+                  <Calendar className="w-4 h-4 text-primary" /> {t('posts_ia.plan_tab.title')}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  A IA cria um plano de 30 dias com o produto certo, tom e tipo de conteúdo para cada dia.
+                  {t('posts_ia.plan_tab.description')}
                 </p>
               </div>
               {plano.length > 0 && (
                 <span className="text-xs text-muted-foreground">
-                  {Object.keys(planoChecked).length}/{plano.length} feitos
+                  {t('posts_ia.plan_tab.done_count', { done: Object.keys(planoChecked).length, total: plano.length })}
                 </span>
               )}
             </div>
@@ -852,10 +868,10 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
               className="w-full py-2.5 rounded-xl gradient-primary text-primary-foreground font-medium text-sm shadow-glow hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {gerandoPlano
-                ? <><Loader2 className="w-4 h-4 animate-spin" /> Gerando plano…</>
+                ? <><Loader2 className="w-4 h-4 animate-spin" /> {t('posts_ia.plan_tab.generating')}</>
                 : plano.length > 0
-                  ? <><RefreshCw className="w-4 h-4" /> Gerar novo plano</>
-                  : <><Sparkles className="w-4 h-4" /> Gerar plano do mês</>
+                  ? <><RefreshCw className="w-4 h-4" /> {t('posts_ia.plan_tab.new_plan')}</>
+                  : <><Sparkles className="w-4 h-4" /> {t('posts_ia.plan_tab.generate_month_plan')}</>
               }
             </button>
           </Card>
@@ -879,7 +895,7 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
                     </button>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs font-bold text-primary">Dia {item.day}</span>
+                        <span className="text-xs font-bold text-primary">{t('posts_ia.plan_tab.day', { day: item.day })}</span>
                         <span className="text-xs bg-muted px-2 py-0.5 rounded-full capitalize">{item.tone}</span>
                         <span className="text-xs bg-muted px-2 py-0.5 rounded-full">{item.type}</span>
                       </div>
@@ -890,13 +906,13 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
                   {planoExpanded === item.day && (
                     <div className="px-4 pb-4 pt-0">
                       <div className="rounded-lg bg-muted p-3 text-xs text-muted-foreground leading-relaxed">
-                        <span className="flex items-start gap-1.5"><Lightbulb className="w-3 h-3 shrink-0 mt-0.5" /><span><strong>Ideia:</strong> {item.idea}</span></span>
+                        <span className="flex items-start gap-1.5"><Lightbulb className="w-3 h-3 shrink-0 mt-0.5" /><span><strong>{t('posts_ia.plan_tab.idea')}</strong> {item.idea}</span></span>
                       </div>
                       <button
                         onClick={() => { setSelectedProductId(config.products.find(p => p.name === item.productName)?.id ?? ''); setTone(item.tone as Tone); setActiveTab('gerar'); }}
                         className="mt-2 flex items-center gap-1.5 px-3 py-1.5 rounded-lg gradient-primary text-primary-foreground text-xs font-medium shadow-glow hover:opacity-90 transition-opacity"
                       >
-                        <Sparkles className="w-3 h-3" /> Gerar post deste dia
+                        <Sparkles className="w-3 h-3" /> {t('posts_ia.plan_tab.generate_day_post')}
                       </button>
                     </div>
                   )}
@@ -916,10 +932,10 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
             <div className="flex items-start justify-between gap-2">
               <div>
                 <p className="text-sm font-semibold flex items-center gap-2">
-                  <Hash className="w-4 h-4 text-primary" /> Sets de Hashtags Personalizados
+                  <Hash className="w-4 h-4 text-primary" /> {t('posts_ia.tools_tab.hashtag_sets_title')}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  3 sets prontos (grandes, médias e nichadas) com base nos seus produtos. Misture os 3 para máximo alcance.
+                  {t('posts_ia.tools_tab.hashtag_sets_description')}
                 </p>
               </div>
             </div>
@@ -929,16 +945,16 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
               className="w-full py-2.5 rounded-xl gradient-primary text-primary-foreground font-medium text-sm shadow-glow hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {gerandoHashtags
-                ? <><Loader2 className="w-4 h-4 animate-spin" /> Gerando hashtags…</>
-                : hashtags ? <><RefreshCw className="w-4 h-4" /> Gerar novos sets</> : <><Sparkles className="w-4 h-4" /> Gerar sets de hashtags</>
+                ? <><Loader2 className="w-4 h-4 animate-spin" /> {t('posts_ia.tools_tab.generating_hashtags')}</>
+                : hashtags ? <><RefreshCw className="w-4 h-4" /> {t('posts_ia.tools_tab.new_sets')}</> : <><Sparkles className="w-4 h-4" /> {t('posts_ia.tools_tab.generate_sets')}</>
               }
             </button>
             {hashtags && (
               <div className="space-y-3">
                 {[
-                  { key: 'large', label: 'Grandes (+1M)', set: hashtags.large },
-{ key: 'medium', label: 'Médias (100k–500k)', set: hashtags.medium },
-{ key: 'niche', label: 'Nichadas (-50k)', set: hashtags.niche },
+                  { key: 'large', label: t('posts_ia.tools_tab.large'), set: hashtags.large },
+{ key: 'medium', label: t('posts_ia.tools_tab.medium'), set: hashtags.medium },
+{ key: 'niche', label: t('posts_ia.tools_tab.niche'), set: hashtags.niche },
                 ].map(({ key, label, set }) => (
                   <div key={key} className="rounded-lg bg-muted p-3 space-y-2">
                     <div className="flex items-center justify-between">
@@ -947,13 +963,13 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
                         onClick={() => copyHashSet(set, key)}
                         className="flex items-center gap-1 px-2.5 py-1 rounded-lg gradient-primary text-primary-foreground text-xs font-medium shadow-glow"
                       >
-                        {copiedHashSet === key ? <><Check className="w-3 h-3" /> Copiado!</> : <><Copy className="w-3 h-3" /> Copiar</>}
+                        {copiedHashSet === key ? <><Check className="w-3 h-3" /> {t('posts_ia.tools_tab.copied')}</> : <><Copy className="w-3 h-3" /> {t('posts_ia.tools_tab.copy')}</>}
                       </button>
                     </div>
                     <p className="text-xs text-primary leading-relaxed">{set.map(h => `#${h}`).join(' ')}</p>
                   </div>
                 ))}
-                <p className="text-xs text-muted-foreground flex items-start gap-1.5"><Lightbulb className="w-3 h-3 shrink-0 mt-0.5" /> Combine hashtags dos 3 sets em cada post para equilibrar alcance e relevância.</p>
+                <p className="text-xs text-muted-foreground flex items-start gap-1.5"><Lightbulb className="w-3 h-3 shrink-0 mt-0.5" /> {t('posts_ia.tools_tab.combine_hashtags_tip')}</p>
               </div>
             )}
           </Card>
@@ -962,10 +978,10 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
           <Card className="p-5 border-none shadow-md space-y-4">
             <div>
               <p className="text-sm font-semibold flex items-center gap-2">
-                <UserCircle2 className="w-4 h-4 text-primary" /> Gerador de Bio Otimizada
+                <UserCircle2 className="w-4 h-4 text-primary" /> {t('posts_ia.tools_tab.bio_title')}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                Bio profissional com emoji, palavras-chave do seu nicho e CTA. Pronta para colar no Instagram.
+                {t('posts_ia.tools_tab.bio_description')}
               </p>
             </div>
             <button
@@ -974,8 +990,8 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
               className="w-full py-2.5 rounded-xl gradient-primary text-primary-foreground font-medium text-sm shadow-glow hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {gerandoBio
-                ? <><Loader2 className="w-4 h-4 animate-spin" /> Gerando bio…</>
-                : bio ? <><RefreshCw className="w-4 h-4" /> Gerar nova bio</> : <><Sparkles className="w-4 h-4" /> Gerar bio</>
+                ? <><Loader2 className="w-4 h-4 animate-spin" /> {t('posts_ia.tools_tab.generating_bio')}</>
+                : bio ? <><RefreshCw className="w-4 h-4" /> {t('posts_ia.tools_tab.new_bio')}</> : <><Sparkles className="w-4 h-4" /> {t('posts_ia.tools_tab.generate_bio')}</>
               }
             </button>
             {bio && (
@@ -984,12 +1000,12 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
                   <p className="text-sm leading-relaxed whitespace-pre-wrap">{bio}</p>
                 </div>
                 <div className="flex items-center justify-between">
-                  <p className="text-xs text-muted-foreground">{bio.length}/150 caracteres</p>
+                  <p className="text-xs text-muted-foreground">{t('posts_ia.tools_tab.chars_count', { count: bio.length })}</p>
                   <button
                     onClick={copyBio}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg gradient-primary text-primary-foreground text-xs font-medium shadow-glow"
                   >
-                    {bioCopiado ? <><Check className="w-3 h-3" /> Copiada!</> : <><Copy className="w-3 h-3" /> Copiar bio</>}
+                    {bioCopiado ? <><Check className="w-3 h-3" /> {t('posts_ia.tools_tab.copied_bio')}</> : <><Copy className="w-3 h-3" /> {t('posts_ia.tools_tab.copy_bio')}</>}
                   </button>
                 </div>
               </div>
@@ -999,18 +1015,18 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
           <Card className="p-5 border-none shadow-md space-y-4">
             <div>
               <p className="text-sm font-semibold flex items-center gap-2">
-                <Film className="w-4 h-4 text-primary" /> Sequência de Stories
+                <Film className="w-4 h-4 text-primary" /> {t('posts_ia.tools_tab.stories_title')}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                3 slides prontos: Teaser → Reveal → CTA. Stories têm 2× mais alcance que posts no feed para contas pequenas.
+                {t('posts_ia.tools_tab.stories_description')}
               </p>
             </div>
             {config.products.length === 0 ? (
-              <p className="text-xs text-muted-foreground">Cadastre produtos na Vitrine primeiro.</p>
+              <p className="text-xs text-muted-foreground">{t('posts_ia.tools_tab.register_products_first')}</p>
             ) : (
               <>
                 <div>
-                  <Label className="text-xs font-medium mb-2 block">Selecione o produto</Label>
+                  <Label className="text-xs font-medium mb-2 block">{t('posts_ia.tools_tab.select_product')}</Label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     {config.products.map(p => (
                       <button
@@ -1035,8 +1051,8 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
                   className="w-full py-2.5 rounded-xl gradient-primary text-primary-foreground font-medium text-sm shadow-glow hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {gerandoStories
-                    ? <><Loader2 className="w-4 h-4 animate-spin" /> Gerando slides…</>
-                    : <><Sparkles className="w-4 h-4" /> Gerar sequência de Stories</>
+                    ? <><Loader2 className="w-4 h-4 animate-spin" /> {t('posts_ia.tools_tab.generating_slides')}</>
+                    : <><Sparkles className="w-4 h-4" /> {t('posts_ia.tools_tab.generate_stories')}</>
                   }
                 </button>
               </>
@@ -1051,7 +1067,7 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
                         onClick={() => copyStory(s.texto, i)}
                         className="flex items-center gap-1 px-2.5 py-1 rounded-lg gradient-primary text-primary-foreground text-xs font-medium shadow-glow"
                       >
-                        {copiedStory === i ? <><Check className="w-3 h-3" /> Copiado!</> : <><Copy className="w-3 h-3" /> Copiar</>}
+                        {copiedStory === i ? <><Check className="w-3 h-3" /> {t('posts_ia.tools_tab.copied')}</> : <><Copy className="w-3 h-3" /> {t('posts_ia.tools_tab.copy')}</>}
                       </button>
                     </div>
                     <p className="text-sm leading-relaxed">{s.texto}</p>
@@ -1064,24 +1080,24 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
           <Card className="p-5 border-none shadow-md space-y-4">
             <div>
               <p className="text-sm font-semibold flex items-center gap-2">
-                <PenLine className="w-4 h-4 text-primary" /> Reescritor de Legenda
+                <PenLine className="w-4 h-4 text-primary" /> {t('posts_ia.tools_tab.rewrite_title')}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                Cole qualquer texto de um post antigo, de um concorrente ou de qualquer lugar, e a IA reescreve na voz da sua loja.
+                {t('posts_ia.tools_tab.rewrite_description')}
               </p>
             </div>
             <div>
-              <Label className="text-xs font-medium mb-1.5 block">Texto original</Label>
+              <Label className="text-xs font-medium mb-1.5 block">{t('posts_ia.tools_tab.original_text')}</Label>
               <textarea
                 value={textoOriginal}
                 onChange={e => setTextoOriginal(e.target.value)}
-                placeholder="Cole aqui qualquer legenda que queira reescrever…"
+                placeholder={t('posts_ia.tools_tab.rewrite_placeholder')}
                 rows={5}
                 className="w-full text-sm bg-muted rounded-lg p-3 resize-none focus:outline-none focus:ring-2 focus:ring-primary font-sans placeholder:text-muted-foreground/50"
               />
             </div>
             <div>
-              <Label className="text-xs font-medium mb-2 block">Tom desejado</Label>
+              <Label className="text-xs font-medium mb-2 block">{t('posts_ia.tools_tab.desired_tone')}</Label>
               <div className="flex gap-2 flex-wrap">
                 {(['promocional', 'elegante', 'divertido'] as Tone[]).map(t => (
                   <button
@@ -1101,11 +1117,11 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
               disabled={reescrevendo || !textoOriginal.trim()}
               className="w-full py-2.5 rounded-xl gradient-primary text-primary-foreground font-medium text-sm shadow-glow hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
             >
-              {reescrevendo ? <><Loader2 className="w-4 h-4 animate-spin" /> Reescrevendo…</> : <><Sparkles className="w-4 h-4" /> Reescrever legenda</>}
+              {reescrevendo ? <><Loader2 className="w-4 h-4 animate-spin" /> {t('posts_ia.tools_tab.rewriting')}</> : <><Sparkles className="w-4 h-4" /> {t('posts_ia.tools_tab.rewrite_button')}</>}
             </button>
             {legendaReescrita && (
               <div className="space-y-2">
-                <Label className="text-xs font-medium">Legenda reescrita</Label>
+                <Label className="text-xs font-medium">{t('posts_ia.tools_tab.rewritten_caption')}</Label>
                 <div className="rounded-lg bg-muted p-3">
                   <p className="text-sm leading-relaxed whitespace-pre-wrap">{legendaReescrita}</p>
                 </div>
@@ -1113,7 +1129,7 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
                   onClick={copyRewrite}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg gradient-primary text-primary-foreground text-xs font-medium shadow-glow"
                 >
-                  {copiedRewrite ? <><Check className="w-3 h-3" /> Copiada!</> : <><Copy className="w-3 h-3" /> Copiar legenda</>}
+                  {copiedRewrite ? <><Check className="w-3 h-3" /> {t('posts_ia.tools_tab.copied_caption')}</> : <><Copy className="w-3 h-3" /> {t('posts_ia.tools_tab.copy_caption')}</>}
                 </button>
               </div>
             )}
