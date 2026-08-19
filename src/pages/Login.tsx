@@ -71,16 +71,6 @@ const homePath = `/dashboard${tokenSearch}`;
     <div className="min-h-screen bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/20" />
       <div className="relative w-full max-w-md">
-        <div className="flex justify-end gap-1 mb-3">
-          {LANGUAGES.map(l => (
-            <button
-              key={l.code}
-              onClick={() => setLang(l.code)}
-              className={`text-lg px-2 py-1 rounded transition ${lang === l.code ? 'bg-white/30' : 'opacity-60 hover:opacity-100'}`}
-              aria-label={l.label}
-            >{l.flag}</button>
-          ))}
-        </div>
         <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
           <div className="bg-gradient-to-r from-green-700 to-blue-800 p-8 text-center">
             <div className="inline-flex items-center justify-center mb-4">
@@ -88,6 +78,16 @@ const homePath = `/dashboard${tokenSearch}`;
             </div>
             <h1 className="text-3xl font-bold text-white mb-2">{t('login.title')}</h1>
             <p className="text-white/90">{t('login.subtitle')}</p>
+            <div className="flex items-center justify-center gap-2 mt-4">
+              {LANGUAGES.map(l => (
+                <button
+                  key={l.code}
+                  onClick={() => setLang(l.code)}
+                  className={`text-xl leading-none rounded-full w-8 h-8 flex items-center justify-center transition-all ${lang === l.code ? 'ring-2 ring-white bg-white/20' : 'opacity-70 hover:opacity-100'}`}
+                  aria-label={l.label}
+                >{l.flag}</button>
+              ))}
+            </div>
           </div>
 
           <div className="p-8">

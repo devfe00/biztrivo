@@ -16,6 +16,8 @@ import {
   ArrowRight,
   Menu,
   X,
+  Moon,
+  Sun,
   Zap,
   Store,
   Download,
@@ -25,6 +27,7 @@ import {
   FileSpreadsheet,
   Briefcase,
   Sparkles,
+  Heart,
 } from 'lucide-react';
 
 type Lang = 'pt' | 'en' | 'es' | 'fr';
@@ -33,7 +36,7 @@ const translations = {
   pt: {
     nav: {
       features: 'Funcionalidades',
-      testimonials: 'Depoimentos',
+      testimonials: 'PostsAI',
       pricing: 'Planos',
       login: 'Entrar',
       register: 'Começar grátis',
@@ -43,7 +46,7 @@ const translations = {
       h1a: 'Venda mais.',
       h1b: 'Controle tudo.',
       subtitle:
-        'Caixa diário, vitrine no WhatsApp ou na Web, relatórios, calculadora de preço e materiais para vender mais. Feito para lojistas que querem crescer de verdade.',
+        'Caixa diário, vitrine própria, vendas no WhatsApp ou na Web, relatórios, PostsAI com sugestes inteligentes, calculadora de preço e materiais para vender mais. Feito para lojistas que querem crescer de verdade.',
       cta: 'Criar minha conta grátis',
       login: 'Já tenho conta',
     },
@@ -74,13 +77,6 @@ const translations = {
         },
       ],
     },
-    // Stats
-    stats: [
-      { value: '40+', label: 'Lojistas ativos' },
-      { value: 'R$ 38k+', label: 'Em vendas controladas' },
-      { value: '99.6%', label: 'Uptime garantido' },
-      { value: '4.8★', label: 'Avaliação média' },
-    ],
     // Features section
     featuresSection: {
       eyebrow: 'Funcionalidades',
@@ -169,28 +165,31 @@ const translations = {
       ],
       download: 'Baixar grátis',
     },
-    // Testimonials
-    testimonialsSection: {
-      eyebrow: 'Depoimentos',
-      title: 'O que nossos lojistas dizem',
+    // PostIA section
+    postIASection: {
+      eyebrow: 'PostsAI',
+      title: 'Posts para o Instagram em segundos',
+      subtitle: 'Escolha o produto, o tom e a IA cria a imagem, a legenda e as hashtags. Você só posta.',
+      steps: [
+        { label: 'Escolha o produto', desc: 'Selecione da sua vitrine' },
+        { label: 'Defina o tom', desc: 'Promocional, elegante ou divertido' },
+        { label: 'Gere e publique', desc: 'Imagem + legenda + hashtags prontas' },
+      ],
+      mockup: {
+        product: 'Bolsa de Couro Premium',
+        price: 'R$ 129,00',
+        caption: '✨ Sofisticação que cabe na mão. Nossa Bolsa de Couro Premium chegou para elevar o seu estilo! 🛍️ Link do catálogo na bio. Chama no WhatsApp! 💬',
+        hashtags: '#moda #bolsa #couro #lookdodia #estilo',
+        tag: 'IA gerou em 8 segundos',
+      },
+      bullets: [
+        'Imagem profissional gerada por IA',
+        'Legenda com CTA para WhatsApp',
+        'Hashtags segmentadas por nicho',
+        'Plano de conteúdo para 30 dias',
+      ],
+      cta: 'Testar PostsAI grátis',
     },
-    testimonials: [
-      {
-        name: 'Ana Souza',
-        role: 'Dona de boutique em SP',
-        text: 'Antes eu perdia horas em planilhas. Hoje registro tudo no Caixa Diário e a vitrine trouxe clientes novos que nem conhecia minha loja.',
-      },
-      {
-        name: 'Carlos Mendes',
-        role: 'Loja de eletrônicos, RJ',
-        text: 'A calculadora de preço me salvou. Eu achava que estava lucrando e estava vendendo quase no prejuízo. Agora sei exatamente minha margem.',
-      },
-      {
-        name: 'Fernanda Lima',
-        role: 'Revendedora, BH',
-        text: 'O link da vitrine é incrível. Mando pro grupo do WhatsApp e os pedidos chegam sozinhos. Muito mais profissional que mandar foto por foto.',
-      },
-    ],
     // Pricing
     pricing: {
       eyebrow: 'Planos',
@@ -220,7 +219,7 @@ const translations = {
       subtitle:
         'Cadastre-se grátis agora e tenha sua vitrine online funcionando em menos de 5 minutos.',
       cta: 'Criar minha conta grátis',
-      disclaimer: ' Sem compromisso.',
+      disclaimer: ' ',
     },
     footer: {
       rights: '© 2026 Biztrivo. Todos os direitos reservados.',
@@ -232,7 +231,7 @@ const translations = {
   en: {
     nav: {
       features: 'Features',
-      testimonials: 'Testimonials',
+      testimonials: 'PostsAI',
       pricing: 'Pricing',
       login: 'Log in',
       register: 'Start free',
@@ -243,8 +242,7 @@ const translations = {
       h1a: 'Sell more.',
       h1b: 'Control everything.',
       subtitle:
-        'Daily cash register, WhatsApp & web storefront, reports, price calculator and growth resources. Built for retailers who are serious about growing.',
-      cta: 'Create my free account',
+        'Daily cash register, own storefront, WhatsApp & web sales, reports, PostsAI with smart suggestions, price calculator and resources to sell more. Built for retailers who are serious about growing.',      cta: 'Create my free account',
       login: 'I already have an account',
     },
     dashboard: {
@@ -365,27 +363,31 @@ const translations = {
       ],
       download: 'Download free',
     },
-    testimonialsSection: {
-      eyebrow: 'Testimonials',
-      title: 'What our retailers say',
+    // PostIA section
+    postIASection: {
+      eyebrow: 'PostsAI',
+      title: 'Instagram posts in seconds',
+      subtitle: 'Pick a product, choose a tone, and AI creates the image, caption, and hashtags. Just post.',
+      steps: [
+        { label: 'Choose a product', desc: 'Select from your storefront' },
+        { label: 'Set the tone', desc: 'Promotional, elegant, or fun' },
+        { label: 'Generate & post', desc: 'Image + caption + hashtags ready' },
+      ],
+      mockup: {
+        product: 'Premium Leather Bag',
+        price: '$ 25.90',
+        caption: '✨ Sophistication that fits in your hand. Our Premium Leather Bag is here to elevate your style! 🛍️ Catalog link in bio. Message us on WhatsApp! 💬',
+        hashtags: '#fashion #bag #leather #ootd #style',
+        tag: 'AI generated in 8 seconds',
+      },
+      bullets: [
+        'Professional image generated by AI',
+        'Caption with WhatsApp CTA',
+        'Hashtags segmented by niche',
+        '30-day content plan',
+      ],
+      cta: 'Try PostsAI free',
     },
-    testimonials: [
-      {
-        name: 'Ana Souza',
-        role: 'Boutique owner in São Paulo',
-        text: 'I used to waste hours on spreadsheets. Now I log everything in the Daily Cash Register and the storefront brought in new customers who never knew my store existed.',
-      },
-      {
-        name: 'Carlos Mendes',
-        role: 'Electronics store, Rio de Janeiro',
-        text: 'The price calculator saved me. I thought I was making money and I was barely breaking even. Now I know my margin exactly.',
-      },
-      {
-        name: 'Fernanda Lima',
-        role: 'Reseller, Belo Horizonte',
-        text: "The storefront link is incredible. I share it in my WhatsApp group and orders come in on their own. So much more professional than sending photos one by one.",
-      },
-    ],
     pricing: {
       eyebrow: 'Pricing',
       title: 'Simple and no surprises',
@@ -413,7 +415,7 @@ const translations = {
       title: 'Ready to sell more and control everything?',
       subtitle: 'Sign up free now and have your online storefront running in under 5 minutes.',
       cta: 'Create my free account',
-      disclaimer: ' No commitment.',
+      disclaimer: ' ',
     },
     footer: {
       rights: '© 2026 Biztrivo. All rights reserved.',
@@ -425,7 +427,7 @@ const translations = {
   es: {
     nav: {
       features: 'Funciones',
-      testimonials: 'Testimonios',
+      testimonials: 'PostsAI',
       pricing: 'Planes',
       login: 'Entrar',
       register: 'Empezar gratis',
@@ -435,9 +437,8 @@ const translations = {
       badge: 'Todo lo que tu tienda necesita en un solo lugar',
       h1a: 'Vende más.',
       h1b: 'Controla todo.',
-      subtitle:
-        'Caja diaria, vitrina en WhatsApp o en la Web, informes, calculadora de precios y materiales para vender más. Hecho para comerciantes que quieren crecer de verdad.',
-      cta: 'Crear mi cuenta gratis',
+     subtitle:
+        'Caja diaria, vitrina propia, ventas por WhatsApp o en la Web, informes, PostsAI con sugerencias inteligentes, calculadora de precios y materiales para vender más. Hecho para comerciantes que quieren crecer de verdad.',      cta: 'Crear mi cuenta gratis',
       login: 'Ya tengo cuenta',
     },
     dashboard: {
@@ -558,27 +559,31 @@ const translations = {
       ],
       download: 'Descargar gratis',
     },
-    testimonialsSection: {
-      eyebrow: 'Testimonios',
-      title: 'Lo que dicen nuestros comerciantes',
+    // PostIA section
+    postIASection: {
+      eyebrow: 'PostsAI',
+      title: 'Posts de Instagram en segundos',
+      subtitle: 'Elige el producto, el tono, y la IA crea la imagen, el texto y los hashtags. Solo publicas.',
+      steps: [
+        { label: 'Elige el producto', desc: 'Selecciona de tu vitrina' },
+        { label: 'Define el tono', desc: 'Promocional, elegante o divertido' },
+        { label: 'Genera y publica', desc: 'Imagen + texto + hashtags listos' },
+      ],
+      mockup: {
+        product: 'Bolso de Cuero Premium',
+        price: '$ 25,90',
+        caption: '✨ Sofisticación que cabe en la mano. ¡Nuestro Bolso de Cuero Premium llegó para elevar tu estilo! 🛍️ Enlace del catálogo en bio. ¡Escríbenos! 💬',
+        hashtags: '#moda #bolso #cuero #lookdeldia #estilo',
+        tag: 'IA generó en 8 segundos',
+      },
+      bullets: [
+        'Imagen profesional generada por IA',
+        'Texto con CTA para WhatsApp',
+        'Hashtags segmentados por nicho',
+        'Plan de contenido de 30 días',
+      ],
+      cta: 'Probar PostsAI gratis',
     },
-    testimonials: [
-      {
-        name: 'Ana Souza',
-        role: 'Dueña de boutique en SP',
-        text: 'Antes perdía horas en hojas de cálculo. Hoy registro todo en la Caja Diaria y la vitrina trajo nuevos clientes que ni conocían mi tienda.',
-      },
-      {
-        name: 'Carlos Mendes',
-        role: 'Tienda de electrónica, RJ',
-        text: 'La calculadora de precios me salvó. Creía que ganaba y casi estaba vendiendo a pérdida. Ahora sé exactamente mi margen.',
-      },
-      {
-        name: 'Fernanda Lima',
-        role: 'Revendedora, BH',
-        text: 'El enlace de la vitrina es increíble. Lo mando al grupo de WhatsApp y los pedidos llegan solos. Mucho más profesional que mandar foto por foto.',
-      },
-    ],
     pricing: {
       eyebrow: 'Planes',
       title: 'Simple y sin sorpresas',
@@ -607,7 +612,7 @@ const translations = {
       subtitle:
         'Regístrate gratis ahora y ten tu vitrina online funcionando en menos de 5 minutos.',
       cta: 'Crear mi cuenta gratis',
-      disclaimer: ' Sin compromiso.',
+      disclaimer: ' ',
     },
     footer: {
       rights: '© 2026 Biztrivo. Todos los derechos reservados.',
@@ -619,7 +624,7 @@ const translations = {
   fr: {
     nav: {
       features: 'Fonctionnalités',
-      testimonials: 'Témoignages',
+      testimonials: 'PostsAI',
       pricing: 'Tarifs',
       login: 'Connexion',
       register: 'Commencer gratuit',
@@ -629,8 +634,8 @@ const translations = {
       badge: 'Tout ce dont votre boutique a besoin en un seul endroit',
       h1a: 'Vendez plus.',
       h1b: 'Contrôlez tout.',
-      subtitle:
-        'Caisse journalière, vitrine sur WhatsApp ou le Web, rapports, calculateur de prix et ressources pour vendre plus. Conçu pour les commerçants qui veulent vraiment croître.',
+       subtitle:
+        'Caisse journalière, vitrine propre, ventes sur WhatsApp ou le Web, rapports, PostsAI avec suggestions intelligentes, calculateur de prix et ressources pour vendre plus. Conçu pour les commerçants qui veulent vraiment croître.',
       cta: 'Créer mon compte gratuit',
       login: "J'ai déjà un compte",
     },
@@ -752,27 +757,31 @@ const translations = {
       ],
       download: 'Télécharger gratuit',
     },
-    testimonialsSection: {
-      eyebrow: 'Témoignages',
-      title: 'Ce que disent nos commerçants',
+    // PostIA section
+    postIASection: {
+      eyebrow: 'PostsAI',
+      title: 'Publications Instagram en secondes',
+      subtitle: 'Choisissez le produit, le ton, et l\'IA crée l\'image, la légende et les hashtags. Il ne reste qu\'à publier.',
+      steps: [
+        { label: 'Choisissez un produit', desc: 'Sélectionnez dans votre vitrine' },
+        { label: 'Définissez le ton', desc: 'Promotionnel, élégant ou amusant' },
+        { label: 'Générez & publiez', desc: 'Image + légende + hashtags prêts' },
+      ],
+      mockup: {
+        product: 'Sac en Cuir Premium',
+        price: '€ 25,90',
+        caption: '✨ La sophistication au bout des doigts. Notre Sac en Cuir Premium est là pour sublimer votre style ! 🛍️ Lien du catalogue en bio. Contactez-nous ! 💬',
+        hashtags: '#mode #sac #cuir #lookdujour #style',
+        tag: 'IA générée en 8 secondes',
+      },
+      bullets: [
+        'Image professionnelle générée par IA',
+        'Légende avec CTA pour WhatsApp',
+        'Hashtags segmentés par niche',
+        'Plan de contenu sur 30 jours',
+      ],
+      cta: 'Essayer PostsAI gratuitement',
     },
-    testimonials: [
-      {
-        name: 'Ana Souza',
-        role: 'Propriétaire de boutique à SP',
-        text: 'Avant, je perdais des heures sur des tableurs. Maintenant, j\'enregistre tout dans la Caisse Journalière et la vitrine a attiré de nouveaux clients.',
-      },
-      {
-        name: 'Carlos Mendes',
-        role: 'Boutique électronique, RJ',
-        text: 'Le calculateur de prix m\'a sauvé. Je croyais gagner de l\'argent et je vendais presque à perte. Maintenant je connais exactement ma marge.',
-      },
-      {
-        name: 'Fernanda Lima',
-        role: 'Revendeuse, BH',
-        text: 'Le lien vitrine est incroyable. Je l\'envoie dans mon groupe WhatsApp et les commandes arrivent toutes seules. Bien plus professionnel qu\'envoyer des photos une par une.',
-      },
-    ],
     pricing: {
       eyebrow: 'Tarifs',
       title: 'Simple et sans surprises',
@@ -801,7 +810,7 @@ const translations = {
       subtitle:
         'Inscrivez-vous gratuitement et lancez votre vitrine en ligne en moins de 5 minutes.',
       cta: 'Créer mon compte gratuit',
-      disclaimer: ' Sans engagement.',
+      disclaimer: ' ',
     },
     footer: {
       rights: '© 2026 Biztrivo. Tous droits réservés.',
@@ -869,6 +878,69 @@ function useCounter(target: number, decimals = 0, duration = 1400, active = fals
     requestAnimationFrame(step);
   }, [active, target, decimals, duration]);
   return count;
+}
+
+const LANG_ORDER: Lang[] = ['pt', 'en', 'es', 'fr'];
+
+function useTypewriter(activeLang: Lang) {
+ const phrases = LANG_ORDER.map((l) => ({
+    a: translations[l].hero.h1a,
+    b: translations[l].hero.h1b,
+    subtitle: translations[l].hero.subtitle,
+    lang: l,
+  }));
+
+  const [phraseIdx, setPhraseIdx] = useState(() => LANG_ORDER.indexOf(activeLang));
+  const [display, setDisplay] = useState<{ a: string; b: string }>({ a: phrases[LANG_ORDER.indexOf(activeLang)].a, b: phrases[LANG_ORDER.indexOf(activeLang)].b });
+    const [charIdx, setCharIdx] = useState(phrases[LANG_ORDER.indexOf(activeLang)].b.length);
+  const [phase, setPhase] = useState<'typing' | 'pausing' | 'erasing'>('pausing');
+  const prevLang = useRef(activeLang);
+
+  // Troca manual de idioma → interrompe e sincroniza
+  useEffect(() => {
+    if (activeLang === prevLang.current) return;
+    prevLang.current = activeLang;
+    const idx = LANG_ORDER.indexOf(activeLang);
+    setPhraseIdx(idx);
+    setDisplay({ a: phrases[idx].a, b: '' });
+    setCharIdx(0);
+    setPhase('typing');
+  }, [activeLang]); // eslint-disable-line
+
+  useEffect(() => {
+    const target = phrases[phraseIdx];
+
+    if (phase === 'typing') {
+      if (charIdx >= target.b.length) { setPhase('pausing'); return; }
+      const id = setTimeout(() => {
+        setDisplay({ a: target.a, b: target.b.slice(0, charIdx + 1) });
+        setCharIdx((i) => i + 1);
+      }, 55);
+      return () => clearTimeout(id);
+    }
+
+    if (phase === 'pausing') {
+      const id = setTimeout(() => setPhase('erasing'), 2400);
+      return () => clearTimeout(id);
+    }
+
+    if (phase === 'erasing') {
+      if (charIdx <= 0) {
+        const next = (phraseIdx + 1) % phrases.length;
+        setPhraseIdx(next);
+         setDisplay({ a: phrases[next].a as string, b: '' });
+        setPhase('typing');
+        return;
+      }
+      const id = setTimeout(() => {
+        setDisplay((d) => ({ a: d.a as string, b: d.b.slice(0, -1) }));
+        setCharIdx((i) => i - 1);
+      }, 32);
+      return () => clearTimeout(id);
+    }
+  }, [phase, charIdx, phraseIdx]); // eslint-disable-line
+
+  return { ...display, subtitle: phrases[phraseIdx].subtitle };
 }
 
 const Reveal: React.FC<{ children: React.ReactNode; delay?: number; className?: string }> = ({
@@ -945,11 +1017,18 @@ const LangSwitcher: React.FC<{ lang: Lang; setLang: (l: Lang) => void }> = ({ la
 
 const LandingPage: React.FC = () => {
   const { lang, setLang } = useGlobalLang();
-  const t = translations[lang];
+const t = translations[lang];
+  const heroAnimated = useTypewriter(lang);
 
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);  const [scrolled, setScrolled] = useState(false);
   const [parallaxY, setParallaxY] = useState(0);
+  const [scrollProgress, setScrollProgress] = useState(0);
+
+  //modo escuro: detecta noite automaticamente (hora local do dispositivo)
+  const [isDark, setIsDark] = useState(() => {
+    const h = new Date().getHours();
+    return h >= 20 || h < 6;
+  });
 
   const statsRef = useRef<HTMLDivElement>(null);
   const [statsActive, setStatsActive] = useState(false);
@@ -958,6 +1037,8 @@ const LandingPage: React.FC = () => {
     const onScroll = () => {
       setScrolled(window.scrollY > 20);
       setParallaxY(window.scrollY * 0.35);
+      const progress = Math.min(window.scrollY / (window.innerHeight * 0.8), 1);
+      setScrollProgress(progress);
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
@@ -975,26 +1056,46 @@ const LandingPage: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white overflow-x-hidden">
+    <div
+      className="min-h-screen overflow-x-hidden"
+      style={{
+        background: isDark
+          ? 'linear-gradient(to bottom, #071f12 0%, #0d2340 15%, #0a1e38 30%, #071f12 45%, #0a1e38 60%, #071f12 75%, #0d2340 90%, #071a12 100%)'
+          : 'linear-gradient(160deg, #dcfce7 0%, #f0fdf4 20%, #f8fafc 50%, #eff6ff 80%, #dbeafe 100%)',
+      }}
+    >
 
       {/* ── HEADER ── */}
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled ? 'bg-white/95 backdrop-blur-md shadow-sm' : 'bg-transparent'
+          scrolled
+            ? isDark
+              ? 'bg-[#071a12]/95 backdrop-blur-md shadow-sm'
+              : 'bg-white/95 backdrop-blur-md shadow-sm'
+            : 'bg-transparent'
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <img src="/logo.png" alt="Biztrivo" className="h-9 w-auto object-contain" />
+         <img src="/logo.png" alt="Biztrivo" className="h-12 w-auto object-contain" />
 
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
-            <a href="#funcionalidades" className="hover:text-gray-900 transition-colors">{t.nav.features}</a>
-            <a href="#depoimentos" className="hover:text-gray-900 transition-colors">{t.nav.testimonials}</a>
-            <a href="#planos" className="hover:text-gray-900 transition-colors">{t.nav.pricing}</a>
-          </nav>
+<nav className={`hidden md:flex items-center gap-8 text-sm font-medium ${isDark ? 'text-green-200' : 'text-gray-600'}`}>
+  <a href="#funcionalidades" className={`transition-colors ${isDark ? 'hover:text-white' : 'hover:text-gray-900'}`}>{t.nav.features}</a>
+  <a href="#depoimentos" className={`transition-colors ${isDark ? 'hover:text-white' : 'hover:text-gray-900'}`}>{t.nav.testimonials}</a>
+  <a href="#vitrine" className={`transition-colors ${isDark ? 'hover:text-white' : 'hover:text-gray-900'}`}>Vitrine</a>
+  <a href="#academy" className={`transition-colors ${isDark ? 'hover:text-white' : 'hover:text-gray-900'}`}>Academy</a>
+  <a href="#planos" className={`transition-colors ${isDark ? 'hover:text-white' : 'hover:text-gray-900'}`}>{t.nav.pricing}</a>
+</nav>
 
           <div className="hidden md:flex items-center gap-3">
+            <button
+              onClick={() => setIsDark(d => !d)}
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-600 dark:text-gray-300 transition-colors"
+              title={isDark ? 'Modo claro' : 'Modo escuro'}
+            >
+              {isDark ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
             <LangSwitcher lang={lang} setLang={setLang} />
-            <Link to="/login" className="text-sm font-semibold text-gray-700 hover:text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-100 transition-all">
+            <Link to="/login" className={`text-sm font-semibold px-4 py-2 rounded-lg transition-all ${isDark ? 'text-green-200 hover:text-white hover:bg-white/10' : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'}`}>
               {t.nav.login}
             </Link>
             <Link to="/register" className="text-sm font-semibold text-white bg-gradient-to-r from-green-500 to-blue-600 px-5 py-2.5 rounded-lg hover:from-green-600 hover:to-blue-700 transition-all shadow-md hover:shadow-lg">
@@ -1013,6 +1114,13 @@ const LandingPage: React.FC = () => {
             <a href="#depoimentos" className="text-gray-700 font-medium" onClick={() => setMobileMenuOpen(false)}>{t.nav.testimonials}</a>
             <a href="#planos" className="text-gray-700 font-medium" onClick={() => setMobileMenuOpen(false)}>{t.nav.pricing}</a>
             <div className="flex gap-3 pt-2 items-center">
+              <button
+                onClick={() => setIsDark(d => !d)}
+                className="p-2 rounded-lg border border-gray-200 text-gray-600 transition-colors"
+                title={isDark ? 'Modo claro' : 'Modo escuro'}
+              >
+                {isDark ? <Sun size={18} /> : <Moon size={18} />}
+              </button>
               <LangSwitcher lang={lang} setLang={setLang} />
               <Link to="/login" className="flex-1 text-center py-2.5 border border-gray-300 rounded-lg text-sm font-semibold text-gray-700">{t.nav.login}</Link>
               <Link to="/register" className="flex-1 text-center py-2.5 bg-gradient-to-r from-green-500 to-blue-600 rounded-lg text-sm font-semibold text-white">{t.nav.registerMobile}</Link>
@@ -1022,30 +1130,37 @@ const LandingPage: React.FC = () => {
       </header>
 
       {/* ── HERO ── */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-green-50 via-white to-blue-50">
+      <section className={`relative min-h-screen flex items-start justify-center overflow-hidden ${isDark ? 'bg-transparent' : 'bg-gradient-to-br from-green-200 via-gray-100 to-blue-200'}`}>
         <div
-          className="absolute top-20 -left-32 w-96 h-96 bg-green-300/30 rounded-full blur-3xl will-change-transform"
-          style={{ transform: `translateY(${parallaxY * 0.6}px)` }}
+          className="absolute top-20 -left-32 w-96 h-96 bg-green-300 rounded-full blur-3xl will-change-transform"
+          style={{
+            transform: `translateY(${parallaxY * 0.6}px)`,
+            opacity: 0.3 - scrollProgress * 0.3,
+          }}
         />
         <div
-          className="absolute bottom-20 -right-32 w-96 h-96 bg-blue-300/30 rounded-full blur-3xl will-change-transform"
-          style={{ transform: `translateY(${-parallaxY * 0.4}px)` }}
+          className="absolute bottom-20 -right-32 w-96 h-96 bg-blue-300 rounded-full blur-3xl will-change-transform"
+          style={{
+            transform: `translateY(${-parallaxY * 0.4}px)`,
+            opacity: 0.3 - scrollProgress * 0.3,
+          }}
         />
 
         <div className="relative max-w-5xl mx-auto px-6 text-center pt-28 pb-20">
           
 
-          <h1 className="text-5xl md:text-7xl font-extrabold text-gray-900 leading-tight mb-6 tracking-tight">
-            {t.hero.h1a}{' '}
+ <div style={{ minHeight: '14rem' }}>
+          <h1 className={`text-5xl md:text-7xl font-extrabold leading-tight mb-6 tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
+            {heroAnimated.a}{' '}
             <span className="bg-gradient-to-r from-green-500 to-blue-600 bg-clip-text text-transparent">
-              {t.hero.h1b}
+              {heroAnimated.b}
+              <span className="inline-block w-[3px] h-[0.85em] ml-[2px] align-middle bg-gradient-to-b from-green-500 to-blue-600 animate-pulse rounded-sm" />
             </span>
           </h1>
-
-          <p className="text-xl text-gray-500 max-w-2xl mx-auto mb-10 leading-relaxed">
-            {t.hero.subtitle}
+          </div>
+          <p className={`text-xl max-w-2xl mx-auto mb-10 leading-relaxed ${isDark ? 'text-green-200' : 'text-gray-500'}`}>
+            {heroAnimated.subtitle}
           </p>
-
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link to="/register"
               className="group flex items-center gap-2 bg-gradient-to-r from-green-500 to-blue-600 text-white text-lg font-bold px-8 py-4 rounded-xl hover:from-green-600 hover:to-blue-700 transition-all shadow-xl hover:shadow-2xl hover:-translate-y-0.5">
@@ -1053,7 +1168,7 @@ const LandingPage: React.FC = () => {
               <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link to="/login"
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 text-lg font-semibold px-8 py-4 rounded-xl hover:bg-gray-100 transition-all">
+              className={`flex items-center gap-2 text-lg font-semibold px-8 py-4 rounded-xl transition-all ${isDark ? 'text-green-200 hover:text-white hover:bg-white/10' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'}`}>
               {t.hero.login}
               <ChevronRight size={18} />
             </Link>
@@ -1105,37 +1220,28 @@ const LandingPage: React.FC = () => {
                 </div>
               </div>
             </div>
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-white/80 rounded-2xl pointer-events-none" style={{ top: '65%' }} />
+            <div className="absolute inset-0 rounded-2xl pointer-events-none" style={{ top: '65%', background: isDark ? 'linear-gradient(to bottom, transparent, #071f12cc)' : 'linear-gradient(to bottom, transparent, rgba(255,255,255,0.8))' }} />
           </div>
         </div>
       </section>
 
-      {/* ── STATS ── */}
-      <section className="bg-gradient-to-r from-green-700 to-blue-800 py-16">
-        <div ref={statsRef} className="max-w-5xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-          {t.stats.map((s) => (
-            <StatCard key={s.label} value={s.value} label={s.label} active={statsActive} />
-          ))}
-        </div>
-      </section>
-
-      <section id="funcionalidades" className="py-24 bg-white">
+      <section id="funcionalidades" className="py-24 bg-transparent">
         <div className="max-w-6xl mx-auto px-6">
           <Reveal className="text-center mb-16">
             <p className="text-green-600 font-semibold text-sm uppercase tracking-widest mb-3">{t.featuresSection.eyebrow}</p>
-            <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">{t.featuresSection.title}</h2>
-            <p className="text-gray-500 text-lg max-w-xl mx-auto">{t.featuresSection.subtitle}</p>
+            <h2 className={`text-4xl md:text-5xl font-extrabold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>{t.featuresSection.title}</h2>
+            <p className={`text-lg max-w-xl mx-auto ${isDark ? 'text-green-200' : 'text-gray-500'}`}>{t.featuresSection.subtitle}</p>
           </Reveal>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {t.features.map((f, i) => (
               <Reveal key={f.title} delay={i * 80}>
-                <div className="group bg-white border border-gray-100 rounded-2xl p-7 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 h-full">
+                <div className={`group rounded-2xl p-7 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 h-full border ${isDark ? 'bg-[#0a2a18] border-green-900/40 hover:border-green-700/60' : 'bg-white border-gray-100'}`}>
                   <div className={`inline-flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br ${featureColors[i]} text-white mb-5 shadow-lg group-hover:scale-110 transition-transform`}>
                     {featureIcons[i]}
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">{f.title}</h3>
-                  <p className="text-gray-500 leading-relaxed">{f.description}</p>
+                  <h3 className={`text-xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>{f.title}</h3>
+                  <p className={`leading-relaxed ${isDark ? 'text-green-200' : 'text-gray-500'}`}>{f.description}</p>
                 </div>
               </Reveal>
             ))}
@@ -1144,17 +1250,17 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* ── STOREFRONT HIGHLIGHT ── */}
-      <section className="py-20 bg-gradient-to-br from-green-50 to-blue-50">
+      <section id="vitrine" className={`py-20 ${isDark ? 'bg-transparent' : 'bg-gradient-to-br from-green-50 to-blue-50'}`}>
         <div className="max-w-5xl mx-auto px-6 flex flex-col md:flex-row items-center gap-12">
           <Reveal className="flex-1">
             <p className="text-green-600 font-semibold text-sm uppercase tracking-widest mb-3">{t.storefront.eyebrow}</p>
-            <h2 className="text-4xl font-extrabold text-gray-900 mb-5">{t.storefront.title}</h2>
-            <p className="text-gray-500 text-lg mb-6 leading-relaxed">{t.storefront.subtitle}</p>
+            <h2 className={`text-4xl font-extrabold mb-5 ${isDark ? 'text-white' : 'text-gray-900'}`}>{t.storefront.title}</h2>
+            <p className={`text-lg mb-6 leading-relaxed ${isDark ? 'text-green-200' : 'text-gray-500'}`}>{t.storefront.subtitle}</p>
             <ul className="space-y-3 mb-8">
               {t.storefront.bullets.map(item => (
                 <li key={item} className="flex items-center gap-3">
                   <CheckCircle2 size={18} className="text-green-500 flex-shrink-0" />
-                  <span className="text-gray-600">{item}</span>
+                  <span className={isDark ? 'text-green-100' : 'text-gray-600'}>{item}</span>
                 </li>
               ))}
             </ul>
@@ -1165,7 +1271,7 @@ const LandingPage: React.FC = () => {
           </Reveal>
 
           <Reveal delay={150} className="flex-1 max-w-sm w-full">
-            <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100">
+            <div className={`rounded-2xl shadow-2xl overflow-hidden border ${isDark ? 'bg-[#0a2a18] border-green-900/40' : 'bg-white border-gray-100'}`}>
               <div className="bg-gradient-to-r from-green-600 to-blue-700 p-4 flex items-center gap-3">
                 <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
                   <ShoppingBag size={20} className="text-white" />
@@ -1178,11 +1284,11 @@ const LandingPage: React.FC = () => {
               <div className="p-4 grid grid-cols-2 gap-3">
                 {t.storefront.mockupItems.map((p) => (
                   <div key={p.name} className={`rounded-xl overflow-hidden border border-gray-100 ${p.name === t.storefront.mockupItems[1].name ? 'col-span-2' : ''}`}>
-                    <div className="bg-gray-100 h-24 flex items-center justify-center">
-                      <Package size={28} className="text-gray-300" />
+                    <div className={`h-24 flex items-center justify-center ${isDark ? 'bg-[#0d3520]' : 'bg-gray-100'}`}>
+                      <Package size={28} className={isDark ? 'text-green-700' : 'text-gray-300'} />
                     </div>
                     <div className="p-2">
-                      <p className="text-xs font-semibold text-gray-800 truncate">{p.name}</p>
+                      <p className={`text-xs font-semibold truncate ${isDark ? 'text-white' : 'text-gray-800'}`}>{p.name}</p>
                       {p.orig && <p className="text-xs line-through text-gray-400">{p.orig}</p>}
                       <p className="text-sm font-bold text-green-600">{p.price}</p>
                       <div className="mt-2 bg-green-500 text-white text-xs font-semibold py-1.5 rounded-lg flex items-center justify-center gap-1">
@@ -1197,21 +1303,21 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      <section className="py-20 bg-white">
+      <section id="academy" className="py-20 bg-transparent">
         <div className="max-w-5xl mx-auto px-6 text-center">
           <Reveal>
             <p className="text-blue-600 font-semibold text-sm uppercase tracking-widest mb-3">{t.academy.eyebrow}</p>
-            <h2 className="text-4xl font-extrabold text-gray-900 mb-4">{t.academy.title}</h2>
-            <p className="text-gray-500 text-lg mb-10 max-w-xl mx-auto">{t.academy.subtitle}</p>
+            <h2 className={`text-4xl font-extrabold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>{t.academy.title}</h2>
+            <p className={`text-lg mb-10 max-w-xl mx-auto ${isDark ? 'text-green-200' : 'text-gray-500'}`}>{t.academy.subtitle}</p>
           </Reveal>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {t.academy.guides.map((title, i) => (
               <Reveal key={title} delay={i * 70}>
-                <div className="bg-gray-50 border border-gray-100 rounded-2xl p-5 text-left hover:shadow-md transition-shadow h-full">
+                <div className={`rounded-2xl p-5 text-left hover:shadow-md transition-shadow h-full border ${isDark ? 'bg-[#0a2a18] border-green-900/40' : 'bg-gray-50 border-gray-100'}`}>
                   <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-blue-500 rounded-xl flex items-center justify-center mb-3">
                     <BookOpen size={18} className="text-white" />
                   </div>
-                  <p className="text-sm font-bold text-gray-900 mb-1">{title}</p>
+                  <p className={`text-sm font-bold mb-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>{title}</p>
                   <div className="flex items-center gap-1 text-green-600 text-xs font-medium mt-3">
                     <Download size={12} /> {t.academy.download}
                   </div>
@@ -1222,39 +1328,104 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      <section id="depoimentos" className="py-24 bg-gray-50">
+      {/* ── POSTS AI SHOWCASE ── */}
+      <section id="depoimentos" className={`py-24 ${isDark ? 'bg-transparent' : 'bg-gray-50'}`}>
         <div className="max-w-6xl mx-auto px-6">
           <Reveal className="text-center mb-16">
-            <p className="text-blue-600 font-semibold text-sm uppercase tracking-widest mb-3">{t.testimonialsSection.eyebrow}</p>
-            <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">{t.testimonialsSection.title}</h2>
+            <p className="text-blue-600 font-semibold text-sm uppercase tracking-widest mb-3">{t.postIASection.eyebrow}</p>
+            <h2 className={`text-4xl md:text-5xl font-extrabold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>{t.postIASection.title}</h2>
+            <p className={`text-lg max-w-xl mx-auto ${isDark ? 'text-green-200' : 'text-gray-500'}`}>{t.postIASection.subtitle}</p>
           </Reveal>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {t.testimonials.map((testimonial, i) => (
-              <Reveal key={testimonial.name} delay={i * 100}>
-                <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 hover:shadow-md transition-shadow h-full">
-                  <div className="flex gap-1 mb-4">
-                    {Array.from({ length: 5 }).map((_, idx) => (
-                      <Star key={idx} size={16} className="text-yellow-400 fill-yellow-400" />
-                    ))}
+
+          <div className="flex flex-col lg:flex-row items-center gap-14">
+            {/* Left: steps + bullets */}
+            <Reveal className="flex-1 w-full">
+              {/* Steps */}
+              <div className="flex flex-col gap-5 mb-10">
+                {t.postIASection.steps.map((step, i) => (
+                  <div key={i} className="flex items-start gap-4">
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-green-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-md">
+                      {i + 1}
+                    </div>
+                    <div>
+                      <p className={`font-bold text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>{step.label}</p>
+                      <p className={`text-sm ${isDark ? 'text-green-300' : 'text-gray-500'}`}>{step.desc}</p>
+                    </div>
                   </div>
-                  <p className="text-gray-600 leading-relaxed mb-6">"{testimonial.text}"</p>
+                ))}
+              </div>
+
+              {/* Bullets */}
+              <ul className="space-y-3 mb-8">
+                {t.postIASection.bullets.map(item => (
+                  <li key={item} className="flex items-center gap-3">
+                    <CheckCircle2 size={18} className="text-green-500 shrink-0" />
+                    <span className={`text-sm ${isDark ? 'text-green-100' : 'text-gray-600'}`}>{item}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <Link to="/register"
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-green-500 to-blue-600 text-white font-bold px-7 py-3.5 rounded-xl hover:from-green-600 hover:to-blue-700 transition-all shadow-lg">
+                <Sparkles size={18} /> {t.postIASection.cta}
+              </Link>
+            </Reveal>
+
+            {/* Right: Instagram post mockup */}
+            <Reveal delay={150} className="flex-1 w-full max-w-sm mx-auto">
+              <div className={`rounded-2xl shadow-2xl overflow-hidden border ${isDark ? 'bg-[#0a2a18] border-green-900/40' : 'bg-white border-gray-100'}`}>
+                {/* Instagram-style header */}
+                <div className={`flex items-center gap-3 px-4 py-3 border-b ${isDark ? 'border-green-900/40' : 'border-gray-100'}`}>
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center">
+                    <Store size={16} className="text-white" />
+                  </div>
                   <div>
-                    <p className="font-bold text-gray-900">{testimonial.name}</p>
-                    <p className="text-sm text-gray-500">{testimonial.role}</p>
+                    <p className={`text-xs font-bold leading-none ${isDark ? 'text-white' : 'text-gray-900'}`}>minhaloja</p>
+                    <p className="text-xs text-gray-400">Patrocinado</p>
+                  </div>
+                  <div className="ml-auto">
+                    <Instagram size={18} className="text-pink-500" />
                   </div>
                 </div>
-              </Reveal>
-            ))}
+
+                {/* AI-generated image placeholder */}
+                <div className="relative bg-gradient-to-br from-green-700 to-blue-800 h-52 flex items-center justify-center overflow-hidden">
+                  <div className="absolute inset-0 opacity-20"
+                    style={{ backgroundImage: 'repeating-linear-gradient(45deg, white 0, white 1px, transparent 0, transparent 50%)', backgroundSize: '12px 12px' }} />
+                  <div className="relative text-center px-6">
+                    <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center mx-auto mb-3 shadow-lg">
+                      <ShoppingBag size={28} className="text-white" />
+                    </div>
+                    <p className="text-white font-bold text-base leading-tight">{t.postIASection.mockup.product}</p>
+                    <p className="text-green-300 font-extrabold text-xl mt-1">{t.postIASection.mockup.price}</p>
+                  </div>
+                  {/* AI tag badge */}
+                  <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm text-white text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1.5">
+                    <Sparkles size={10} className="text-yellow-400" /> {t.postIASection.mockup.tag}
+                  </div>
+                </div>
+
+                {/* Caption area */}
+                <div className="px-4 py-3">
+                  <div className="flex gap-3 mb-2">
+                    <Heart size={20} className="text-gray-400" />
+                    <MessageCircle size={20} className="text-gray-400" />
+                  </div>
+                  <p className="text-xs text-gray-700 leading-relaxed mb-2">{t.postIASection.mockup.caption}</p>
+                  <p className="text-xs text-blue-500 font-medium">{t.postIASection.mockup.hashtags}</p>
+                </div>
+              </div>
+            </Reveal>
           </div>
         </div>
       </section>
 
-      <section id="planos" className="py-24 bg-white">
+      <section id="planos" className="py-24 bg-transparent">
         <div className="max-w-4xl mx-auto px-6">
           <Reveal className="text-center mb-16">
             <p className="text-green-600 font-semibold text-sm uppercase tracking-widest mb-3">{t.pricing.eyebrow}</p>
-            <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">{t.pricing.title}</h2>
-            <p className="text-gray-500 text-lg">{t.pricing.subtitle}</p>
+            <h2 className={`text-4xl md:text-5xl font-extrabold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>{t.pricing.title}</h2>
+            <p className={`text-lg ${isDark ? 'text-green-200' : 'text-gray-500'}`}>{t.pricing.subtitle}</p>
           </Reveal>
           <Reveal delay={100} className="max-w-sm mx-auto">
             <div className="relative bg-gradient-to-br from-green-700 to-blue-800 rounded-2xl p-8 text-white overflow-hidden">
@@ -1276,12 +1447,12 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      <section className="py-24 bg-gradient-to-br from-green-50 to-blue-50">
+      <section className={`py-24 ${isDark ? 'bg-transparent' : 'bg-gradient-to-br from-green-50 to-blue-50'}`}>
         <Reveal className="max-w-3xl mx-auto px-6 text-center">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6">
+          <h2 className={`text-4xl md:text-5xl font-extrabold mb-6 ${isDark ? 'text-white' : 'text-gray-900'}`}>
             {t.ctaFinal.title}
           </h2>
-          <p className="text-gray-500 text-lg mb-10">
+          <p className={`text-lg mb-10 ${isDark ? 'text-green-200' : 'text-gray-500'}`}>
             {t.ctaFinal.subtitle}
           </p>
           <Link to="/register"
@@ -1294,9 +1465,9 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* ── FOOTER ── */}
-<footer className="mt-0">
-  <div className="h-1 w-full bg-gradient-to-r from-green-500 to-blue-600" />
-  <div className="bg-gradient-to-r from-green-700 to-blue-800 px-6 py-6">
+<footer className="mt-0" style={{ borderTop: isDark ? "1px solid rgba(255,255,255,0.08)" : "none" }}>
+  {!isDark && <div className="h-1 w-full bg-gradient-to-r from-green-500 to-blue-600" />}
+  <div className={isDark ? 'bg-gradient-to-r from-[#071f12] to-[#0a1e38] px-6 py-6 border-t border-white/10' : 'bg-gradient-to-r from-green-700 to-blue-800 px-6 py-6'}>
     <div className="max-w-6xl mx-auto flex items-center justify-between">
       <div>
         <p className="text-white font-bold text-lg">Biztrivo</p>
