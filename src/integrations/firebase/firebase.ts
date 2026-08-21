@@ -51,7 +51,9 @@ export async function callFunction<T = unknown>(
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: res.statusText }));
-    throw new Error(err.error || res.statusText);
+    const error = new Error(err.error || res.statusText) as Error & { status: number };
+    error.status = res.status;
+    throw error;
   }
   return res.json();
 }
