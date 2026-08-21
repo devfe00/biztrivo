@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useStore } from '@/contexts/StoreContext';
 import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import { useAuth } from '@/contexts/AuthContext';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import {
   Instagram, Sparkles, Loader2, Download, Copy, Check,
   Trash2, Clock, CheckCircle2, Circle, Info, Image as ImageIcon,
@@ -10,7 +12,7 @@ import {
   Star, Eye, Heart
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { FUNCTIONS, callFunction } from '@/integrations/firebase/firebase';
+import { FUNCTIONS, callFunction, db } from '@/integrations/firebase/firebase';
 
 interface PostRecord {
   id: string;
@@ -84,6 +86,7 @@ const DICAS = [
   { icon: '👁️', text: 'A primeira linha da legenda é decisiva. Ela aparece antes do "ver mais", faça ela gerar curiosidade ou urgência.' },
 ];
 
+// ── helpers localStorage (sem alteração, continuam como cache offline) ──
 const loadHistory = (): PostRecord[] => {
   try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch { return []; }
 };
@@ -103,8 +106,33 @@ const saveHashtags = (h: HashtagSet) => localStorage.setItem(HASHTAG_KEY, JSON.s
 const loadBio = (): string => localStorage.getItem(BIO_KEY) || '';
 const saveBio = (b: string) => localStorage.setItem(BIO_KEY, b);
 
+//firestore sync
+const postsIADoc = (uid: string) => doc(db, 'users', uid, 'postsIA', 'data');
+
+const syncFromFirestore = async (uid: string) => {
+  try {
+    const snap = await getDoc(postsIADoc(uid));
+    if (!snap.exists()) return null;
+    return snap.data() as {
+      history?: PostRecord[];
+      plano?: PlanoItem[];
+      hashtags?: HashtagSet | null;
+      bio?: string;
+    };
+  } catch { return null; }
+};
+
+const syncToFirestore = async (uid: string, payload: object) => {
+  try {
+    await setDoc(postsIADoc(uid), payload, { merge: true });
+  } catch (e) {
+    console.warn('PostsIA: falha ao sincronizar', e);
+  }
+};
+
 export default function PostsIA() {
   const { config } = useStore();
+  const { user } = useAuth();
 
   // Tab
   const [activeTab, setActiveTab] = useState<Tab>('gerar');
@@ -202,6 +230,19 @@ export default function PostsIA() {
     }
   }, []);
 
+  //carrega do Firestore ao montar
+  useEffect(() => {
+    if (!user?.uid) return;
+    getDoc(postsIADoc(user.uid)).then(snap => {
+      if (!snap.exists()) return;
+      const d = snap.data();
+      if (d.history?.length) { setHistory(d.history); saveHistory(d.history); }
+      if (d.plano?.length)   { setPlano(d.plano);     savePlano(d.plano);     }
+      if (d.hashtags)        { setHashtags(d.hashtags); saveHashtags(d.hashtags); }
+      if (d.bio)             { setBio(d.bio);           saveBio(d.bio);           }
+    }).catch(() => {});
+  }, [user?.uid]);
+
   // ── Análise de desempenho ──
   const postsComStats = history.filter(r => r.reach !== undefined && r.likes !== undefined);
   const melhorTom = (() => {
@@ -256,6 +297,7 @@ export default function PostsIA() {
       const updated = [record, ...history];
       setHistory(updated);
       saveHistory(updated);
+      if (user?.uid) syncToFirestore(user.uid, { history: updated.slice(0, MAX_HISTORY) });
       localStorage.setItem(RATE_KEY, String(Date.now()));
       toast.success('Post gerado e salvo no histórico!');
       setActiveTab('historico');
@@ -273,10 +315,12 @@ export default function PostsIA() {
   const togglePublished = (id: string) => {
     const updated = history.map(r => r.id === id ? { ...r, published: !r.published } : r);
     setHistory(updated); saveHistory(updated);
+    if (user?.uid) syncToFirestore(user.uid, { history: updated });
   };
   const deleteRecord = (id: string) => {
     const updated = history.filter(r => r.id !== id);
     setHistory(updated); saveHistory(updated);
+    if (user?.uid) syncToFirestore(user.uid, { history: updated });
     toast.success('Post removido do histórico.');
   };
   const downloadImage = (record: PostRecord) => {
@@ -300,6 +344,7 @@ export default function PostsIA() {
     if (isNaN(reach) || isNaN(likes)) { toast.error('Digite números válidos.'); return; }
     const updated = history.map(r => r.id === id ? { ...r, reach, likes } : r);
     setHistory(updated); saveHistory(updated);
+    if (user?.uid) syncToFirestore(user.uid, { history: updated });
     setEditingStats(null);
     toast.success('Métricas salvas!');
   };
@@ -327,6 +372,7 @@ Varie os tipos de conteúdo e tons ao longo do mês. Distribua os produtos de fo
       const parsed: PlanoItem[] = JSON.parse(clean);
       setPlano(parsed);
       savePlano(parsed);
+      if (user?.uid) syncToFirestore(user.uid, { plano: parsed });
       setPlanoChecked({});
       toast.success('Plano mensal gerado!');
     } catch (e: any) {
@@ -357,6 +403,7 @@ Todas em português, sem o símbolo #.`;
       const parsed: HashtagSet = JSON.parse(clean);
       setHashtags(parsed);
       saveHashtags(parsed);
+      if (user?.uid) syncToFirestore(user.uid, { hashtags: parsed });
       toast.success('Sets de hashtags gerados!');
     } catch (e: any) {
       if (e?.status === 403 || e?.message?.toLowerCase().includes('plano')) {
@@ -393,6 +440,7 @@ Responda APENAS com o texto da bio, sem aspas, sem explicações.`;
       const bioTexto = result.trim();
       setBio(bioTexto);
       saveBio(bioTexto);
+      if (user?.uid) syncToFirestore(user.uid, { bio: bioTexto });
       toast.success('Bio gerada!');
     } catch (e: any) {
       if (e?.status === 403 || e?.message?.toLowerCase().includes('plano')) {
@@ -515,7 +563,7 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
       <div className="flex items-start gap-3 rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-4 py-3 text-sm text-yellow-700 dark:text-yellow-300">
         <Info className="w-4 h-4 mt-0.5 shrink-0" />
         <span>
-          Histórico e plano salvos <strong>apenas neste navegador</strong>. Em breve serão sincronizados na nuvem para acesso em qualquer dispositivo.
+          Histórico e plano sincronizados na nuvem. Cache local mantido para acesso offline.
         </span>
       </div>
       {dicaSmartMsg && (

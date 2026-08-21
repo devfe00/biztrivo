@@ -279,6 +279,8 @@ const Contador = () => {
 
   const [pais, setPais] = useState<Pais>(() => lsGet('biztrivo_contador_pais', 'BR') as Pais);
   const [aba,  setAba]  = useState<Aba>('dre');
+  const [nivelSimulador, setNivelSimulador] = useState<'conservador' | 'equilibrado' | 'agressivo'>('equilibrado');
+  const [infoAberto, setInfoAberto] = useState<string | null>(null);
   const [frAtividade, setFrAtividade] = useState<FrAtividade>(
     () => lsGet('biztrivo_fr_atividade', 'comercio') as FrAtividade
   );
@@ -861,6 +863,178 @@ const Contador = () => {
               )}
             </div>
           </Card>
+
+          {/* SIMULADOR DE PRÓ-LABORE IDEAL */}
+          <Card className="p-5 border-none shadow-md">
+            <h3 className="font-semibold font-heading text-sm mb-1 flex items-center gap-2">
+              <Lightbulb className="w-4 h-4 text-primary" />
+              {pais === 'BR' ? 'Simulador de Pró-labore Ideal' : 'Owner\'s Draw Simulator'}
+              <button
+                onClick={() => setInfoAberto(infoAberto === 'simulador' ? null : 'simulador')}
+                className="ml-auto text-muted-foreground hover:text-primary transition-colors"
+              >
+                <Info className="w-3.5 h-3.5" />
+              </button>
+            </h3>
+            {infoAberto === 'simulador' && (
+              <div className="mb-3 p-3 rounded-xl bg-primary/5 border-l-4 border-l-primary text-xs text-muted-foreground leading-relaxed">
+                {pais === 'BR'
+                  ? 'O simulador usa sua receita do mês para calcular faixas seguras de retirada. Conservador mantém seu score no máximo; Equilibrado é o ponto ideal entre retirada e reserva; Agressivo ainda é positivo, mas reduz pontos no score de saúde.'
+                  : 'The simulator uses your monthly revenue to calculate safe draw ranges. Conservative keeps your score at max; Balanced is the sweet spot; Aggressive is still positive but reduces your health score points.'}
+              </div>
+            )}
+            <p className="text-xs text-muted-foreground mb-4">
+              {pais === 'BR'
+                ? 'Simule quanto retirar sem comprometer a saúde do negócio'
+                : 'Simulate how much to draw without hurting business health'}
+            </p>
+
+            {/* Pills de nível */}
+            <div className="flex gap-2 mb-5">
+              {(['conservador', 'equilibrado', 'agressivo'] as const).map((nivel) => {
+                const labels = {
+                  conservador: pais === 'BR' ? 'Conservador' : 'Conservative',
+                  equilibrado: pais === 'BR' ? 'Equilibrado'  : 'Balanced',
+                  agressivo:   pais === 'BR' ? 'Agressivo'    : 'Aggressive',
+                };
+                const ativo = nivelSimulador === nivel;
+                return (
+                  <button
+                    key={nivel}
+                    onClick={() => setNivelSimulador(nivel)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                      ativo
+                        ? 'gradient-primary text-primary-foreground border-transparent shadow-glow'
+                        : 'border-border text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {labels[nivel]}
+                  </button>
+                );
+              })}
+            </div>
+
+            {(() => {
+              const pcts: Record<typeof nivelSimulador, number> = {
+                conservador: 0.15,
+                equilibrado: 0.25,
+                agressivo:   0.35,
+              };
+              const pctEscolhido = pcts[nivelSimulador];
+              const prolaboreSugerido = dre.receita * pctEscolhido;
+              // resultado líquido com o pró-labore sugerido no lugar do atual
+              const resultadoSimulado =
+                dre.receita - dre.cmv - dre.despesaOp - dre.folha - impostosMensais.total - prolaboreSugerido;
+              const diferenca = prolaboreSugerido - dre.prolabore;
+              const isNegativo = resultadoSimulado < 0;
+
+              const scoreImpacto = nivelSimulador === 'conservador'
+                ? (pais === 'BR' ? 'Mantém score_pessoal no máximo (25 pts)' : 'Keeps personal draw score at max (25 pts)')
+                : nivelSimulador === 'equilibrado'
+                ? (pais === 'BR' ? 'Score pessoal médio, sem penalização' : 'Average draw score, no penalty')
+                : (pais === 'BR' ? 'Score pessoal cai, mas ainda positivo (10 pts)' : 'Draw score drops, still positive (10 pts)');
+
+              return (
+                <div className="space-y-4">
+                  {/*valor sugerido */}
+                  <div className="flex items-baseline justify-between p-4 rounded-xl bg-muted/40">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-0.5 flex items-center gap-1">
+                        {pais === 'BR' ? 'Pró-labore sugerido' : 'Suggested draw'}
+                        {' '}({(pctEscolhido * 100).toFixed(0)}%{' '}
+                        {pais === 'BR' ? 'da receita' : 'of revenue'})
+                        <button
+                          onClick={() => setInfoAberto(infoAberto === 'prolabore' ? null : 'prolabore')}
+                          className="text-muted-foreground hover:text-primary transition-colors"
+                        >
+                          <Info className="w-3 h-3" />
+                        </button>
+                      </p>
+                      {infoAberto === 'prolabore' && (
+                        <p className="text-xs text-muted-foreground bg-primary/5 border-l-4 border-l-primary rounded-r-lg px-2 py-1.5 mb-1 leading-relaxed">
+                          {pais === 'BR'
+                            ? 'Calculado sobre a receita bruta do mês. Não leva em conta sazonalidade — em meses de receita baixa, revise o valor manualmente.'
+                            : 'Calculated on gross monthly revenue. Doesn\'t account for seasonality — on low-revenue months, review manually.'}
+                        </p>
+                      )}
+                      <p className="text-2xl font-bold font-heading text-primary">
+                        {fmtMoeda(prolaboreSugerido, pais)}
+                      </p>
+                    </div>
+                    <p className="text-xs text-muted-foreground text-right max-w-[120px] flex items-center gap-1 justify-end">
+                      {nivelSimulador === 'conservador' && <CheckCircle2 className="w-3 h-3 text-secondary shrink-0" />}
+                      {nivelSimulador === 'equilibrado'  && <AlertTriangle className="w-3 h-3 text-warning shrink-0" />}
+                      {nivelSimulador === 'agressivo'    && <TrendingDown className="w-3 h-3 text-destructive shrink-0" />}
+                      {scoreImpacto}
+                    </p>
+                  </div>
+
+                  {/* Comparação com o atual */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 rounded-xl bg-muted/30 text-center">
+                      <p className="text-xs text-muted-foreground mb-1">
+                        {pais === 'BR' ? 'Retirando hoje' : 'Current draw'}
+                      </p>
+                      <p className="text-sm font-bold font-heading">
+                        {fmtMoeda(dre.prolabore, pais)}
+                      </p>
+                    </div>
+                    <div className="p-3 rounded-xl bg-muted/30 text-center">
+                      <p className="text-xs text-muted-foreground mb-1">
+                        {pais === 'BR' ? 'Diferença' : 'Difference'}
+                      </p>
+                      <p className={`text-sm font-bold font-heading ${diferenca > 0 ? 'text-secondary' : diferenca < 0 ? 'text-destructive' : 'text-foreground'}`}>
+                        {diferenca > 0 ? '+' : ''}{fmtMoeda(diferenca, pais)}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/*frase de diferença */}
+                  {dre.prolabore > 0 && diferenca !== 0 && (
+                    <p className="text-xs text-muted-foreground px-1">
+                      {pais === 'BR'
+                        ? `Você está retirando ${fmtMoeda(Math.abs(diferenca), pais)} ${diferenca < 0 ? 'a mais' : 'a menos'} que o ideal ${nivelSimulador}.`
+                        : `You are drawing ${fmtMoeda(Math.abs(diferenca), pais)} ${diferenca < 0 ? 'more' : 'less'} than the ${nivelSimulador} target.`}
+                    </p>
+                  )}
+
+                  {/*resultado líquido simulado */}
+                  <div className={`p-3 rounded-xl border ${isNegativo ? 'bg-destructive/10 border-destructive/30' : 'bg-secondary/10 border-secondary/30'}`}>
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-medium flex items-center gap-1">
+                        {pais === 'BR' ? 'Resultado líquido simulado' : 'Simulated net income'}
+                        <button
+                          onClick={() => setInfoAberto(infoAberto === 'resultado' ? null : 'resultado')}
+                          className="text-muted-foreground hover:text-primary transition-colors"
+                        >
+                          <Info className="w-3 h-3" />
+                        </button>
+                      </p>
+                      <p className={`text-sm font-bold font-heading ${isNegativo ? 'text-destructive' : 'text-secondary'}`}>
+                        {fmtMoeda(resultadoSimulado, pais)}
+                      </p>
+                    </div>
+                    {infoAberto === 'resultado' && (
+                      <p className="text-xs text-muted-foreground mt-2 bg-primary/5 border-l-4 border-l-primary rounded-r-lg px-2 py-1.5 leading-relaxed">
+                        {pais === 'BR'
+                          ? 'Receita − CMV − Despesas operacionais − Folha − Impostos − Pró-labore sugerido. É o que sobraria no caixa ao final do mês com essa retirada.'
+                          : 'Revenue − COGS − Operating expenses − Payroll − Taxes − Suggested draw. What would remain in cash at month\'s end with this draw.'}
+                      </p>
+                    )}
+                    {isNegativo && (
+                      <p className="text-xs text-destructive mt-2 flex items-center gap-1">
+                        <AlertTriangle className="w-3 h-3 shrink-0" />
+                        {pais === 'BR'
+                          ? 'Retirada acima da capacidade do negócio neste mês.'
+                          : 'Draw exceeds business capacity this month.'}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
+          </Card>
+
 <Card className="p-5 border-none shadow-md">
               <h3 className="font-semibold font-heading text-sm mb-3 flex items-center gap-2">
                 <Activity className="w-4 h-4 text-primary" />

@@ -987,24 +987,24 @@ const StatCard: React.FC<{ value: string; label: string; active: boolean }> = ({
 
 const langLabels: Record<Lang, string> = { pt: '🇧🇷 PT', en: '🇺🇸 EN', es: '🇪🇸 ES', fr: '🇫🇷 FR' };
 
-const LangSwitcher: React.FC<{ lang: Lang; setLang: (l: Lang) => void }> = ({ lang, setLang }) => {
+const LangSwitcher: React.FC<{ lang: Lang; setLang: (l: Lang) => void; isDark?: boolean }> = ({ lang, setLang, isDark }) => {
   const [open, setOpen] = useState(false);
   const langs: Lang[] = ['pt', 'en', 'es', 'fr'];
   return (
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="text-xs font-semibold text-gray-600 hover:text-gray-900 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-all border border-gray-200"
+        className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-all border ${isDark ? 'text-green-200 hover:text-white hover:bg-white/10 border-white/20' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 border-gray-200'}`}
       >
         {langLabels[lang]}
       </button>
       {open && (
-        <div className="absolute right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-50">
+        <div className={`absolute right-0 mt-1 rounded-xl shadow-lg overflow-hidden z-50 border ${isDark ? 'bg-[#0a2a18] border-green-900/40' : 'bg-white border-gray-200'}`}>
           {langs.map((l) => (
             <button
               key={l}
               onClick={() => { setLang(l); setOpen(false); }}
-              className={`block w-full text-left px-4 py-2 text-xs font-semibold hover:bg-gray-50 transition-colors ${l === lang ? 'text-green-600' : 'text-gray-700'}`}
+              className={`block w-full text-left px-4 py-2 text-xs font-semibold transition-colors ${l === lang ? 'text-green-400' : isDark ? 'text-green-200' : 'text-gray-700'} ${isDark ? 'hover:bg-white/10' : 'hover:bg-gray-50'}`}
             >
               {langLabels[l]}
             </button>
@@ -1094,7 +1094,7 @@ const t = translations[lang];
             >
               {isDark ? <Sun size={18} /> : <Moon size={18} />}
             </button>
-            <LangSwitcher lang={lang} setLang={setLang} />
+            <LangSwitcher lang={lang} setLang={setLang} isDark={isDark} />
             <Link to="/login" className={`text-sm font-semibold px-4 py-2 rounded-lg transition-all ${isDark ? 'text-green-200 hover:text-white hover:bg-white/10' : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'}`}>
               {t.nav.login}
             </Link>
@@ -1109,10 +1109,10 @@ const t = translations[lang];
         </div>
 
         {mobileMenuOpen && (
-          <div className="md:hidden bg-white border-t border-gray-100 px-6 py-4 flex flex-col gap-4">
-            <a href="#funcionalidades" className="text-gray-700 font-medium" onClick={() => setMobileMenuOpen(false)}>{t.nav.features}</a>
-            <a href="#depoimentos" className="text-gray-700 font-medium" onClick={() => setMobileMenuOpen(false)}>{t.nav.testimonials}</a>
-            <a href="#planos" className="text-gray-700 font-medium" onClick={() => setMobileMenuOpen(false)}>{t.nav.pricing}</a>
+          <div className={`md:hidden border-t px-6 py-4 flex flex-col gap-4 ${isDark ? 'bg-[#071a12] border-white/10' : 'bg-white border-gray-100'}`}>
+<a href="#funcionalidades" className={`font-medium ${isDark ? 'text-green-200' : 'text-gray-700'}`} onClick={() => setMobileMenuOpen(false)}>{t.nav.features}</a>
+<a href="#depoimentos" className={`font-medium ${isDark ? 'text-green-200' : 'text-gray-700'}`} onClick={() => setMobileMenuOpen(false)}>{t.nav.testimonials}</a>
+<a href="#planos" className={`font-medium ${isDark ? 'text-green-200' : 'text-gray-700'}`} onClick={() => setMobileMenuOpen(false)}>{t.nav.pricing}</a>
             <div className="flex gap-3 pt-2 items-center">
               <button
                 onClick={() => setIsDark(d => !d)}
@@ -1121,8 +1121,8 @@ const t = translations[lang];
               >
                 {isDark ? <Sun size={18} /> : <Moon size={18} />}
               </button>
-              <LangSwitcher lang={lang} setLang={setLang} />
-              <Link to="/login" className="flex-1 text-center py-2.5 border border-gray-300 rounded-lg text-sm font-semibold text-gray-700">{t.nav.login}</Link>
+              <LangSwitcher lang={lang} setLang={setLang} isDark={isDark} />
+              <Link to="/login" className={`flex-1 text-center py-2.5 border rounded-lg text-sm font-semibold ${isDark ? 'border-white/20 text-green-200' : 'border-gray-300 text-gray-700'}`}>{t.nav.login}</Link>
               <Link to="/register" className="flex-1 text-center py-2.5 bg-gradient-to-r from-green-500 to-blue-600 rounded-lg text-sm font-semibold text-white">{t.nav.registerMobile}</Link>
             </div>
           </div>

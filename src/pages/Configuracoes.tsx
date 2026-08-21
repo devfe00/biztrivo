@@ -228,6 +228,7 @@ const Configuracoes: React.FC = () => {
                     placeholder={t('configuracoes.store_name_placeholder')} required />
                 </div>
 
+                {config.paisBase === 'BR' && (
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">
                     Chave PIX
@@ -236,7 +237,7 @@ const Configuracoes: React.FC = () => {
                     type="text"
                     value={pixKey}
                     onChange={(e) => setPixKey(e.target.value)}
-                    className="w-full px-4 py-3 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent transition-all bg-background text-foreground"
+                    className="w-full px-4 py-3 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:boundary-transparent transition-all bg-background text-foreground"
                     placeholder="CPF, e-mail, telefone ou chave aleatória"
                     maxLength={140}
                   />
@@ -244,6 +245,7 @@ const Configuracoes: React.FC = () => {
                     Aparece pré-preenchida na mensagem do WhatsApp quando o cliente clicar em "Comprar" na sua vitrine.
                   </p>
                 </div>
+                )}
 
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">{t('configuracoes.email')}</label>
