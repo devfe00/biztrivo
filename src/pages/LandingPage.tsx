@@ -1471,7 +1471,7 @@ const t = translations[lang];
     <div className="max-w-6xl mx-auto flex items-center justify-between">
       <div>
         <p className="text-white font-bold text-lg">Biztrivo</p>
-        <p className="text-white/60 text-xs mt-0.5">CNPJ: 65.321.369/0001-41</p>
+        <p className="text-white/60 text-xs mt-0.5">CNPJ: 68.199.491/0001-85</p>
       </div>
       <div className="flex items-center gap-3">
         <a href="https://www.instagram.com/biztrivo/" target="_blank" rel="noopener noreferrer"

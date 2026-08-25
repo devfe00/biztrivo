@@ -15,7 +15,7 @@ const Footer = () => {
         <div className="flex items-center justify-between md:mb-6">
           <div>
             <p className="text-primary-foreground font-heading font-bold text-sm md:text-xl tracking-tight">Biztrivo</p>
-            <p className="text-primary-foreground/60 text-xs mt-0.5">CNPJ: 65.321.369/0001-41</p>
+            <p className="text-primary-foreground/60 text-xs mt-0.5">CNPJ: 68.199.491/0001-85</p>
           </div>
 
           <div className="flex items-center gap-2">
