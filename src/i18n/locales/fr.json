@@ -1064,7 +1064,7 @@
     "vt_save": "Enregistrer",
     "vt_cancel": "Annuler",
     "vt_empty_title": "Votre vitrine vous attend !",
-    "vt_empty_sub": "Ajoutez votre premier produit et commencez à vendre 🚀",
+    "vt_empty_sub": "Ajoutez votre premier produit et commencez à vendre",
     "vt_empty_cta": "Ajouter Premier Produit",
     "vt_out_of_stock": "Épuisé",
     "vt_stock": "Stock : {{n}}",

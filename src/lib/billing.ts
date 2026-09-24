@@ -21,7 +21,7 @@ export const hasActiveSubscription = (sub?: {
   plan?: string | null;
   currentPeriodEnd?: { toDate?: () => Date } | string | null;
 } | null) => {
-  if (!sub || sub.plan !== 'pro') return false;
+  if (!sub || (sub.plan !== 'pro' && sub.plan !== 'trial')) return false;
 
   // Suporta tanto Firestore Timestamp quanto string ISO
   const endDate = sub.currentPeriodEnd

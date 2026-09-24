@@ -1064,7 +1064,7 @@
     "vt_save": "Guardar Producto",
     "vt_cancel": "Cancelar",
     "vt_empty_title": "¡Tu escaparate te espera!",
-    "vt_empty_sub": "Añade tu primer producto y empieza a vender ahora 🚀",
+    "vt_empty_sub": "Añade tu primer producto y empieza a vender ahora",
     "vt_empty_cta": "Registrar Primer Producto",
     "vt_out_of_stock": "Agotado",
     "vt_stock": "Stock: {{n}}",

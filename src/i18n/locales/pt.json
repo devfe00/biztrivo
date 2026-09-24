@@ -1127,7 +1127,7 @@
     "vt_save": "Salvar Produto",
     "vt_cancel": "Cancelar",
     "vt_empty_title": "Sua vitrine está esperando!",
-    "vt_empty_sub": "Adicione seu primeiro produto e comece a vender agora mesmo 🚀",
+    "vt_empty_sub": "Adicione seu primeiro produto e comece a vender agora mesmo",
     "vt_empty_cta": "Cadastrar Primeiro Produto",
     "vt_out_of_stock": "Esgotado",
     "vt_stock": "Estoque: {{n}}",

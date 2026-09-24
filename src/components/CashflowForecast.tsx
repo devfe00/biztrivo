@@ -4,6 +4,7 @@ import { Sparkles, RefreshCw, TrendingUp, AlertTriangle } from 'lucide-react';
 import { FUNCTIONS, callFunction } from '@/integrations/firebase/firebase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useT, useI18n } from '@/lib/i18n';
+import UpgradeModal from '@/components/UpgradeModal';
 
 interface Forecast {
   previsao_7_dias: number;
@@ -25,6 +26,8 @@ const CashflowForecast = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [insufficient, setInsufficient] = useState<string | null>(null);
+  const [trialUsage, setTrialUsage] = useState<{ used: number; remaining: number; limit: number } | null>(null);
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
   useEffect(() => {
     if (!cacheKey) return;
@@ -44,17 +47,27 @@ const CashflowForecast = () => {
     setError(null);
     setInsufficient(null);
     try {
-      const data = await callFunction<Forecast & { insufficient_data?: boolean; message?: string; error?: string }>(FUNCTIONS.forecastCashflow, {});
+      const data = await callFunction<Forecast & {
+        insufficient_data?: boolean;
+        message?: string;
+        error?: string;
+        trialUsage?: { used: number; remaining: number; limit: number } | null;
+      }>(FUNCTIONS.forecastCashflow, {});
       if (data?.insufficient_data) {
         setInsufficient(data.message);
       } else if (data?.error) {
         setError(data.error);
       } else {
         setForecast(data);
+        if (data.trialUsage) setTrialUsage(data.trialUsage);
         if (cacheKey) localStorage.setItem(cacheKey, JSON.stringify(data));
       }
     } catch (e: any) {
-      setError(e?.message || t('cashflow_forecast.generic_error'));
+      if ((e as any)?.status === 403 && (e as any)?.code === 'UPGRADE_REQUIRED') {
+        setShowUpgrade(true);
+      } else {
+        setError(e?.message || t('cashflow_forecast.generic_error'));
+      }
     } finally {
       setLoading(false);
     }
@@ -68,6 +81,7 @@ const CashflowForecast = () => {
     : 'border-l-secondary bg-secondary/5';
 
   return (
+    <>
     <Card className={`p-6 border-none shadow-md border-l-4 ${forecast ? riskColor : 'border-l-primary bg-primary/5'}`}>
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2">
@@ -125,10 +139,21 @@ const CashflowForecast = () => {
           <p className="text-[10px] text-muted-foreground text-right">
             {t('cashflow_forecast.generated_by_ai', { date: new Date(forecast.generated_at).toLocaleString(lang) })}
           </p>
+          {trialUsage && (
+            <p className="text-[10px] text-muted-foreground text-right">
+              Previsões este mês: <strong>{trialUsage.used}/{trialUsage.limit}</strong> — <strong>{trialUsage.remaining}</strong> restantes
+            </p>
+          )}
         </div>
       )}
     </Card>
-  );
+<UpgradeModal
+      open={showUpgrade}
+      onClose={() => setShowUpgrade(false)}
+      reason="Você atingiu o limite de previsões de caixa do período de teste."
+    />
+  </>
+);
 };
 
 export default CashflowForecast;

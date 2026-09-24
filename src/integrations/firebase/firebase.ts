@@ -21,7 +21,7 @@ export const storage = getStorage(app);
 
 // URLs das Cloud Functions
 export const FUNCTIONS = {
-  setupUser:            'https://southamerica-east1-biztrivo-491617.cloudfunctions.net/setupUser',
+  setupUser:            'https://setupuser-mfnr6ijotq-rj.a.run.app',
   stripeWebhook:        'https://stripewebhook-mfnr6ijotq-rj.a.run.app',
   generateInstagramPost:'https://generateinstagrampost-mfnr6ijotq-rj.a.run.app',
   ajudaeSync:           'https://ajudaesync-mfnr6ijotq-rj.a.run.app',
@@ -32,6 +32,9 @@ export const FUNCTIONS = {
   getPublicStoreBySlug: 'https://getpublicstorebyslug-mfnr6ijotq-rj.a.run.app',
   postsIA:              'https://postsia-mfnr6ijotq-rj.a.run.app',
   activateMei:          'https://southamerica-east1-biztrivo-491617.cloudfunctions.net/activateMei',
+  grantTrialAccess:     'https://southamerica-east1-biztrivo-491617.cloudfunctions.net/grantTrialAccess',
+  listTrialAccess:      'https://southamerica-east1-biztrivo-491617.cloudfunctions.net/listTrialAccess',
+  revokeTrialAccess:    'https://southamerica-east1-biztrivo-491617.cloudfunctions.net/revokeTrialAccess',
 };
 
 // Helper para chamar functions autenticadas

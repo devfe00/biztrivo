@@ -364,7 +364,7 @@ className="text-xs text-muted-foreground hover:text-secondary flex items-center 
 <ShoppingCart className="w-3 h-3" /> Registrar venda
 </button>
 )}
-  <button onClick={() => removeProduct(p.id)} className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-1 transition-colors">
+  <button onClick={() => { if (window.confirm('Tem certeza que deseja excluir esse produto?')) removeProduct(p.id); }} className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-1 transition-colors">
     <Trash2 className="w-3 h-3" /> {t('ext.vt_remove')}
   </button>
 </div>

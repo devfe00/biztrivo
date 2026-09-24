@@ -1064,7 +1064,7 @@
     "vt_save": "Save Product",
     "vt_cancel": "Cancel",
     "vt_empty_title": "Your storefront is waiting!",
-    "vt_empty_sub": "Add your first product and start selling right now 🚀",
+    "vt_empty_sub": "Add your first product and start selling right now",
     "vt_empty_cta": "Add First Product",
     "vt_out_of_stock": "Sold Out",
     "vt_stock": "Stock: {{n}}",

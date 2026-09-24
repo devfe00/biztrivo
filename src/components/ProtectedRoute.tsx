@@ -3,13 +3,20 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { getCurrentSubscription, hasActiveSubscription, redirectToCheckout } from '@/lib/billing';
 import { useT } from '@/lib/i18n';
+import { useLocation } from 'react-router-dom';
+import UpgradeModal from '@/components/UpgradeModal';
+
+const TRIAL_BLOCKED_ROUTES = ['/posts-ia'];
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const t = useT();
   const [checkingSubscription, setCheckingSubscription] = useState(true);
   const [hasSubscription, setHasSubscription] = useState(false);
+  const [isTrial, setIsTrial] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -22,6 +29,12 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       getCurrentSubscription(user.uid).then((sub) => {
         if (hasActiveSubscription(sub)) {
           setHasSubscription(true);
+          if (sub?.plan === 'trial') {
+            setIsTrial(true);
+            if (TRIAL_BLOCKED_ROUTES.includes(location.pathname)) {
+              setShowUpgradeModal(true);
+            }
+          }
         } else {
           redirectToCheckout(user.email);
         }
@@ -42,6 +55,18 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }
 
   if (!hasSubscription) return null;
+
+  if (isTrial && TRIAL_BLOCKED_ROUTES.includes(location.pathname)) {
+    return (
+      <>
+        <UpgradeModal
+          open={showUpgradeModal}
+          onClose={() => { setShowUpgradeModal(false); navigate('/dashboard'); }}
+          reason="Posts com IA está disponível apenas no plano PRO."
+        />
+      </>
+    );
+  }
 
   return <>{children}</>;
 };

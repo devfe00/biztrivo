@@ -27,6 +27,7 @@ import TermosDeUso from "@/pages/TermosDeUso";
 import PoliticaPrivacidade from "@/pages/PoliticaPrivacidade";
 import NotFound from "./pages/NotFound";
 import AuthCallback from "@/pages/AuthCallback";
+import Admin from "@/pages/Admin";
 import LandingPage from '@/pages/LandingPage';
 import CookieBanner from "@/components/CookieBanner";
 import { I18nProvider } from "@/lib/i18n";
@@ -65,6 +66,7 @@ const App = () => (
               <Route path="/academy" element={<ProtectedRoute><AppLayout><Academy /></AppLayout></ProtectedRoute>} />
               <Route path="/configuracoes" element={<ProtectedRoute><AppLayout><Configuracoes /></AppLayout></ProtectedRoute>} />
               <Route path="/auth/callback" element={<AuthCallback />} />
+              <Route path="/admin" element={<Admin />} />
               
               <Route path="*" element={<NotFound />} />
             </Routes>

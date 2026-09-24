@@ -7,6 +7,7 @@ import { useStore } from '@/contexts/StoreContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Toaster } from "sonner";
 import Footer from '@/components/Footer';
+import TrialCountdown from '@/components/TrialCountdown';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useI18n, LANGUAGES } from '@/lib/i18n';
 
@@ -271,6 +272,7 @@ const langDropdownRef = useRef<HTMLDivElement>(null);
         <div className="flex-1 md:p-8 p-4 pt-16 md:pt-8">
           <div className="max-w-5xl mx-auto animate-fade-in">
             {children}
+            <TrialCountdown />
             <Footer />
           </div>
         </div>
