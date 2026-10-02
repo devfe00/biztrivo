@@ -1010,6 +1010,34 @@ const HeroDashboard: React.FC<{ isDark: boolean; lang: Lang }> = ({ isDark, lang
   const muted = 'text-slate-400';
   const hi    = 'text-emerald-400';
 
+  // ── dados mockados fiéis ao produto real ──
+  const dreRows = [
+    { label: lang === 'pt' ? 'Receita bruta'       : lang === 'en' ? 'Gross revenue'  : lang === 'es' ? 'Ingresos brutos'   : 'CA brut',          value: lang === 'pt' ? 'R$ 8.420' : lang === 'en' ? '$ 1.684' : '$ 1.684', color: 'text-white',         bar: 100 },
+    { label: lang === 'pt' ? '(-) DAS / Impostos'  : lang === 'en' ? '(-) Taxes'      : lang === 'es' ? '(-) Impuestos'     : '(-) Cotisations',  value: lang === 'pt' ? '- R$ 421' : lang === 'en' ? '- $ 129' : '- $ 129', color: 'text-red-400',       bar: 5  },
+    { label: lang === 'pt' ? '(-) Custos'          : lang === 'en' ? '(-) Costs'      : lang === 'es' ? '(-) Costos'        : '(-) Charges',      value: lang === 'pt' ? '- R$ 3.100' : '- $ 620',                            color: 'text-amber-400',     bar: 37 },
+    { label: lang === 'pt' ? '(-) Gastos pessoais' : lang === 'en' ? '(-) Personal'   : lang === 'es' ? '(-) Gast. pers.'   : '(-) Pers.',        value: lang === 'pt' ? '- R$ 980' : '- $ 196',                             color: 'text-violet-400',    bar: 12 },
+    { label: lang === 'pt' ? '= Lucro líquido'     : lang === 'en' ? '= Net profit'   : lang === 'es' ? '= Lucro neto'      : '= Bénéfice net',   value: lang === 'pt' ? 'R$ 3.919' : lang === 'en' ? '$ 739'  : '$ 739',  color: 'text-emerald-400',   bar: 47 },
+  ];
+
+  const barData = [
+    { h: 45, label: 'Jan' }, { h: 58, label: 'Fev' }, { h: 42, label: 'Mar' },
+    { h: 71, label: 'Abr' }, { h: 63, label: 'Mai' }, { h: 88, label: 'Jun' },
+  ];
+
+  const produtos = [
+    { name: lang === 'pt' ? 'Bolsa de Couro Premium' : 'Premium Leather Bag', price: lang === 'pt' ? 'R$ 129,00' : '$ 25.90', stock: 8,  hot: true  },
+    { name: lang === 'pt' ? 'Vestido Longo Floral'   : 'Floral Long Dress',   price: lang === 'pt' ? 'R$ 89,90'  : '$ 17.90', stock: 3,  hot: false },
+    { name: lang === 'pt' ? 'Camiseta Estampada'     : 'Printed T-Shirt',     price: lang === 'pt' ? 'R$ 49,90'  : '$ 9.90',  stock: 15, hot: true  },
+    { name: lang === 'pt' ? 'Tênis Casual Branco'    : 'White Casual Sneaker',price: lang === 'pt' ? 'R$ 199,00' : '$ 39.90', stock: 2,  hot: false },
+  ];
+
+  const pedidos = [
+    { id: '#BZ-0091', item: lang === 'pt' ? 'Bolsa Couro'   : 'Leather Bag',   time: '2min'  },
+    { id: '#BZ-0090', item: lang === 'pt' ? 'Vestido Longo' : 'Long Dress',    time: '18min' },
+    { id: '#BZ-0089', item: lang === 'pt' ? 'Camiseta Est.' : 'Printed T-Shirt',time: '1h'  },
+    { id: '#BZ-0088', item: lang === 'pt' ? 'Tênis Casual'  : 'Casual Sneaker', time: '2h'  },
+  ];
+
   return (
     <div className="relative mx-auto w-full max-w-6xl">
       {/* moldura */}
@@ -1017,21 +1045,25 @@ const HeroDashboard: React.FC<{ isDark: boolean; lang: Lang }> = ({ isDark, lang
         <div className={`${bg} rounded-2xl overflow-hidden`}>
 
           {/* barra superior do browser */}
-          <div className="bg-[#0a0f0d] px-4 py-2.5 flex items-center gap-2.5 border-b border-white/5">
-            <div className="flex gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
-              <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80" />
-              <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
+          <div className="bg-[#0a0f0d] px-4 py-2 flex flex-col gap-1.5 border-b border-white/5">
+            {/* linha 1: dots + URL */}
+            <div className="flex items-center gap-2.5">
+              <div className="flex gap-1.5 shrink-0">
+                <div className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
+                <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80" />
+                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
+              </div>
+              <div className="flex-1 bg-white/5 rounded-md px-3 py-1 text-left min-w-0">
+                <span className="text-slate-500 text-[11px] truncate block">biztrivo.com/dashboard</span>
+              </div>
             </div>
-            <div className="flex-1 mx-4 bg-white/5 rounded-md px-3 py-1 text-left">
-              <span className="text-slate-500 text-[11px]">biztrivo.com/dashboard</span>
-            </div>
-            <div className="flex gap-3">
+            {/* linha 2: tabs */}
+            <div className="flex gap-1 overflow-x-auto scrollbar-none pb-0.5">
               {tabs.map(tab => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-md transition-all ${
+                  className={`flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-md transition-all shrink-0 ${
                     activeTab === tab.id
                       ? 'bg-emerald-500/20 text-emerald-400'
                       : 'text-slate-500 hover:text-slate-300'
@@ -1044,17 +1076,18 @@ const HeroDashboard: React.FC<{ isDark: boolean; lang: Lang }> = ({ isDark, lang
           </div>
 
           {/* conteúdo fixo em altura */}
-          <div style={{ height: 'clamp(320px, 60vw, 500px)' }} className="overflow-hidden">
+          <div style={{ height: 'clamp(260px, 55vw, 500px)' }} className="overflow-hidden">
 
             {/* ── ABA: RELATÓRIOS ── */}
             {activeTab === 'relatorios' && (
-              <div className="h-full grid grid-cols-12 gap-3 p-4">
-                {/* col esquerda: KPIs */}
-                <div className="col-span-4 flex flex-col gap-3">
+              <div className="h-full grid grid-cols-12 gap-2 p-3">
+
+                {/* col esquerda: KPIs estilo Relatorios.tsx */}
+                <div className="col-span-4 flex flex-col gap-2">
                   {[
-                    { label: lang === 'pt' ? 'Faturamento do mês' : lang === 'en' ? 'Monthly revenue' : lang === 'es' ? 'Facturación del mes' : 'Chiffre du mois', value: 'R$ 8.420', delta: '+18%', bar: 74 },
-                    { label: lang === 'pt' ? 'Margem real' : lang === 'en' ? 'Real margin' : lang === 'es' ? 'Margen real' : 'Marge réelle', value: '54%', delta: '+8pp', bar: 54 },
-                    { label: lang === 'pt' ? 'Ticket médio' : lang === 'en' ? 'Avg ticket' : lang === 'es' ? 'Ticket medio' : 'Ticket moyen', value: 'R$ 152', delta: '+11%', bar: 62 },
+                    { label: lang === 'pt' ? 'Faturamento do mês' : lang === 'en' ? 'Monthly revenue' : lang === 'es' ? 'Facturación' : 'CA du mois', value: lang === 'pt' ? 'R$ 8.420' : '$ 1.684', delta: '+18%', bar: 74 },
+                    { label: lang === 'pt' ? 'Margem real'        : lang === 'en' ? 'Real margin'      : lang === 'es' ? 'Margen real' : 'Marge réelle', value: '54%', delta: '+8pp', bar: 54 },
+                    { label: lang === 'pt' ? 'Ticket médio'       : lang === 'en' ? 'Avg ticket'       : lang === 'es' ? 'Ticket medio' : 'Ticket moyen', value: lang === 'pt' ? 'R$ 152' : '$ 30', delta: '+11%', bar: 62 },
                   ].map(k => (
                     <div key={k.label} className={`${card} rounded-xl p-3 flex-1`}>
                       <p className={`${muted} text-[10px] mb-1`}>{k.label}</p>
@@ -1069,47 +1102,45 @@ const HeroDashboard: React.FC<{ isDark: boolean; lang: Lang }> = ({ isDark, lang
                   ))}
                 </div>
 
-                {/* col central: gráfico barras */}
+                {/* col central: gráfico Entradas vs Saídas (fiel ao BarChart do Relatorios.tsx) */}
                 <div className={`col-span-5 ${panel} rounded-xl p-3 flex flex-col`}>
-                  <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center justify-between mb-2">
                     <span className="text-slate-300 text-[11px] font-medium">
-                      {lang === 'pt' ? 'Últimos 6 meses' : lang === 'en' ? 'Last 6 months' : lang === 'es' ? 'Últimos 6 meses' : '6 derniers mois'}
+                      {lang === 'pt' ? 'Entradas vs Saídas' : lang === 'en' ? 'Revenue vs Expenses' : lang === 'es' ? 'Entradas vs Salidas' : 'Revenus vs Charges'}
                     </span>
                     <TrendingUp size={12} className="text-emerald-400" />
                   </div>
-                  <div className="flex-1 flex items-end gap-1.5">
-                    {[
-                      { h: 45, in: 3200, out: 1800 },
-                      { h: 58, in: 4100, out: 2100 },
-                      { h: 42, in: 3000, out: 1750 },
-                      { h: 71, in: 5050, out: 2300 },
-                      { h: 63, in: 4500, out: 2050 },
-                      { h: 88, in: 6270, out: 2150 },
-                    ].map((bar, i) => (
+                  {/* legenda */}
+                  <div className="flex gap-3 mb-2">
+                    <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-sm bg-emerald-500" /><span className={`${muted} text-[8px]`}>{lang === 'pt' ? 'Entradas' : 'Revenue'}</span></div>
+                    <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-sm bg-red-400" /><span className={`${muted} text-[8px]`}>{lang === 'pt' ? 'Saídas' : 'Expenses'}</span></div>
+                  </div>
+                  <div className="flex-1 flex items-end gap-1">
+                    {barData.map((bar, i) => (
                       <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
-                        <div className="w-full flex flex-col justify-end gap-0.5" style={{ height: '120px' }}>
-                          <div
-                            className="w-full rounded-t bg-gradient-to-t from-emerald-500/80 to-emerald-400/40"
-                            style={{ height: `${bar.h}%` }}
-                          />
+                        <div className="w-full flex items-end justify-center gap-0.5" style={{ height: '100px' }}>
+                          {/* barra entrada */}
+                          <div className="w-[45%] rounded-t-sm bg-gradient-to-t from-emerald-600 to-emerald-400" style={{ height: `${bar.h}%` }} />
+                          {/* barra saída — ~55% da entrada */}
+                          <div className="w-[45%] rounded-t-sm bg-red-400/70" style={{ height: `${Math.round(bar.h * 0.52)}%` }} />
                         </div>
-                        <span className={`${muted} text-[9px]`}>{['Jan','Fev','Mar','Abr','Mai','Jun'][i]}</span>
+                        <span className={`${muted} text-[8px]`}>{bar.label}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                {/* col direita: pizza gastos + ranking */}
-                <div className="col-span-3 flex flex-col gap-3">
+                {/* col direita: gastos por categoria (fiel ao PieChart/barras do Relatorios.tsx) */}
+                <div className="col-span-3 flex flex-col gap-2">
                   <div className={`${panel} rounded-xl p-3 flex-1`}>
                     <p className={`${muted} text-[10px] mb-2`}>
                       {lang === 'pt' ? 'Gastos por categoria' : lang === 'en' ? 'Expenses by category' : lang === 'es' ? 'Gastos por categoría' : 'Dépenses par catégorie'}
                     </p>
                     {[
-                      { label: lang === 'pt' ? 'Reposição' : 'Restock', pct: 48, color: 'bg-blue-400' },
-                      { label: lang === 'pt' ? 'Pessoal'   : 'Personal', pct: 22, color: 'bg-emerald-400' },
-                      { label: lang === 'pt' ? 'Frete'     : 'Shipping', pct: 18, color: 'bg-violet-400' },
-                      { label: lang === 'pt' ? 'Outros'    : 'Others',   pct: 12, color: 'bg-slate-500' },
+                      { label: lang === 'pt' ? 'Reposição' : 'Restock',  pct: 48, color: 'bg-blue-400' },
+                      { label: lang === 'pt' ? 'Embalagem' : 'Packaging', pct: 22, color: 'bg-amber-400' },
+                      { label: lang === 'pt' ? 'Frete'     : 'Shipping',  pct: 18, color: 'bg-violet-400' },
+                      { label: lang === 'pt' ? 'Outros'    : 'Others',    pct: 12, color: 'bg-slate-500' },
                     ].map(c => (
                       <div key={c.label} className="mb-1.5">
                         <div className="flex justify-between mb-0.5">
@@ -1122,14 +1153,22 @@ const HeroDashboard: React.FC<{ isDark: boolean; lang: Lang }> = ({ isDark, lang
                       </div>
                     ))}
                   </div>
+                  {/* curva de saldo acumulado — mini linha (fiel ao LineChart do Relatorios.tsx) */}
                   <div className={`${card} rounded-xl p-3`}>
-                    <p className={`${muted} text-[10px] mb-1.5`}>
-                      {lang === 'pt' ? 'Projeção do mês' : lang === 'en' ? 'Month projection' : lang === 'es' ? 'Proyección del mes' : 'Projection du mois'}
+                    <p className={`${muted} text-[10px] mb-1`}>
+                      {lang === 'pt' ? 'Saldo acumulado' : lang === 'en' ? 'Accumulated balance' : lang === 'es' ? 'Saldo acumulado' : 'Solde cumulé'}
                     </p>
-                    <p className="text-emerald-400 font-bold text-base">R$ 9.100</p>
-                    <p className={`${muted} text-[9px]`}>
-                      {lang === 'pt' ? '+8% vs mês passado' : lang === 'en' ? '+8% vs last month' : lang === 'es' ? '+8% vs mes pasado' : '+8% vs mois dernier'}
-                    </p>
+                    <svg viewBox="0 0 80 30" className="w-full h-6">
+                      <polyline
+                        fill="none"
+                        stroke="#34d399"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        points="0,28 13,22 26,18 39,14 52,10 65,6 80,2"
+                      />
+                    </svg>
+                    <p className="text-emerald-400 font-bold text-sm mt-0.5">{lang === 'pt' ? 'R$ 3.919' : '$ 739'}</p>
                   </div>
                 </div>
               </div>
@@ -1287,12 +1326,8 @@ const HeroDashboard: React.FC<{ isDark: boolean; lang: Lang }> = ({ isDark, lang
                   <div className={`${card} rounded-xl p-3 flex-1 flex flex-col justify-between`}>
                     <div>
                       <p className={`${muted} text-[10px] mb-1`}>QR Code</p>
-                      <div className="w-16 h-16 mx-auto bg-white rounded-lg flex items-center justify-center">
-                        <div className="grid grid-cols-5 gap-0.5 p-1.5">
-                          {Array.from({ length: 25 }).map((_, i) => (
-                            <div key={i} className={`w-1.5 h-1.5 ${[0,1,2,3,4,5,9,10,14,15,19,20,21,22,23,24,7,17,12].includes(i) ? 'bg-gray-900' : 'bg-white'}`} />
-                          ))}
-                        </div>
+                      <div className="w-16 h-16 sm:w-28 sm:h-28 mx-auto bg-white rounded-lg overflow-hidden flex items-center justify-center">
+                        <img src="/qrcode.png" alt="QR Code" className="w-full h-full object-contain" />
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5 mt-2 bg-emerald-500/10 rounded-lg px-2 py-1.5">
