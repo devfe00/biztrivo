@@ -218,3 +218,8 @@
     box-shadow: 0 4px 20px -4px hsl(142 71% 45% / 0.3);
   }
 }
+
+@keyframes wave {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-12px); }
+}

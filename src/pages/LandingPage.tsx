@@ -178,7 +178,7 @@ const translations = {
       mockup: {
         product: 'Bolsa de Couro Premium',
         price: 'R$ 129,00',
-        caption: '✨ Sofisticação que cabe na mão. Nossa Bolsa de Couro Premium chegou para elevar o seu estilo! 🛍️ Link do catálogo na bio. Chama no WhatsApp! 💬',
+        caption: 'Sofisticação que cabe na mão. Nossa Bolsa de Couro Premium chegou para elevar o seu estilo! 🛍️ Link do catálogo na bio. Chama no WhatsApp! 💬',
         hashtags: '#moda #bolsa #couro #lookdodia #estilo',
         tag: 'IA gerou em 8 segundos',
       },
@@ -194,7 +194,7 @@ const translations = {
     pricing: {
       eyebrow: 'Planos',
       title: 'Simples e sem surpresas',
-      subtitle: 'Comece grátis e assine quando quiser desbloquear tudo.',
+      subtitle: 'Assine quando quiser desbloquear tudo.',
       badge: 'ÚNICO PLANO',
       planName: 'Biztrivo Pro',
       planDesc: 'Acesso completo a tudo',
@@ -376,7 +376,7 @@ const translations = {
       mockup: {
         product: 'Premium Leather Bag',
         price: '$ 25.90',
-        caption: '✨ Sophistication that fits in your hand. Our Premium Leather Bag is here to elevate your style! 🛍️ Catalog link in bio. Message us on WhatsApp! 💬',
+        caption: 'Sophistication that fits in your hand. Our Premium Leather Bag is here to elevate your style! 🛍️ Catalog link in bio. Message us on WhatsApp! 💬',
         hashtags: '#fashion #bag #leather #ootd #style',
         tag: 'AI generated in 8 seconds',
       },
@@ -391,7 +391,7 @@ const translations = {
     pricing: {
       eyebrow: 'Pricing',
       title: 'Simple and no surprises',
-      subtitle: 'Start free and subscribe when you want to unlock everything.',
+      subtitle: 'Subscribe when you want to unlock everything.',
       badge: 'ONE PLAN',
       planName: 'Biztrivo Pro',
       planDesc: 'Full access to everything',
@@ -572,7 +572,7 @@ const translations = {
       mockup: {
         product: 'Bolso de Cuero Premium',
         price: '$ 25,90',
-        caption: '✨ Sofisticación que cabe en la mano. ¡Nuestro Bolso de Cuero Premium llegó para elevar tu estilo! 🛍️ Enlace del catálogo en bio. ¡Escríbenos! 💬',
+        caption: 'Sofisticación que cabe en la mano. ¡Nuestro Bolso de Cuero Premium llegó para elevar tu estilo! 🛍️ Enlace del catálogo en bio. ¡Escríbenos! 💬',
         hashtags: '#moda #bolso #cuero #lookdeldia #estilo',
         tag: 'IA generó en 8 segundos',
       },
@@ -587,7 +587,7 @@ const translations = {
     pricing: {
       eyebrow: 'Planes',
       title: 'Simple y sin sorpresas',
-      subtitle: 'Comienza gratis y suscríbete cuando quieras desbloquear todo.',
+      subtitle: 'Suscríbete cuando quieras desbloquear todo.',
       badge: 'ÚNICO PLAN',
       planName: 'Biztrivo Pro',
       planDesc: 'Acceso completo a todo',
@@ -770,7 +770,7 @@ const translations = {
       mockup: {
         product: 'Sac en Cuir Premium',
         price: '€ 25,90',
-        caption: '✨ La sophistication au bout des doigts. Notre Sac en Cuir Premium est là pour sublimer votre style ! 🛍️ Lien du catalogue en bio. Contactez-nous ! 💬',
+        caption: 'La sophistication au bout des doigts. Notre Sac en Cuir Premium est là pour sublimer votre style ! 🛍️ Lien du catalogue en bio. Contactez-nous ! 💬',
         hashtags: '#mode #sac #cuir #lookdujour #style',
         tag: 'IA générée en 8 secondes',
       },
@@ -785,7 +785,7 @@ const translations = {
     pricing: {
       eyebrow: 'Tarifs',
       title: 'Simple et sans surprises',
-      subtitle: 'Commencez gratuitement et abonnez-vous quand vous voulez tout débloquer.',
+      subtitle: 'Abonnez-vous quand vous voulez tout débloquer.',
       badge: 'PLAN UNIQUE',
       planName: 'Biztrivo Pro',
       planDesc: 'Accès complet à tout',
@@ -880,67 +880,46 @@ function useCounter(target: number, decimals = 0, duration = 1400, active = fals
   return count;
 }
 
-const LANG_ORDER: Lang[] = ['pt', 'en', 'es', 'fr'];
+const HERO_PHRASE: Record<Lang, { a: string; b: string; subtitle: string }> = {
+  pt: {
+    a: 'Venda mais.',
+    b: 'Controle tudo.',
+    subtitle: 'Do caixa diário à vitrine online, com posts gerados por IA e relatórios que mostram o lucro real do seu negócio.',
+  },
+  en: {
+    a: 'Grow your business.',
+    b: 'Without the chaos.',
+    subtitle: 'Track every sale, showcase your products online and let AI handle your Instagram content while you focus on selling.',
+  },
+  es: {
+    a: 'Tu negocio en orden.',
+    b: 'Sin complicaciones.',
+    subtitle: 'Registra tus ventas, muestra tus productos en línea y deja que la IA cree tu contenido para que tú solo te dediques a vender.',
+  },
+  fr: {
+    a: 'Votre boutique,',
+    b: 'enfin maîtrisée.',
+    subtitle: 'Suivez vos ventes au quotidien, exposez vos produits en ligne et laissez l\'IA créer vos publications pendant que vous vendez.',
+  },
+};
 
-function useTypewriter(activeLang: Lang) {
- const phrases = LANG_ORDER.map((l) => ({
-    a: translations[l].hero.h1a,
-    b: translations[l].hero.h1b,
-    subtitle: translations[l].hero.subtitle,
-    lang: l,
-  }));
+function useHeroPhrase(lang: Lang) {
+  const [visible, setVisible] = useState(true);
+  const [phrase, setPhrase] = useState(HERO_PHRASE[lang]);
+  const prevLang = useRef(lang);
 
-  const [phraseIdx, setPhraseIdx] = useState(() => LANG_ORDER.indexOf(activeLang));
-  const [display, setDisplay] = useState<{ a: string; b: string }>({ a: phrases[LANG_ORDER.indexOf(activeLang)].a, b: phrases[LANG_ORDER.indexOf(activeLang)].b });
-    const [charIdx, setCharIdx] = useState(phrases[LANG_ORDER.indexOf(activeLang)].b.length);
-  const [phase, setPhase] = useState<'typing' | 'pausing' | 'erasing'>('pausing');
-  const prevLang = useRef(activeLang);
-
-  // Troca manual de idioma → interrompe e sincroniza
   useEffect(() => {
-    if (activeLang === prevLang.current) return;
-    prevLang.current = activeLang;
-    const idx = LANG_ORDER.indexOf(activeLang);
-    setPhraseIdx(idx);
-    setDisplay({ a: phrases[idx].a, b: '' });
-    setCharIdx(0);
-    setPhase('typing');
-  }, [activeLang]); // eslint-disable-line
+    if (lang === prevLang.current) return;
+    prevLang.current = lang;
+    setVisible(false);
+    const id = setTimeout(() => {
+      setPhrase(HERO_PHRASE[lang]);
+      setVisible(true);
+    }, 220);
+    return () => clearTimeout(id);
+  }, [lang]);
 
-  useEffect(() => {
-    const target = phrases[phraseIdx];
-
-    if (phase === 'typing') {
-      if (charIdx >= target.b.length) { setPhase('pausing'); return; }
-      const id = setTimeout(() => {
-        setDisplay({ a: target.a, b: target.b.slice(0, charIdx + 1) });
-        setCharIdx((i) => i + 1);
-      }, 55);
-      return () => clearTimeout(id);
-    }
-
-    if (phase === 'pausing') {
-      const id = setTimeout(() => setPhase('erasing'), 2400);
-      return () => clearTimeout(id);
-    }
-
-    if (phase === 'erasing') {
-      if (charIdx <= 0) {
-        const next = (phraseIdx + 1) % phrases.length;
-        setPhraseIdx(next);
-         setDisplay({ a: phrases[next].a as string, b: '' });
-        setPhase('typing');
-        return;
-      }
-      const id = setTimeout(() => {
-        setDisplay((d) => ({ a: d.a as string, b: d.b.slice(0, -1) }));
-        setCharIdx((i) => i - 1);
-      }, 32);
-      return () => clearTimeout(id);
-    }
-  }, [phase, charIdx, phraseIdx]); // eslint-disable-line
-
-  return { ...display, subtitle: phrases[phraseIdx].subtitle };
+  return { phrase, visible };
 }
 
 const Reveal: React.FC<{ children: React.ReactNode; delay?: number; className?: string }> = ({
@@ -1015,10 +994,511 @@ const LangSwitcher: React.FC<{ lang: Lang; setLang: (l: Lang) => void; isDark?: 
   );
 };
 
+const HeroDashboard: React.FC<{ isDark: boolean; lang: Lang }> = ({ isDark, lang }) => {
+  const [activeTab, setActiveTab] = useState<'relatorios' | 'posts' | 'vitrine' | 'contador'>('relatorios');
+
+  const tabs = [
+    { id: 'relatorios' as const, label: lang === 'pt' ? 'Relatórios' : lang === 'en' ? 'Reports' : lang === 'es' ? 'Informes' : 'Rapports', icon: <BarChart3 size={13} /> },
+    { id: 'posts'     as const, label: 'Posts IA',                                                                                                                                    icon: <Sparkles size={13} /> },
+    { id: 'vitrine'   as const, label: lang === 'pt' ? 'Vitrine' : lang === 'en' ? 'Storefront' : lang === 'es' ? 'Vitrina' : 'Vitrine',                                             icon: <Store size={13} /> },
+    { id: 'contador'  as const, label: lang === 'pt' ? 'Contador' : lang === 'en' ? 'Accountant' : lang === 'es' ? 'Contador' : 'Comptable',                                        icon: <FileSpreadsheet size={13} /> },
+  ] as const;
+
+  const bg    = isDark ? 'bg-[#0b1e13]'     : 'bg-[#0f172a]';
+  const panel = isDark ? 'bg-[#0d2318]/80'  : 'bg-[#1e293b]';
+  const card  = isDark ? 'bg-[#0a2a18]/90'  : 'bg-[#273548]';
+  const muted = 'text-slate-400';
+  const hi    = 'text-emerald-400';
+
+  return (
+    <div className="relative mx-auto w-full max-w-6xl">
+      {/* moldura */}
+      <div className="rounded-2xl p-[2px] bg-gradient-to-br from-emerald-500 via-blue-500 to-emerald-700 shadow-2xl">
+        <div className={`${bg} rounded-2xl overflow-hidden`}>
+
+          {/* barra superior do browser */}
+          <div className="bg-[#0a0f0d] px-4 py-2.5 flex items-center gap-2.5 border-b border-white/5">
+            <div className="flex gap-1.5">
+              <div className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
+              <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80" />
+              <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
+            </div>
+            <div className="flex-1 mx-4 bg-white/5 rounded-md px-3 py-1 text-left">
+              <span className="text-slate-500 text-[11px]">biztrivo.com/dashboard</span>
+            </div>
+            <div className="flex gap-3">
+              {tabs.map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-md transition-all ${
+                    activeTab === tab.id
+                      ? 'bg-emerald-500/20 text-emerald-400'
+                      : 'text-slate-500 hover:text-slate-300'
+                  }`}
+                >
+                  {tab.icon} {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* conteúdo fixo em altura */}
+          <div style={{ height: 'clamp(320px, 60vw, 500px)' }} className="overflow-hidden">
+
+            {/* ── ABA: RELATÓRIOS ── */}
+            {activeTab === 'relatorios' && (
+              <div className="h-full grid grid-cols-12 gap-3 p-4">
+                {/* col esquerda: KPIs */}
+                <div className="col-span-4 flex flex-col gap-3">
+                  {[
+                    { label: lang === 'pt' ? 'Faturamento do mês' : lang === 'en' ? 'Monthly revenue' : lang === 'es' ? 'Facturación del mes' : 'Chiffre du mois', value: 'R$ 8.420', delta: '+18%', bar: 74 },
+                    { label: lang === 'pt' ? 'Margem real' : lang === 'en' ? 'Real margin' : lang === 'es' ? 'Margen real' : 'Marge réelle', value: '54%', delta: '+8pp', bar: 54 },
+                    { label: lang === 'pt' ? 'Ticket médio' : lang === 'en' ? 'Avg ticket' : lang === 'es' ? 'Ticket medio' : 'Ticket moyen', value: 'R$ 152', delta: '+11%', bar: 62 },
+                  ].map(k => (
+                    <div key={k.label} className={`${card} rounded-xl p-3 flex-1`}>
+                      <p className={`${muted} text-[10px] mb-1`}>{k.label}</p>
+                      <div className="flex items-end justify-between mb-2">
+                        <p className="text-white font-bold text-lg leading-none">{k.value}</p>
+                        <span className="text-emerald-400 text-[10px] font-semibold">{k.delta}</span>
+                      </div>
+                      <div className="w-full bg-white/10 rounded-full h-1">
+                        <div className="h-1 rounded-full bg-gradient-to-r from-emerald-400 to-blue-400" style={{ width: `${k.bar}%` }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* col central: gráfico barras */}
+                <div className={`col-span-5 ${panel} rounded-xl p-3 flex flex-col`}>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-slate-300 text-[11px] font-medium">
+                      {lang === 'pt' ? 'Últimos 6 meses' : lang === 'en' ? 'Last 6 months' : lang === 'es' ? 'Últimos 6 meses' : '6 derniers mois'}
+                    </span>
+                    <TrendingUp size={12} className="text-emerald-400" />
+                  </div>
+                  <div className="flex-1 flex items-end gap-1.5">
+                    {[
+                      { h: 45, in: 3200, out: 1800 },
+                      { h: 58, in: 4100, out: 2100 },
+                      { h: 42, in: 3000, out: 1750 },
+                      { h: 71, in: 5050, out: 2300 },
+                      { h: 63, in: 4500, out: 2050 },
+                      { h: 88, in: 6270, out: 2150 },
+                    ].map((bar, i) => (
+                      <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
+                        <div className="w-full flex flex-col justify-end gap-0.5" style={{ height: '120px' }}>
+                          <div
+                            className="w-full rounded-t bg-gradient-to-t from-emerald-500/80 to-emerald-400/40"
+                            style={{ height: `${bar.h}%` }}
+                          />
+                        </div>
+                        <span className={`${muted} text-[9px]`}>{['Jan','Fev','Mar','Abr','Mai','Jun'][i]}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* col direita: pizza gastos + ranking */}
+                <div className="col-span-3 flex flex-col gap-3">
+                  <div className={`${panel} rounded-xl p-3 flex-1`}>
+                    <p className={`${muted} text-[10px] mb-2`}>
+                      {lang === 'pt' ? 'Gastos por categoria' : lang === 'en' ? 'Expenses by category' : lang === 'es' ? 'Gastos por categoría' : 'Dépenses par catégorie'}
+                    </p>
+                    {[
+                      { label: lang === 'pt' ? 'Reposição' : 'Restock', pct: 48, color: 'bg-blue-400' },
+                      { label: lang === 'pt' ? 'Pessoal'   : 'Personal', pct: 22, color: 'bg-emerald-400' },
+                      { label: lang === 'pt' ? 'Frete'     : 'Shipping', pct: 18, color: 'bg-violet-400' },
+                      { label: lang === 'pt' ? 'Outros'    : 'Others',   pct: 12, color: 'bg-slate-500' },
+                    ].map(c => (
+                      <div key={c.label} className="mb-1.5">
+                        <div className="flex justify-between mb-0.5">
+                          <span className={`${muted} text-[9px]`}>{c.label}</span>
+                          <span className="text-slate-300 text-[9px]">{c.pct}%</span>
+                        </div>
+                        <div className="w-full bg-white/10 rounded-full h-1">
+                          <div className={`h-1 rounded-full ${c.color}`} style={{ width: `${c.pct}%` }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className={`${card} rounded-xl p-3`}>
+                    <p className={`${muted} text-[10px] mb-1.5`}>
+                      {lang === 'pt' ? 'Projeção do mês' : lang === 'en' ? 'Month projection' : lang === 'es' ? 'Proyección del mes' : 'Projection du mois'}
+                    </p>
+                    <p className="text-emerald-400 font-bold text-base">R$ 9.100</p>
+                    <p className={`${muted} text-[9px]`}>
+                      {lang === 'pt' ? '+8% vs mês passado' : lang === 'en' ? '+8% vs last month' : lang === 'es' ? '+8% vs mes pasado' : '+8% vs mois dernier'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ── ABA: POSTS IA ── */}
+            {activeTab === 'posts' && (
+              <div className="h-full grid grid-cols-12 gap-3 p-4">
+                {/* preview do post */}
+                <div className="col-span-4 flex flex-col">
+                  <div className={`${panel} rounded-xl overflow-hidden flex-1 flex flex-col`}>
+                    <div className="bg-gradient-to-br from-emerald-700 to-blue-800 h-32 flex items-center justify-center relative">
+                      <div className="text-center">
+                        <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center mx-auto mb-1.5">
+                          <ShoppingBag size={18} className="text-white" />
+                        </div>
+                    <p className="text-white font-bold text-xs">
+                      {lang === 'pt' ? 'Bolsa de Couro' : lang === 'en' ? 'Leather Bag' : lang === 'es' ? 'Bolso de Cuero' : 'Sac en Cuir'}
+                    </p>
+                    <p className="text-emerald-300 font-extrabold text-sm">
+                      {lang === 'pt' ? 'R$ 129,00' : lang === 'en' ? '$ 25.90' : lang === 'es' ? '$ 25,90' : '€ 25,90'}
+                    </p>
+                      </div>
+                      <div className="absolute top-2 right-2 bg-black/50 text-white text-[9px] px-1.5 py-0.5 rounded-full flex items-center gap-1">
+                        <Sparkles size={8} className="text-yellow-400" />
+                        IA
+                      </div>
+                    </div>
+                    <div className="p-2.5 flex-1">
+                      <div className="flex gap-2 mb-1.5">
+                        <Heart size={12} className="text-slate-400" />
+                        <MessageCircle size={12} className="text-slate-400" />
+                      </div>
+                      <p className="text-slate-300 text-[9px] leading-relaxed">
+                        {lang === 'pt' ? '✨ Sofisticação que cabe na mão. Nossa Bolsa de Couro chegou! 🛍️'
+                          : lang === 'en' ? '✨ Sophistication that fits. Our Leather Bag is here! 🛍️'
+                          : lang === 'es' ? '✨ Sofisticación al alcance de tu mano. ¡Nuestro Bolso de Cuero llegó! 🛍️'
+                          : '✨ La sophistication à portée de main. Notre Sac en Cuir est arrivé ! 🛍️'}
+                      </p>
+                      <p className="text-blue-400 text-[9px] mt-1">#moda #bolsa #couro</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* seletor de tom + histórico */}
+                <div className="col-span-5 flex flex-col gap-3">
+                  <div className={`${panel} rounded-xl p-3`}>
+                    <p className={`${muted} text-[10px] mb-2`}>
+                      {lang === 'pt' ? 'Tom do post' : lang === 'en' ? 'Post tone' : lang === 'es' ? 'Tono del post' : 'Ton de la publication'}
+                    </p>
+                    <div className="flex gap-2">
+                      {[
+                        { id: 'promo',    label: lang === 'pt' ? 'Promocional' : 'Promotional', color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' },
+                        { id: 'elegante', label: lang === 'pt' ? 'Elegante'    : 'Elegant',     color: 'bg-blue-500/20 text-blue-400 border-blue-500/40' },
+                        { id: 'fun',      label: lang === 'pt' ? 'Divertido'   : 'Fun',         color: 'bg-violet-500/20 text-violet-400 border-violet-500/40' },
+                      ].map((t, i) => (
+                        <div key={t.id} className={`flex-1 text-center text-[9px] font-semibold py-1.5 rounded-lg border ${t.color} ${i === 0 ? 'ring-1 ring-emerald-400/60' : ''}`}>
+                          {t.label}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className={`${panel} rounded-xl p-3 flex-1`}>
+                    <p className={`${muted} text-[10px] mb-2`}>
+                      {lang === 'pt' ? 'Últimos posts gerados' : lang === 'en' ? 'Recent generated posts' : lang === 'es' ? 'Últimas publicaciones' : 'Dernières publications'}
+                    </p>
+                    {[
+                      { prod: 'Vestido Longo',    reach: '1.240', likes: '87' },
+                      { prod: 'Camiseta Floral',  reach: '980',   likes: '63' },
+                      { prod: 'Tênis Casual',     reach: '2.100', likes: '142' },
+                    ].map(p => (
+                      <div key={p.prod} className="flex items-center justify-between py-1.5 border-b border-white/5 last:border-0">
+                        <div className="flex items-center gap-2">
+                          <div className="w-5 h-5 rounded bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center">
+                            <Instagram size={10} className="text-white" />
+                          </div>
+                          <span className="text-slate-300 text-[10px]">{p.prod}</span>
+                        </div>
+                        <div className="flex gap-2">
+                          <span className={`${muted} text-[9px]`}>{p.reach} reach</span>
+                          <span className="text-emerald-400 text-[9px]">{p.likes} ♥</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* plano 30 dias */}
+                <div className="col-span-3 flex flex-col gap-3">
+                  <div className={`${panel} rounded-xl p-3 flex-1`}>
+                    <p className={`${muted} text-[10px] mb-2`}>
+                      {lang === 'pt' ? 'Plano 30 dias' : lang === 'en' ? '30-day plan' : lang === 'es' ? 'Plan 30 días' : 'Plan 30 jours'}
+                    </p>
+                    <div className="grid grid-cols-5 gap-0.5">
+                      {Array.from({ length: 30 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className={`h-4 rounded-sm ${
+                            [1,4,7,10,13,16,19,22,25,28].includes(i)
+                              ? 'bg-emerald-500'
+                              : [2,9,15,21,27].includes(i)
+                              ? 'bg-blue-500/60'
+                              : 'bg-white/5'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <div className="flex gap-3 mt-2">
+                      <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-sm bg-emerald-500" /><span className={`${muted} text-[8px]`}>10 posts</span></div>
+                      <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-sm bg-blue-500/60" /><span className={`${muted} text-[8px]`}>5 stories</span></div>
+                    </div>
+                  </div>
+                  <div className={`${card} rounded-xl p-3`}>
+                    <p className={`${muted} text-[10px] mb-1`}>
+                      {lang === 'pt' ? 'Gerados este mês' : 'Generated this month'}
+                    </p>
+                    <p className="text-white font-bold text-xl">23</p>
+                    <p className={`${hi} text-[9px]`}>
+                      {lang === 'pt' ? 'posts prontos' : 'ready posts'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ── ABA: VITRINE ── */}
+            {activeTab === 'vitrine' && (
+              <div className="h-full grid grid-cols-12 gap-3 p-4">
+                {/* info da loja */}
+                <div className="col-span-4 flex flex-col gap-3">
+                  <div className={`${panel} rounded-xl p-3`}>
+                    <div className="flex items-center gap-2.5 mb-3">
+                      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-blue-600 flex items-center justify-center shrink-0">
+                        <Store size={16} className="text-white" />
+                      </div>
+                      <div>
+                        <p className="text-white font-semibold text-xs">Minha Loja</p>
+                        <p className="text-emerald-400 text-[9px]">biztrivo.com/loja/minha-loja</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        { label: lang === 'pt' ? 'Visitas hoje' : 'Visits today', value: '247' },
+                        { label: lang === 'pt' ? 'Pedidos'      : 'Orders',       value: '18' },
+                        { label: lang === 'pt' ? 'Produtos'     : 'Products',     value: '34' },
+                        { label: lang === 'pt' ? 'Conversão'    : 'Conversion',   value: '7.3%' },
+                      ].map(s => (
+                        <div key={s.label} className={`${card} rounded-lg p-2`}>
+                          <p className={`${muted} text-[9px]`}>{s.label}</p>
+                          <p className="text-white font-bold text-sm">{s.value}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className={`${card} rounded-xl p-3 flex-1 flex flex-col justify-between`}>
+                    <div>
+                      <p className={`${muted} text-[10px] mb-1`}>QR Code</p>
+                      <div className="w-16 h-16 mx-auto bg-white rounded-lg flex items-center justify-center">
+                        <div className="grid grid-cols-5 gap-0.5 p-1.5">
+                          {Array.from({ length: 25 }).map((_, i) => (
+                            <div key={i} className={`w-1.5 h-1.5 ${[0,1,2,3,4,5,9,10,14,15,19,20,21,22,23,24,7,17,12].includes(i) ? 'bg-gray-900' : 'bg-white'}`} />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 mt-2 bg-emerald-500/10 rounded-lg px-2 py-1.5">
+                      <Download size={10} className="text-emerald-400" />
+                      <span className="text-emerald-400 text-[9px] font-medium">
+                        {lang === 'pt' ? 'Baixar QR Code' : 'Download QR Code'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* catálogo */}
+                <div className="col-span-5 flex flex-col gap-2">
+                  <p className={`${muted} text-[10px]`}>
+                    {lang === 'pt' ? 'Produtos em destaque' : lang === 'en' ? 'Featured products' : lang === 'es' ? 'Productos destacados' : 'Produits en vedette'}
+                  </p>
+                  {[
+                    { name: 'Bolsa de Couro Premium', price: 'R$ 129,00', stock: 8,  hot: true },
+                    { name: 'Vestido Longo Floral',   price: 'R$ 89,90',  stock: 3,  hot: false },
+                    { name: 'Camiseta Estampada',     price: 'R$ 49,90',  stock: 15, hot: true },
+                    { name: 'Tênis Casual Branco',    price: 'R$ 199,00', stock: 2,  hot: false },
+                  ].map(p => (
+                    <div key={p.name} className={`${card} rounded-xl p-2.5 flex items-center gap-3`}>
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center shrink-0">
+                        <Package size={14} className="text-slate-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-white text-[10px] font-medium truncate">{p.name}</p>
+                          {p.hot && <span className="text-[8px] bg-emerald-500/20 text-emerald-400 px-1 rounded">top</span>}
+                        </div>
+                        <p className="text-emerald-400 text-[10px] font-bold">{p.price}</p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className={`text-[9px] ${p.stock <= 3 ? 'text-amber-400' : muted}`}>{p.stock} un.</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* pedidos recentes */}
+                <div className="col-span-3 flex flex-col gap-2">
+                  <p className={`${muted} text-[10px]`}>
+                    {lang === 'pt' ? 'Pedidos recentes' : lang === 'en' ? 'Recent orders' : lang === 'es' ? 'Pedidos recientes' : 'Commandes récentes'}
+                  </p>
+                  {[
+                    { id: '#BZ-0091', item: 'Bolsa Couro',   status: 'WhatsApp', time: '2min' },
+                    { id: '#BZ-0090', item: 'Vestido Longo', status: 'WhatsApp', time: '18min' },
+                    { id: '#BZ-0089', item: 'Camiseta Est.', status: 'WhatsApp', time: '1h' },
+                    { id: '#BZ-0088', item: 'Tênis Casual',  status: 'WhatsApp', time: '2h' },
+                  ].map(o => (
+                    <div key={o.id} className={`${panel} rounded-xl p-2.5`}>
+                      <div className="flex items-center justify-between mb-0.5">
+                        <span className="text-emerald-400 text-[9px] font-mono">{o.id}</span>
+                        <span className={`${muted} text-[8px]`}>{o.time}</span>
+                      </div>
+                      <p className="text-slate-300 text-[10px]">{o.item}</p>
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <MessageCircle size={8} className="text-emerald-500" />
+                        <span className="text-emerald-500 text-[8px]">{o.status}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ── ABA: CONTADOR ── */}
+            {activeTab === 'contador' && (
+              <div className="h-full grid grid-cols-12 gap-3 p-4">
+                {/* DRE */}
+                <div className="col-span-5 flex flex-col gap-3">
+                  <div className={`${panel} rounded-xl p-3 flex-1`}>
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-slate-300 text-[11px] font-semibold">
+                        {lang === 'pt' ? 'DRE — Outubro 2026' : lang === 'en' ? 'P&L — October 2026' : lang === 'es' ? 'DRE — Octubre 2026' : 'Compte de résultat — Oct. 2026'}
+                      </p>
+                      <span className="text-[9px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded">MEI</span>
+                    </div>
+                    {[
+                      { label: lang === 'pt' ? 'Receita bruta'    : 'Gross revenue',    value: 'R$ 8.420', color: 'text-white',       bar: 100 },
+                      { label: lang === 'pt' ? '(-) DAS / Impostos' : '(-) Taxes',      value: '- R$ 421', color: 'text-red-400',     bar: 5 },
+                      { label: lang === 'pt' ? '(-) Custos'       : '(-) Costs',        value: '- R$ 3.100', color: 'text-amber-400', bar: 37 },
+                      { label: lang === 'pt' ? '(-) Gastos pessoais' : '(-) Personal',  value: '- R$ 980', color: 'text-violet-400',  bar: 12 },
+                      { label: lang === 'pt' ? '= Lucro líquido'  : '= Net profit',     value: 'R$ 3.919', color: 'text-emerald-400', bar: 47 },
+                    ].map(row => (
+                      <div key={row.label} className="flex items-center gap-2 py-1 border-b border-white/5 last:border-0">
+                        <div className="w-1 h-3 rounded-full bg-white/10 overflow-hidden shrink-0">
+                          <div className="w-full rounded-full bg-emerald-400/60" style={{ height: `${row.bar}%` }} />
+                        </div>
+                        <span className={`${muted} text-[9px] flex-1`}>{row.label}</span>
+                        <span className={`${row.color} text-[10px] font-semibold`}>{row.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* score + impostos */}
+                <div className="col-span-4 flex flex-col gap-3">
+                  <div className={`${panel} rounded-xl p-3`}>
+                    <p className={`${muted} text-[10px] mb-2`}>
+                      {lang === 'pt' ? 'Score financeiro' : lang === 'en' ? 'Financial score' : lang === 'es' ? 'Score financiero' : 'Score financier'}
+                    </p>
+                    <div className="flex items-center gap-3">
+                      <div className="relative w-14 h-14 shrink-0">
+                        <svg viewBox="0 0 36 36" className="w-14 h-14 -rotate-90">
+                          <circle cx="18" cy="18" r="14" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="3" />
+                          <circle cx="18" cy="18" r="14" fill="none" stroke="url(#scoreGrad)" strokeWidth="3"
+                            strokeDasharray={`${78 * 0.88} ${88}`} strokeLinecap="round" />
+                          <defs>
+                            <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                              <stop offset="0%" stopColor="#34d399" />
+                              <stop offset="100%" stopColor="#60a5fa" />
+                            </linearGradient>
+                          </defs>
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-white font-bold text-sm">78</span>
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-emerald-400 font-semibold text-xs">
+                          {lang === 'pt' ? 'Saudável' : lang === 'en' ? 'Healthy' : lang === 'es' ? 'Saludable' : 'Sain'}
+                        </p>
+                        <p className={`${muted} text-[9px] mt-0.5`}>
+                          {lang === 'pt' ? 'Margem acima de 40%' : 'Margin above 40%'}
+                        </p>
+                        <p className={`${muted} text-[9px]`}>
+                          {lang === 'pt' ? 'Gastos pessoais ok' : 'Personal expenses ok'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className={`${card} rounded-xl p-3 flex-1`}>
+                    <p className={`${muted} text-[10px] mb-2`}>
+                      {lang === 'pt' ? 'Impostos estimados' : lang === 'en' ? 'Estimated taxes' : lang === 'es' ? 'Impuestos estimados' : 'Impôts estimés'}
+                    </p>
+                    {[
+                      { label: 'DAS MEI', value: 'R$ 76,90', due: lang === 'pt' ? 'Vence dia 20' : 'Due day 20' },
+                      { label: lang === 'pt' ? 'Reserva sugerida' : 'Suggested reserve', value: 'R$ 421', due: '5% receita' },
+                    ].map(t => (
+                      <div key={t.label} className="flex items-center justify-between py-1.5 border-b border-white/5 last:border-0">
+                        <div>
+                          <p className="text-slate-300 text-[10px]">{t.label}</p>
+                          <p className={`${muted} text-[8px]`}>{t.due}</p>
+                        </div>
+                        <p className="text-amber-400 font-semibold text-[10px]">{t.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* limite MEI */}
+                <div className="col-span-3 flex flex-col gap-3">
+                  <div className={`${panel} rounded-xl p-3`}>
+                    <p className={`${muted} text-[10px] mb-2`}>
+                      {lang === 'pt' ? 'Limite MEI 2026' : 'MEI Limit 2026'}
+                    </p>
+                    <div className="flex justify-between mb-1">
+                      <span className="text-slate-300 text-[10px]">R$ 64.200</span>
+                      <span className="text-slate-300 text-[10px]">R$ 81.000</span>
+                    </div>
+                    <div className="w-full bg-white/10 rounded-full h-2 mb-1.5">
+                      <div className="h-2 rounded-full bg-gradient-to-r from-emerald-400 to-amber-400" style={{ width: '79%' }} />
+                    </div>
+                    <p className="text-amber-400 text-[9px] font-medium">79% utilizado</p>
+                    <p className={`${muted} text-[8px] mt-0.5`}>
+                      {lang === 'pt' ? 'Restam R$ 16.800' : 'R$ 16,800 remaining'}
+                    </p>
+                  </div>
+                  <div className={`${card} rounded-xl p-3 flex-1`}>
+                    <p className={`${muted} text-[10px] mb-1.5`}>DASN-SIMEI</p>
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <CheckCircle2 size={12} className="text-emerald-400" />
+                      <span className="text-emerald-400 text-[9px]">
+                        {lang === 'pt' ? 'Dados prontos' : 'Data ready'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 bg-emerald-500/10 rounded-lg px-2 py-1.5">
+                      <Download size={9} className="text-emerald-400" />
+                      <span className="text-emerald-400 text-[9px]">
+                        {lang === 'pt' ? 'Exportar PDF' : 'Export PDF'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+          </div>
+        </div>
+      </div>
+
+      {/* fade bottom */}
+      <div
+        className="absolute bottom-0 left-0 right-0 h-16 rounded-b-2xl pointer-events-none"
+        style={{ background: isDark ? 'linear-gradient(to bottom, transparent, #071f12)' : 'linear-gradient(to bottom, transparent, rgba(220,252,231,0.6))' }}
+      />
+    </div>
+  );
+};
+
 const LandingPage: React.FC = () => {
   const { lang, setLang } = useGlobalLang();
 const t = translations[lang];
-  const heroAnimated = useTypewriter(lang);
+  const { phrase: heroAnimated, visible: heroVisible } = useHeroPhrase(lang);
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);  const [scrolled, setScrolled] = useState(false);
   const [parallaxY, setParallaxY] = useState(0);
@@ -1146,22 +1626,39 @@ const t = translations[lang];
           }}
         />
 
-        <div className="relative max-w-5xl mx-auto px-6 text-center pt-28 pb-20">
-          
+        <div className="relative w-full max-w-6xl mx-auto px-4 sm:px-6 text-center pt-40 pb-16">
 
- <div style={{ minHeight: '14rem' }}>
-          <h1 className={`text-5xl md:text-7xl font-extrabold leading-tight mb-6 tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
-            {heroAnimated.a}{' '}
-            <span className="bg-gradient-to-r from-green-500 to-blue-600 bg-clip-text text-transparent">
-              {heroAnimated.b}
-              <span className="inline-block w-[3px] h-[0.85em] ml-[2px] align-middle bg-gradient-to-b from-green-500 to-blue-600 animate-pulse rounded-sm" />
-            </span>
-          </h1>
+          <div className="mb-16">
+            <h1 className={`text-6xl md:text-8xl font-extrabold leading-tight tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              {heroAnimated.a}{' '}
+              <span
+                className="inline-block"
+                style={{ opacity: heroVisible ? 1 : 0, transition: 'opacity 0.3s ease' }}
+              >
+                {heroAnimated.b.split('').map((char, i) => (
+                  <span
+                    key={i}
+                    className="bg-gradient-to-r from-green-500 to-blue-600 bg-clip-text text-transparent"
+                    style={{
+                      display: 'inline-block',
+                      animation: char === ' ' ? 'none' : 'wave 2s ease-in-out infinite',
+                      animationDelay: `${i * 0.08}s`,
+                    }}
+                  >
+                    {char === ' ' ? '\u00A0' : char}
+                  </span>
+                ))}
+              </span>
+            </h1>
           </div>
-          <p className={`text-xl max-w-2xl mx-auto mb-10 leading-relaxed ${isDark ? 'text-green-200' : 'text-gray-500'}`}>
-            {heroAnimated.subtitle}
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+
+          <div className="mb-8">
+            <p className={`text-lg max-w-xl mx-auto leading-relaxed ${isDark ? 'text-green-200' : 'text-gray-500'}`}>
+              {heroAnimated.subtitle}
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', flexWrap: 'wrap', marginBottom: '80px' }}>
             <Link to="/register"
               className="group flex items-center gap-2 bg-gradient-to-r from-green-500 to-blue-600 text-white text-lg font-bold px-8 py-4 rounded-xl hover:from-green-600 hover:to-blue-700 transition-all shadow-xl hover:shadow-2xl hover:-translate-y-0.5">
               {t.hero.cta}
@@ -1174,54 +1671,10 @@ const t = translations[lang];
             </Link>
           </div>
 
-          {/* Dashboard mockup */}
-          <div className="mt-16 relative mx-auto max-w-4xl">
-            <div className="bg-gradient-to-br from-green-700 to-blue-800 rounded-2xl shadow-2xl p-1">
-              <div className="bg-gray-900 rounded-xl overflow-hidden">
-                <div className="bg-gray-800 px-4 py-3 flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-red-400" />
-                  <div className="w-3 h-3 rounded-full bg-yellow-400" />
-                  <div className="w-3 h-3 rounded-full bg-green-400" />
-                  <span className="ml-3 text-gray-500 text-xs">{t.dashboard.url}</span>
-                </div>
-                <div className="p-6 grid grid-cols-3 gap-4">
-                  {t.dashboard.cards.map((card) => (
-                    <div
-                      key={card.label}
-                      className="group/card bg-gray-700/60 rounded-xl p-4 text-left cursor-pointer transition-all duration-300 hover:bg-gray-600/80 hover:scale-[1.03] hover:shadow-lg relative overflow-hidden"
-                    >
-                      <div className="transition-all duration-300 group-hover/card:opacity-0 group-hover/card:-translate-y-2">
-                        <p className="text-gray-400 text-xs mb-1">{card.label}</p>
-                        <p className="text-white text-2xl font-bold">{card.value}</p>
-                        <p className="text-xs font-medium mt-1 text-green-400">{card.trend}</p>
-                      </div>
-                      <div className="absolute inset-0 p-4 flex flex-col justify-center opacity-0 translate-y-2 transition-all duration-300 group-hover/card:opacity-100 group-hover/card:translate-y-0">
-                        <p className="text-gray-400 text-xs mb-2">{card.label}</p>
-                        <p className="text-lg font-extrabold mb-1 text-green-400">{card.value}</p>
-                        <div className="w-full bg-gray-600 rounded-full h-1.5 mb-2">
-                          <div className="h-1.5 rounded-full bg-gradient-to-r from-green-400 to-emerald-500 transition-all duration-500" style={{ width: '70%' }} />
-                        </div>
-                        <p className="text-white text-xs font-medium">{card.detail}</p>
-                        <p className="text-xs mt-0.5 text-green-400">{card.detail2}</p>
-                      </div>
-                    </div>
-                  ))}
-                  <div className="col-span-3 bg-gray-700/40 rounded-xl p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-gray-300 text-sm font-medium">{t.dashboard.chartLabel}</span>
-                      <TrendingUp size={16} className="text-green-400" />
-                    </div>
-                    <div className="flex items-end gap-2 h-16">
-                      {[40, 65, 50, 80, 60, 90, 75].map((h, i) => (
-                        <div key={i} className="flex-1 bg-gradient-to-t from-green-500 to-blue-500 rounded-t opacity-80" style={{ height: `${h}%` }} />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="absolute inset-0 rounded-2xl pointer-events-none" style={{ top: '65%', background: isDark ? 'linear-gradient(to bottom, transparent, #071f12cc)' : 'linear-gradient(to bottom, transparent, rgba(255,255,255,0.8))' }} />
+          <div className="w-full px-0">
+            <HeroDashboard isDark={isDark} lang={lang} />
           </div>
+
         </div>
       </section>
 
