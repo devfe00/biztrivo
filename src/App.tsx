@@ -11,6 +11,8 @@ import Dashboard from "@/pages/Dashboard";
 import Caixa from "@/pages/Caixa";
 import Vitrine from "@/pages/Vitrine";
 import PostsIA from "@/pages/PostsIA";
+import Fidelidade from "@/pages/Fidelidade";
+import CartaoFidelidade from "@/pages/CartaoFidelidade";
 import Offline from "@/pages/Offline";
 import Academy from "@/pages/Academy";
 import Relatorios from "@/pages/Relatorios";
