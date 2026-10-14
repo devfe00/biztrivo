@@ -29,7 +29,7 @@ const UpgradeModal = ({ open, onClose, reason }: Props) => {
           </div>
 
           <div>
-            <h2 className="text-lg font-bold text-foreground">Recurso PRO</h2>
+            <h2 className="text-lg font-bold text-foreground">Recurso Biztrivo</h2>
             <p className="text-sm text-muted-foreground mt-1">
               {reason ?? 'Este recurso não está disponível no período de teste.'}
             </p>
@@ -38,7 +38,7 @@ const UpgradeModal = ({ open, onClose, reason }: Props) => {
             href={getStripeCheckoutUrl(user?.email)}
             className="w-full py-3 rounded-xl bg-primary text-primary-foreground text-sm font-semibold text-center hover:opacity-90 transition"
           >
-            Assinar PRO e liberar tudo
+            Assinar a Biztrivo e liberar tudo
           </a>
 
           <button

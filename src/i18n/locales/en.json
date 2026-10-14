@@ -543,7 +543,7 @@
     "cancel_sub": "Cancel Subscription",
     "cancelling": "Cancelling...",
     "cancel_confirm": "Are you sure you want to cancel your subscription? You will still have access for 30 days after cancellation.",
-    "subscribe_pro": "Subscribe to Pro Plan",
+    "subscribe_pro": "Subscribe to Biztrivo",
     "grace_notice": "Your subscription was cancelled, but you still have access until <1>{{date}}</1>. After that date, your access will be suspended.",
     "coupon_title": "Ajudaê Coupon available",
     "coupon_subscriber": "We identified that you are a <1>{{plan}}</1> subscriber of Ajudaê.",
@@ -572,7 +572,7 @@
     "title": "Plans",
     "subtitle": "Choose the best plan for your business",
     "free": "Free",
-    "pro": "Pro",
+    "pro": "Biztrivo",
     "monthly": "per month",
     "subscribe": "Subscribe now",
     "current_plan": "Current plan",
@@ -1014,7 +1014,7 @@
     "cx_personal_hint": "(marked separately on the statement)",
     "cx_btn_in": "+ Income",
     "cx_btn_out": "- Expense",
-    "cx_ledger": "Today's Statement",
+    "cx_ledger": "Financial Statement",
     "cx_search": "Search entry...",
     "cx_all": "All",
     "cx_empty_title": "Your day starts now!",
@@ -1087,7 +1087,10 @@
     "db_cancel": "Cancel",
     "vt_only_mode": "Display-only mode",
     "vt_only_mode_hint": "The \"Buy\" button is hidden. Customers see product details, but reaching out is up to them. Great for a showroom or reference catalog.",
-    "vt_edit_photo": "Photo"
+    "vt_edit_photo": "Photo",
+    "cx_period": "Period",
+    "cx_today": "Today",
+    "cx_confirm_rm": "Remove this entry?"
   },
   "academy": {
     "subtitle": "Learn how to sell more and better",

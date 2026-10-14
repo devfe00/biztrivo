@@ -606,7 +606,7 @@
     "cancel_sub": "Cancelar Assinatura",
     "cancelling": "Cancelando...",
     "cancel_confirm": "Tem certeza que deseja cancelar sua assinatura? Você ainda terá acesso por 30 dias após o cancelamento.",
-    "subscribe_pro": "Assinar Plano Pro",
+    "subscribe_pro": "Assinar Biztrivo",
     "grace_notice": "Sua assinatura foi cancelada, mas você ainda tem acesso até <1>{{date}}</1>. Após essa data, seu acesso será suspenso.",
     "coupon_title": "Cupom Ajudaê disponível",
     "coupon_subscriber": "Identificamos que você é assinante <1>{{plan}}</1> da Ajudaê.",
@@ -635,7 +635,7 @@
     "title": "Planos",
     "subtitle": "Escolha o melhor plano para o seu negócio",
     "free": "Gratuito",
-    "pro": "Pro",
+    "pro": "Biztrivo",
     "monthly": "por mês",
     "subscribe": "Assinar agora",
     "current_plan": "Plano atual",
@@ -1077,7 +1077,7 @@
     "cx_personal_hint": "(marca separado no extrato)",
     "cx_btn_in": "+ Entrada",
     "cx_btn_out": "- Saída",
-    "cx_ledger": "Extrato de Hoje",
+    "cx_ledger": "Extrato Financeiro",
     "cx_search": "Buscar lançamento...",
     "cx_all": "Todas",
     "cx_empty_title": "Seu dia começa agora!",
@@ -1150,7 +1150,10 @@
     "db_cancel": "Cancelar",
     "vt_only_mode": "Modo Vitrine (só exibição)",
     "vt_only_mode_hint": "O botão \"Comprar\" some. Clientes veem os detalhes do produto, mas o contato fica a cargo deles. Ótimo para showroom ou catálogo de referência.",
-    "vt_edit_photo": "Foto"
+    "vt_edit_photo": "Foto",
+    "cx_period": "Período",
+    "cx_today": "Hoje",
+    "cx_confirm_rm": "Remover este lançamento?"
   },
   "academy": {
     "subtitle": "Aprenda a vender mais e melhor",

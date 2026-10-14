@@ -62,7 +62,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
         <UpgradeModal
           open={showUpgradeModal}
           onClose={() => { setShowUpgradeModal(false); navigate('/dashboard'); }}
-          reason="Posts com IA está disponível apenas no plano PRO."
+          reason="Posts com IA está disponível apenas para assinantes Biztrivo."
         />
       </>
     );

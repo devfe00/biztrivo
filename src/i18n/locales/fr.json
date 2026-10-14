@@ -543,7 +543,7 @@
     "cancel_sub": "Annuler l'abonnement",
     "cancelling": "Annulation...",
     "cancel_confirm": "Êtes-vous sûr de vouloir annuler votre abonnement ? Vous aurez encore accès pendant 30 jours après l'annulation.",
-    "subscribe_pro": "S'abonner au Plan Pro",
+    "subscribe_pro": "S'abonner à Biztrivo",
     "grace_notice": "Votre abonnement a été annulé, mais vous avez encore accès jusqu'au <1>{{date}}</1>. Après cette date, votre accès sera suspendu.",
     "coupon_title": "Coupon Ajudaê disponible",
     "coupon_subscriber": "Nous avons identifié que vous êtes abonné <1>{{plan}}</1> d'Ajudaê.",
@@ -572,7 +572,7 @@
     "title": "Plans",
     "subtitle": "Choisissez le meilleur plan pour votre entreprise",
     "free": "Gratuit",
-    "pro": "Pro",
+    "pro": "Biztrivo",
     "monthly": "par mois",
     "subscribe": "S'abonner maintenant",
     "current_plan": "Plan actuel",
@@ -1014,7 +1014,7 @@
     "cx_personal_hint": "(marquée séparément sur le relevé)",
     "cx_btn_in": "+ Entrée",
     "cx_btn_out": "- Sortie",
-    "cx_ledger": "Relevé du Jour",
+    "cx_ledger": "Relevé Financier",
     "cx_search": "Rechercher...",
     "cx_all": "Toutes",
     "cx_empty_title": "Votre journée commence !",
@@ -1087,7 +1087,10 @@
     "db_cancel": "Annuler",
     "vt_only_mode": "Mode vitrine (affichage seul)",
     "vt_only_mode_hint": "Le bouton « Acheter » disparaît. Les clients voient les détails du produit, mais le contact leur revient. Parfait pour un showroom ou un catalogue de référence.",
-    "vt_edit_photo": "Photo"
+    "vt_edit_photo": "Photo",
+    "cx_period": "Période",
+    "cx_today": "Aujourd'hui",
+    "cx_confirm_rm": "Supprimer cette écriture ?"
   },
   "academy": {
     "subtitle": "Apprenez à mieux vendre",
