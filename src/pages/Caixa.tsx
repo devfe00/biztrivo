@@ -8,6 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { TrendingUp, TrendingDown, Trash2, Search, Wallet } from 'lucide-react';
 import { useT } from '@/lib/i18n';
+import { useLang } from '@/lib/useLang';
 
 const CATEGORY_KEYS = ['Venda', 'Reposição', 'Embalagem', 'Frete', 'Pessoal', 'Funcionário', 'Outros'] as const;
 const CAT_LABEL_KEY: Record<string, string> = {
@@ -31,13 +32,28 @@ const Caixa = () => {
   const [search, setSearch] = useState('');
   const [filterCategory, setFilterCategory] = useState('Todas');
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const { lang } = useLang();
+  const [period, setPeriod] = useState('today');
+  const localKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const todayStr = localKey(new Date());
+  const months = useMemo(() => {
+    const now = new Date();
+    return Array.from({ length: 12 }, (_, i) => {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const label = d.toLocaleDateString(lang === 'pt' ? 'pt-BR' : lang, { month: 'long', year: 'numeric' });
+      return { key, label };
+    });
+  }, [lang]);
 
   const todayTransactions = useMemo(() =>
     config.transactions
-      .filter(t => t.date.startsWith(todayStr))
+      .filter(t => {
+        const k = localKey(new Date(t.date));
+        return period === 'today' ? k === todayStr : k.startsWith(period);
+      })
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
-    [config.transactions, todayStr]
+    [config.transactions, todayStr, period]
   );
 
   const runningBalance = useMemo(() => {
@@ -143,7 +159,16 @@ const Caixa = () => {
 
       {/* Ledger */}
       <div>
-        <h2 className="text-lg font-semibold font-heading mb-4">{tr('ext.cx_ledger')}</h2>
+        <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+          <h2 className="text-lg font-semibold font-heading">{tr('ext.cx_ledger')}</h2>
+          <Select value={period} onValueChange={setPeriod}>
+            <SelectTrigger className="w-[200px]" aria-label={tr('ext.cx_period')}><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="today">{tr('ext.cx_today')}</SelectItem>
+              {months.map(m => <SelectItem key={m.key} value={m.key} className="capitalize">{m.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
         <div className="flex flex-col sm:flex-row gap-3 mb-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -187,6 +212,7 @@ const Caixa = () => {
                       <p className="font-medium text-sm">{t.description}</p>
                       <div className="flex items-center gap-2 mt-0.5">
                         <span className="text-xs text-muted-foreground">{CAT_LABEL_KEY[t.category] ? tr(CAT_LABEL_KEY[t.category]) : t.category}</span>
+                        {period !== 'today' && <span className="text-xs text-muted-foreground">{new Date(t.date).toLocaleDateString(lang === 'pt' ? 'pt-BR' : lang)}</span>}
                         {t.isPersonal && <span className="text-xs px-2 py-0.5 rounded-full bg-warning/10 text-warning font-medium">{tr('ext.cx_personal_tag')}</span>}
                       </div>
                     </div>
@@ -198,7 +224,7 @@ const Caixa = () => {
                       </p>
                       <p className="text-xs text-muted-foreground">{tr('ext.cx_running')} {formatCurrency(t.balance)}</p>
                     </div>
-                    <button onClick={() => removeTransaction(t.id)}
+                    <button onClick={() => { if (window.confirm(tr('ext.cx_confirm_rm'))) removeTransaction(t.id); }} aria-label={tr('ext.cx_confirm_rm')}
                       className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-destructive transition-colors">
                       <Trash2 className="w-4 h-4" />
                     </button>
