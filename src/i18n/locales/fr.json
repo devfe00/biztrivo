@@ -36,7 +36,8 @@
     "academy": "Academy",
     "settings": "Paramètres",
     "logout": "Déconnexion",
-    "view_profile": "Voir le profil"
+    "view_profile": "Voir le profil",
+    "fidelidade": "Clients & Fidélité"
   },
   "auth": {
     "logout_confirm": "Êtes-vous sûr de vouloir vous déconnecter ?",

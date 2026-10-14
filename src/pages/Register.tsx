@@ -216,7 +216,7 @@ const Register: React.FC = () => {
                   <Store className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                   <input id="storeName" name="storeName" type="text" value={formData.storeName} onChange={handleChange}
                     disabled={loading || success}
-                    className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all disabled:opacity-60"
+                    className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all disabled:opacity-60"
                     placeholder={t.storeNamePh} required />
                 </div>
               </div>
@@ -227,7 +227,7 @@ const Register: React.FC = () => {
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                   <input id="email" name="email" type="email" value={formData.email} onChange={handleChange}
                     disabled={loading || success}
-                    className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all disabled:opacity-60"
+                    className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all disabled:opacity-60"
                     placeholder={t.emailPh} required />
                 </div>
               </div>
@@ -238,7 +238,7 @@ const Register: React.FC = () => {
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                   <input id="password" name="password" type={showPassword ? 'text' : 'password'} value={formData.password} onChange={handleChange}
                     disabled={loading || success}
-                    className="w-full pl-11 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all disabled:opacity-60"
+                    className="w-full pl-11 pr-12 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all disabled:opacity-60"
                     placeholder={t.passwordPh} required />
                   <button type="button" onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
@@ -266,7 +266,7 @@ const Register: React.FC = () => {
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                   <input id="confirmPassword" name="confirmPassword" type={showConfirmPassword ? 'text' : 'password'} value={formData.confirmPassword} onChange={handleChange}
                     disabled={loading || success}
-                    className="w-full pl-11 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all disabled:opacity-60"
+                    className="w-full pl-11 pr-12 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all disabled:opacity-60"
                     placeholder={t.confirmPh} required />
                   <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">

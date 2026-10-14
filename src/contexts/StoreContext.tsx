@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { db, storage } from '@/integrations/firebase/firebase';
 import { sanitizeText } from '@/lib/sanitize';
 import { onlyDigits } from '@/lib/cnpj';
+import { MEI_DAS, getMeiAtividade, setMeiAtividade, type MeiAtividade } from '@/lib/meiDas';
 
 async function compressImage(dataUrl: string, maxSize = 1600, quality = 0.82): Promise<string> {
   return new Promise((resolve) => {
@@ -88,6 +89,18 @@ export interface StoreConfig {
   isMei: boolean;
   cnpj: string;
   paisBase: 'BR' | 'outros';
+  meiAtividade: MeiAtividade;
+  loyaltyCustomers: LoyaltyCustomer[];
+  loyaltyGoal: number;
+}
+
+export interface LoyaltyCustomer {
+  id: string;
+  name: string;
+  phone: string;
+  stamps: number;
+  rewards: number;
+  purchases: string[];
 }
 
 interface StoreContextType {
@@ -97,7 +110,7 @@ interface StoreContextType {
   removeProduct: (id: string) => Promise<void>;
   updateProduct: (product: Product) => Promise<void>;
   addTransaction: (transaction: Omit<Transaction, 'id'>) => Promise<void>;
-  removeTransaction: (id: string) => Promise<void>;
+  removeTransaction: (id: string) => Promise<Transaction | undefined>;
   isLoading: boolean;
   refreshData: () => Promise<void>;
 }
@@ -119,6 +132,9 @@ const defaultConfig: StoreConfig = {
   isMei: false,
   cnpj: '',
   paisBase: navigator.language?.startsWith('pt-BR') ? 'BR' : 'outros',
+  meiAtividade: getMeiAtividade(),
+  loyaltyCustomers: [],
+  loyaltyGoal: 10,
 };
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -198,9 +214,13 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
         isMei: priv?.isMei ?? false,
         cnpj: priv?.cnpj ?? '',
         paisBase: priv?.paisBase ?? (navigator.language?.startsWith('pt-BR') ? 'BR' : 'outros'),
+        meiAtividade: priv?.meiAtividade && priv.meiAtividade in MEI_DAS ? priv.meiAtividade : getMeiAtividade(),
+        loyaltyCustomers: Array.isArray(priv?.loyaltyCustomers) ? priv.loyaltyCustomers : [],
+        loyaltyGoal: Number(priv?.loyaltyGoal) || 10,
         products,
         transactions,
       });
+      if (priv?.meiAtividade && priv.meiAtividade in MEI_DAS) setMeiAtividade(priv.meiAtividade);
     } catch (err) {
       console.error('Error fetching store data:', err);
     } finally {
@@ -254,7 +274,22 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
       privateUpdate.cnpj = cnpjDigits;
     }
     if (partial.isMei !== undefined) privateUpdate.isMei = partial.isMei;
-if (partial.paisBase !== undefined) privateUpdate.paisBase = partial.paisBase;
+    if (partial.paisBase !== undefined) privateUpdate.paisBase = partial.paisBase;
+    if (partial.meiAtividade !== undefined && partial.meiAtividade in MEI_DAS) {
+      privateUpdate.meiAtividade = partial.meiAtividade;
+      setMeiAtividade(partial.meiAtividade);
+    }
+    if (partial.loyaltyGoal !== undefined) privateUpdate.loyaltyGoal = Math.min(50, Math.max(2, Math.round(partial.loyaltyGoal)));
+    if (partial.loyaltyCustomers !== undefined) {
+      privateUpdate.loyaltyCustomers = partial.loyaltyCustomers.slice(0, 2000).map(c => ({
+        id: String(c.id).slice(0, 40),
+        name: sanitizeText(c.name).slice(0, 80),
+        phone: onlyDigits(c.phone).slice(0, 15),
+        stamps: Math.max(0, Math.floor(c.stamps) || 0),
+        rewards: Math.max(0, Math.floor(c.rewards) || 0),
+        purchases: (c.purchases || []).slice(-50).map(String),
+      }));
+    }
 
     //writes
     const writes: Promise<void>[] = [];
@@ -405,10 +440,12 @@ if (partial.paisBase !== undefined) privateUpdate.paisBase = partial.paisBase;
     const opKey = `rm-tx-${id}`;
     if (pendingOps.current.has(opKey)) return;
     pendingOps.current.add(opKey);
+    const removed = config.transactions.find(t => t.id === id);
 
     try {
       setConfig(prev => ({ ...prev, transactions: prev.transactions.filter(t => t.id !== id) }));
       await deleteDoc(doc(db, 'transactions', id));
+      return removed;
     } finally {
       pendingOps.current.delete(opKey);
     }
