@@ -8,6 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { TrendingUp, TrendingDown, Trash2, Search, Wallet } from 'lucide-react';
 import { useT } from '@/lib/i18n';
+import { toast } from 'sonner';
 import { useLang } from '@/lib/useLang';
 
 const CATEGORY_KEYS = ['Venda', 'Reposição', 'Embalagem', 'Frete', 'Pessoal', 'Funcionário', 'Outros'] as const;
@@ -90,6 +91,20 @@ const Caixa = () => {
     setValue('');
     setDescription('');
     setIsPersonal(false);
+  };
+
+  const handleRemove = async (id: string) => {
+    const removed = await removeTransaction(id);
+    if (!removed) return;
+    const { id: _id, ...data } = removed;
+    toast(lang === 'pt' ? 'Lançamento removido' : lang === 'es' ? 'Movimiento eliminado' : lang === 'fr' ? 'Écriture supprimée' : 'Entry removed', {
+      description: removed.description,
+      duration: 8000,
+      action: {
+        label: lang === 'pt' ? 'Desfazer' : lang === 'es' ? 'Deshacer' : lang === 'fr' ? 'Annuler' : 'Undo',
+        onClick: () => { addTransaction(data); },
+      },
+    });
   };
 
   return (
@@ -224,7 +239,7 @@ const Caixa = () => {
                       </p>
                       <p className="text-xs text-muted-foreground">{tr('ext.cx_running')} {formatCurrency(t.balance)}</p>
                     </div>
-                    <button onClick={() => { if (window.confirm(tr('ext.cx_confirm_rm'))) removeTransaction(t.id); }} aria-label={tr('ext.cx_confirm_rm')}
+                    <button onClick={() => handleRemove(t.id)} aria-label={tr('ext.cx_confirm_rm')}
                       className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-destructive transition-colors">
                       <Trash2 className="w-4 h-4" />
                     </button>

@@ -36,7 +36,8 @@
     "academy": "Academy",
     "settings": "Configuración",
     "logout": "Salir",
-    "view_profile": "Ver perfil"
+    "view_profile": "Ver perfil",
+    "fidelidade": "Clientes y Fidelidad"
   },
   "auth": {
     "logout_confirm": "¿Estás seguro de que quieres salir?",

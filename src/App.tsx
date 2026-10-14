@@ -11,6 +11,8 @@ import Dashboard from "@/pages/Dashboard";
 import Caixa from "@/pages/Caixa";
 import Vitrine from "@/pages/Vitrine";
 import PostsIA from "@/pages/PostsIA";
+import Fidelidade from "@/pages/Fidelidade";
+import CartaoFidelidade from "@/pages/CartaoFidelidade";
 import Offline from "@/pages/Offline";
 import Academy from "@/pages/Academy";
 import Relatorios from "@/pages/Relatorios";
@@ -57,6 +59,8 @@ const App = () => (
               <Route path="/dashboard" element={<ProtectedRoute><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
               <Route path="/caixa" element={<ProtectedRoute><AppLayout><Caixa /></AppLayout></ProtectedRoute>} />
               <Route path="/vitrine" element={<ProtectedRoute><AppLayout><Vitrine /></AppLayout></ProtectedRoute>} />
+              <Route path="/fidelidade" element={<ProtectedRoute><AppLayout><Fidelidade /></AppLayout></ProtectedRoute>} />
+              <Route path="/cartao" element={<CartaoFidelidade />} />
               <Route path="/posts-ia" element={<ProtectedRoute><AppLayout><PostsIA /></AppLayout></ProtectedRoute>} />
               <Route path="/offline" element={<ProtectedRoute><AppLayout><Offline /></AppLayout></ProtectedRoute>} />
               <Route path="/calculadora" element={<ProtectedRoute><AppLayout><Calculadora /></AppLayout></ProtectedRoute>} />

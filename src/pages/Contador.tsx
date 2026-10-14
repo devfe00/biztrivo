@@ -275,11 +275,11 @@ const DRERow = ({ label, valor, pctReceita, cor, destaque, separador, sub, pais 
   </>
 );
 const Contador = () => {
-  const { config } = useStore();
+  const { config, updateConfig } = useStore();
 
   const [pais, setPais] = useState<Pais>(() => lsGet('biztrivo_contador_pais', 'BR') as Pais);
   const [aba,  setAba]  = useState<Aba>('dre');
-  const [meiAtv, setMeiAtv] = useState<MeiAtividade>(getMeiAtividade);
+  const meiAtv: MeiAtividade = config.meiAtividade ?? getMeiAtividade();
   const BR_DAS_MEI_MENSAL = MEI_DAS[meiAtv].total;
   const [nivelSimulador, setNivelSimulador] = useState<'conservador' | 'equilibrado' | 'agressivo'>('equilibrado');
   const [infoAberto, setInfoAberto] = useState<string | null>(null);
@@ -1119,7 +1119,7 @@ const Contador = () => {
                   <TrendingDown className="w-5 h-5 text-warning" />
                   <h3 className="font-semibold font-heading">DAS MEI</h3>
                 </div>
-                <select value={meiAtv} onChange={e => { const v = e.target.value as MeiAtividade; setMeiAtv(v); setMeiAtividade(v); }}
+                <select value={meiAtv} onChange={e => { const v = e.target.value as MeiAtividade; updateConfig({ meiAtividade: v }); }}
                   className="w-full mb-3 rounded-md border border-input bg-background px-3 py-2 text-sm">
                   {(Object.keys(MEI_DAS) as MeiAtividade[]).map(k => <option key={k} value={k}>{MEI_DAS[k].label} ({MEI_DAS[k].detalhe})</option>)}
                 </select>

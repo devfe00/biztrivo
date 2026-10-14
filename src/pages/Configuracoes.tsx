@@ -326,7 +326,7 @@ const Configuracoes: React.FC = () => {
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">{t('configuracoes.plan')}</span>
-                      <span className="font-medium text-foreground capitalize">{subscription?.plan || 'Free'}</span>
+                      <span className="font-medium text-foreground capitalize">{subscription?.plan && subscription.plan !== 'free' ? 'Biztrivo' : 'Free'}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">{t('configuracoes.status')}</span>

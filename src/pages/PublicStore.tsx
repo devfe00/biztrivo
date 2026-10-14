@@ -298,6 +298,20 @@ const handleBuy = useCallback((productId: string, productName: string, price: nu
         )}
       </main>
 
+      {typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('fidelidade') === '1' && store.whatsapp && (
+        <div className="fixed bottom-5 left-5 right-24 sm:right-auto sm:max-w-sm z-50 rounded-2xl p-4 shadow-2xl" style={{ background: pc, color: '#fff' }}>
+          <p className="font-bold">{t('nav.fidelidade')}</p>
+          <p className="text-sm opacity-90 mb-3">🎁 10 = 1</p>
+          <button onClick={() => {
+            const phone = store.whatsapp.replace(/\D/g, '');
+            if (!/^\d{10,13}$/.test(phone)) return;
+            window.open(`https://wa.me/55${phone}?text=${encodeURIComponent('🎁 ' + t('nav.fidelidade') + ' - ' + store.storeName)}`, '_blank');
+          }} className="w-full rounded-xl bg-white/95 py-2 font-semibold" style={{ color: pc }}>
+            <MessageCircle className="w-4 h-4 inline mr-1" /> WhatsApp
+          </button>
+        </div>
+      )}
+
       {showWhatsAppButton && store.whatsapp && (
         <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-2">
           <button onClick={handleWhatsAppContact}
