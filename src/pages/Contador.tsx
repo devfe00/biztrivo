@@ -21,10 +21,10 @@ import {
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { toast } from 'sonner';
+import { MEI_DAS, getMeiAtividade, setMeiAtividade, type MeiAtividade } from '@/lib/meiDas';
 
 //BRASIL
 const BR_LIMITE_MEI_ANUAL = 81_000;
-const BR_DAS_MEI_MENSAL = 76.9; // fixo 2026
 
 //ESPANHA
 const ES_CUOTA_SS_MINIMA = 230;   // €/mês — tramo mínimo 2024
@@ -279,6 +279,8 @@ const Contador = () => {
 
   const [pais, setPais] = useState<Pais>(() => lsGet('biztrivo_contador_pais', 'BR') as Pais);
   const [aba,  setAba]  = useState<Aba>('dre');
+  const [meiAtv, setMeiAtv] = useState<MeiAtividade>(getMeiAtividade);
+  const BR_DAS_MEI_MENSAL = MEI_DAS[meiAtv].total;
   const [nivelSimulador, setNivelSimulador] = useState<'conservador' | 'equilibrado' | 'agressivo'>('equilibrado');
   const [infoAberto, setInfoAberto] = useState<string | null>(null);
   const [frAtividade, setFrAtividade] = useState<FrAtividade>(
@@ -1117,10 +1119,14 @@ const Contador = () => {
                   <TrendingDown className="w-5 h-5 text-warning" />
                   <h3 className="font-semibold font-heading">DAS MEI</h3>
                 </div>
+                <select value={meiAtv} onChange={e => { const v = e.target.value as MeiAtividade; setMeiAtv(v); setMeiAtividade(v); }}
+                  className="w-full mb-3 rounded-md border border-input bg-background px-3 py-2 text-sm">
+                  {(Object.keys(MEI_DAS) as MeiAtividade[]).map(k => <option key={k} value={k}>{MEI_DAS[k].label} ({MEI_DAS[k].detalhe})</option>)}
+                </select>
                 <p className="text-2xl font-bold font-heading text-warning">{fmtMoeda(BR_DAS_MEI_MENSAL, 'BR')}<span className="text-sm font-normal text-muted-foreground">/mês</span></p>
                 <p className="text-sm text-muted-foreground mt-1">Acumulado {anoAtual}: <strong>{fmtMoeda(impostoBR.dasTotal, 'BR')}</strong></p>
                 <p className="text-xs text-muted-foreground mt-3">
-                  Valor fixo 2026. Vence todo dia 20 do mês seguinte. Pague em{' '}
+                  Valor 2026 conforme sua atividade. Vence todo dia 20 do mês seguinte. Pague em{' '}
                   <a href="https://www.gov.br/empresas-e-negocios/pt-br/empreendedor" target="_blank" rel="noopener noreferrer" className="underline text-primary">gov.br/mei</a>.
                 </p>
               </Card>

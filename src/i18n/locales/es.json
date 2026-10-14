@@ -543,7 +543,7 @@
     "cancel_sub": "Cancelar Suscripción",
     "cancelling": "Cancelando...",
     "cancel_confirm": "¿Estás seguro de que quieres cancelar tu suscripción? Aún tendrás acceso durante 30 días después de la cancelación.",
-    "subscribe_pro": "Suscribirse al Plan Pro",
+    "subscribe_pro": "Suscribirse a Biztrivo",
     "grace_notice": "Tu suscripción fue cancelada, pero aún tienes acceso hasta <1>{{date}}</1>. Después de esa fecha, tu acceso será suspendido.",
     "coupon_title": "Cupón Ajudaê disponible",
     "coupon_subscriber": "Identificamos que eres suscriptor <1>{{plan}}</1> de Ajudaê.",
@@ -572,7 +572,7 @@
     "title": "Planes",
     "subtitle": "Elige el mejor plan para tu negocio",
     "free": "Gratuito",
-    "pro": "Pro",
+    "pro": "Biztrivo",
     "monthly": "por mes",
     "subscribe": "Suscribirse ahora",
     "current_plan": "Plan actual",
@@ -1014,7 +1014,7 @@
     "cx_personal_hint": "(marcado por separado en el extracto)",
     "cx_btn_in": "+ Ingreso",
     "cx_btn_out": "- Gasto",
-    "cx_ledger": "Extracto de Hoy",
+    "cx_ledger": "Extracto Financiero",
     "cx_search": "Buscar registro...",
     "cx_all": "Todas",
     "cx_empty_title": "¡Tu día empieza ahora!",
@@ -1087,7 +1087,10 @@
     "db_cancel": "Cancelar",
     "vt_only_mode": "Modo escaparate (solo exhibición)",
     "vt_only_mode_hint": "El botón \"Comprar\" desaparece. Los clientes ven los detalles del producto, pero el contacto queda de su parte. Ideal para showroom o catálogo de referencia.",
-    "vt_edit_photo": "Foto"
+    "vt_edit_photo": "Foto",
+    "cx_period": "Período",
+    "cx_today": "Hoy",
+    "cx_confirm_rm": "¿Eliminar este registro?"
   },
   "academy": {
     "subtitle": "Aprende a vender más y mejor",
