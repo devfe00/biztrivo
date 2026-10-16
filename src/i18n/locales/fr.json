@@ -37,7 +37,8 @@
     "settings": "Paramètres",
     "logout": "Déconnexion",
     "view_profile": "Voir le profil",
-    "fidelidade": "Clients & Fidélité"
+    "fidelidade": "Clients & Fidélité",
+    "etiquetas": "Étiquettes d'envoi"
   },
   "auth": {
     "logout_confirm": "Êtes-vous sûr de vouloir vous déconnecter ?",

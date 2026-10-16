@@ -37,7 +37,8 @@
     "settings": "Settings",
     "logout": "Logout",
     "view_profile": "View profile",
-    "fidelidade": "Customers & Loyalty"
+    "fidelidade": "Customers & Loyalty",
+    "etiquetas": "Shipping Labels"
   },
   "auth": {
     "logout_confirm": "Are you sure you want to log out?",

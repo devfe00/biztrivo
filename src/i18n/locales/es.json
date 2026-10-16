@@ -37,7 +37,8 @@
     "settings": "Configuración",
     "logout": "Salir",
     "view_profile": "Ver perfil",
-    "fidelidade": "Clientes y Fidelidad"
+    "fidelidade": "Clientes y Fidelidad",
+    "etiquetas": "Etiquetas de Envío"
   },
   "auth": {
     "logout_confirm": "¿Estás seguro de que quieres salir?",
