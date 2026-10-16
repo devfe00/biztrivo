@@ -1,0 +1,11 @@
+# Roadmap
+- [x] Gerador de etiqueta de envio + declaração de conteúdo
+- [ ] Grade de variações (tamanho/cor) com estoque
+- [ ] Alerta de estoque baixo
+- [ ] Termômetro do teto MEI + prévia DASN
+- [ ] Cobrança via WhatsApp / carnês
+- [ ] Trocas e devoluções
+- [ ] Comanda digital (alimentício) + ficha técnica
+- [ ] Controle de aluguéis (imobiliário)
+- [ ] Emissor NFS-e/NF-e, DAS com Pix, pró-labore (dependem de parceiros/API)
+- [ ] Conta PJ / Pix via parceiro (depende de parceiro)

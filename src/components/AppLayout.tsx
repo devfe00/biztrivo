@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Wallet, Store, GraduationCap, BarChart3, Calculator, Menu, X, User, Settings, LogOut, ChevronDown, WifiOff, FileText, Instagram, Heart } from 'lucide-react';
+import { LayoutDashboard, Wallet, Store, GraduationCap, BarChart3, Calculator, Menu, X, User, Settings, LogOut, ChevronDown, WifiOff, FileText, Instagram, Heart, Package } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { useStore } from '@/contexts/StoreContext';
@@ -16,6 +16,7 @@ const navItemsBase = [
   { path: '/caixa', key: 'nav.caixa', icon: Wallet },
   { path: '/vitrine', key: 'nav.vitrine', icon: Store },
   { path: '/fidelidade', key: 'nav.fidelidade', icon: Heart },
+  { path: '/etiquetas', key: 'nav.etiquetas', icon: Package },
   { path: '/posts-ia', key: 'nav.posts_ia', icon: Instagram },
   { path: '/offline', key: 'nav.offline', icon: WifiOff },
   { path: '/calculadora', key: 'nav.calculadora', icon: Calculator },
