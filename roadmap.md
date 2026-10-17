@@ -1,11 +1,13 @@
 # Roadmap
 - [x] Gerador de etiqueta de envio + declaração de conteúdo
-- [ ] Grade de variações (tamanho/cor) com estoque
-- [ ] Alerta de estoque baixo
+- [x] Grade de variações (tamanho/cor) com estoque e seleção na vitrine pública
+- [x] Alerta de estoque baixo por variação com limite configurável
+- [ ] Validar no backend separado: propriedade dos produtos, variantes, preços e venda com baixa de estoque atômica; expor variantes na resposta pública (bloqueado: backend externo ao projeto)
 - [ ] Termômetro do teto MEI + prévia DASN
 - [ ] Cobrança via WhatsApp / carnês
 - [ ] Trocas e devoluções
 - [ ] Comanda digital (alimentício) + ficha técnica
 - [ ] Controle de aluguéis (imobiliário)
-- [ ] Emissor NFS-e/NF-e, DAS com Pix, pró-labore (dependem de parceiros/API)
+- [ ] Pró-labore e separação de lucros
+- [ ] Emissor NFS-e/NF-e e DAS com Pix (dependem de parceiros/API)
 - [ ] Conta PJ / Pix via parceiro (depende de parceiro)

@@ -3,6 +3,10 @@ import { useParams } from 'react-router-dom';
 import { MessageCircle, ShoppingBag, AlertCircle, Search, Phone, X, Loader2, Eye, Sun, Moon } from 'lucide-react';
 import { FUNCTIONS, callFunction } from '@/integrations/firebase/firebase';
 import { useT } from '@/lib/i18n';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { productStock, variantLabel, type ProductVariant } from '@/lib/inventory';
+import { useInventoryT } from '@/lib/inventory-i18n';
 
 interface StoreProduct {
   id: string;
@@ -12,6 +16,7 @@ interface StoreProduct {
   discountPrice: number;
   description: string;
   stock: number;
+  variants?: ProductVariant[];
 }
 
 interface StoreData {
@@ -44,6 +49,8 @@ const setMetaTag = (property: string, content: string, isOg = false) => {
 
 const PublicStore = () => {
   const t = useT();
+  const it = useInventoryT();
+  const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
   const { slug } = useParams();
   const [store, setStore] = useState<StoreData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -245,7 +252,9 @@ const handleBuy = useCallback((productId: string, productName: string, price: nu
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
             {filteredProducts.map((product) => {
-              const outOfStock = product.stock === 0;
+              const variant = product.variants?.find(v => v.id === selectedVariants[product.id]);
+              const availableStock = product.variants?.length ? variant?.stock ?? 0 : productStock(product);
+              const outOfStock = productStock(product) <= 0;
               const isBuying = buyingProductId === product.id;
               return (
                 <div key={product.id} className="rounded-xl overflow-hidden group relative" style={{ backgroundColor: theme.cardBg, boxShadow: theme.cardShadow }}>
@@ -274,6 +283,12 @@ const handleBuy = useCallback((productId: string, productName: string, price: nu
                         <span className="text-sm font-bold" style={{ color: pc }}>R$ {(product.discountPrice > 0 ? product.discountPrice : product.originalPrice).toFixed(2).replace('.', ',')}</span>
                       </div>
                     )}
+                    {!!product.variants?.length && (
+                      <Select value={selectedVariants[product.id] ?? ''} onValueChange={id => setSelectedVariants(prev => ({ ...prev, [product.id]: id }))}>
+                        <SelectTrigger className="mt-3 bg-background text-foreground w-full text-xs" aria-label={`${it('choose')}: ${product.name}`}><SelectValue placeholder={it('choose')} /></SelectTrigger>
+                        <SelectContent>{product.variants.map(v => <SelectItem key={v.id} value={v.id} disabled={!store.vitrineOnlyMode && v.stock <= 0}>{variantLabel(v)}{!store.vitrineOnlyMode && v.stock <= 0 ? ` · ${it('unavailable')}` : ''}</SelectItem>)}</SelectContent>
+                      </Select>
+                    )}
                     {store.vitrineOnlyMode ? (
                       <button
                         onClick={() => setViewingProduct(product)}
@@ -282,13 +297,12 @@ const handleBuy = useCallback((productId: string, productName: string, price: nu
                         <Eye className="w-4 h-4" /> {t('public_store.view_details')}
                       </button>
                     ) : (
-                      <button
-                        onClick={() => handleBuy(product.id, product.name, product.discountPrice > 0 ? product.discountPrice : product.originalPrice, product.stock)}
-                        disabled={outOfStock || isBuying}
-                        className="mt-3 w-full py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-all active:scale-95 disabled:cursor-not-allowed"
-                        style={{ backgroundColor: outOfStock ? '#94a3b8' : pc, color: '#fff', opacity: outOfStock ? 0.4 : 1 }}>
+                      <Button
+                        onClick={() => handleBuy(product.id, `${product.name}${variant ? ` (${variantLabel(variant)})` : ''}`, product.discountPrice > 0 ? product.discountPrice : product.originalPrice, availableStock)}
+                        disabled={outOfStock || isBuying || availableStock <= 0}
+                        className="mt-3 w-full h-auto min-h-10 py-2 whitespace-normal text-sm">
                         {isBuying ? <Loader2 className="w-4 h-4 animate-spin" /> : outOfStock ? <><AlertCircle className="w-4 h-4" /> {t('public_store.unavailable')}</> : <><MessageCircle className="w-4 h-4" /> {t('public_store.buy')}</>}
-                      </button>
+                      </Button>
                     )}
                   </div>
                 </div>
