@@ -24,13 +24,14 @@ vi.mock('@/components/InvoiceComparator', () => ({ default: () => null }));
 beforeEach(() => {
   cleanup();
   localStorage.clear();
+  localStorage.setItem('biztrivo:lang', 'pt');
   vi.clearAllMocks();
 });
 
 describe('Inventory management flow', () => {
   it('saves the size/color and its individual stock on product creation', async () => {
     render(<I18nProvider><Vitrine /></I18nProvider>);
-    fireEvent.click(screen.getByRole('button', { name: /Adicionar Produto/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'Adicionar' }));
     fireEvent.change(screen.getByPlaceholderText('Ex: Camiseta Básica'), { target: { value: 'Camiseta' } });
     fireEvent.change(screen.getByPlaceholderText('49,90'), { target: { value: '50' } });
     fireEvent.click(screen.getByRole('button', { name: 'Adicionar variação' }));
