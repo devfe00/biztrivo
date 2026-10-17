@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
 import {
   doc, collection, getDoc, getDocs, addDoc, updateDoc, deleteDoc,
-  query, where, orderBy, serverTimestamp, setDoc,
+  query, where, orderBy, serverTimestamp, setDoc, runTransaction,
 } from 'firebase/firestore';
 import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 import { useAuth } from '@/contexts/AuthContext';
@@ -9,6 +9,7 @@ import { db, storage } from '@/integrations/firebase/firebase';
 import { sanitizeText } from '@/lib/sanitize';
 import { onlyDigits } from '@/lib/cnpj';
 import { MEI_DAS, getMeiAtividade, setMeiAtividade, type MeiAtividade } from '@/lib/meiDas';
+import { deductStock, productStock, validateVariants, variantLabel, type ProductVariant } from '@/lib/inventory';
 
 async function compressImage(dataUrl: string, maxSize = 1600, quality = 0.82): Promise<string> {
   return new Promise((resolve) => {
@@ -60,6 +61,8 @@ export interface Product {
   discountPrice: number;
   description: string;
   stock: number;
+  variants?: ProductVariant[];
+  lowStockThreshold?: number;
 }
 
 export interface Transaction {
@@ -109,6 +112,7 @@ interface StoreContextType {
   addProduct: (product: Omit<Product, 'id'>) => Promise<void>;
   removeProduct: (id: string) => Promise<void>;
   updateProduct: (product: Product) => Promise<void>;
+  registerProductSale: (productId: string, quantity: number, variantId?: string) => Promise<void>;
   addTransaction: (transaction: Omit<Transaction, 'id'>) => Promise<void>;
   removeTransaction: (id: string) => Promise<Transaction | undefined>;
   isLoading: boolean;
@@ -182,6 +186,8 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
           discountPrice: Number(p.discountPrice) || 0,
           description: p.description ?? '',
           stock: p.stock ?? 0,
+          variants: validateVariants(p.variants),
+          lowStockThreshold: p.lowStockThreshold ?? 3,
         };
       });
 
@@ -321,6 +327,10 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
     pendingOps.current.add(opKey);
 
     try {
+      const variants = validateVariants(product.variants);
+      const inventoryStock = productStock({ ...product, variants });
+      const threshold = product.lowStockThreshold ?? 3;
+      if (!Number.isSafeInteger(inventoryStock) || inventoryStock < 0 || !Number.isSafeInteger(threshold) || threshold < 0) throw new Error('Invalid inventory');
       const tempId = crypto.randomUUID();
       const photoUrl = await uploadImageIfNeeded(product.photo, `products/${user.uid}/${tempId}.jpg`);
 
@@ -331,7 +341,9 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
         originalPrice: Math.max(0, product.originalPrice),
         discountPrice: Math.max(0, product.discountPrice),
         description: sanitizeText(product.description),
-        stock: Math.max(0, product.stock),
+        stock: inventoryStock,
+        variants,
+        lowStockThreshold: threshold,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
@@ -345,7 +357,9 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
           originalPrice: product.originalPrice,
           discountPrice: product.discountPrice,
           description: product.description,
-          stock: product.stock,
+          stock: inventoryStock,
+          variants,
+          lowStockThreshold: threshold,
         }, ...prev.products],
       }));
     } finally {
@@ -374,13 +388,12 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
     pendingOps.current.add(opKey);
 
     try {
+      const variants = validateVariants(product.variants);
+      const inventoryStock = productStock({ ...product, variants });
+      const threshold = product.lowStockThreshold ?? 3;
+      if (!Number.isSafeInteger(inventoryStock) || inventoryStock < 0 || !Number.isSafeInteger(threshold) || threshold < 0) throw new Error('Invalid inventory');
       const photoUrl = await uploadImageIfNeeded(product.photo, `products/${user.uid}/${product.id}.jpg`);
-      const updatedProduct = { ...product, photo: photoUrl };
-
-      setConfig(prev => ({
-        ...prev,
-        products: prev.products.map(p => p.id === product.id ? updatedProduct : p),
-      }));
+      const updatedProduct = { ...product, photo: photoUrl, variants, stock: inventoryStock, lowStockThreshold: threshold };
 
       await updateDoc(doc(db, 'products', product.id), {
         name: sanitizeText(product.name),
@@ -388,9 +401,53 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
         originalPrice: Math.max(0, product.originalPrice),
         discountPrice: Math.max(0, product.discountPrice),
         description: sanitizeText(product.description),
-        stock: Math.max(0, product.stock),
+        stock: inventoryStock,
+        variants,
+        lowStockThreshold: threshold,
         updatedAt: serverTimestamp(),
       });
+      setConfig(prev => ({
+        ...prev,
+        products: prev.products.map(p => p.id === product.id ? updatedProduct : p),
+      }));
+    } finally {
+      pendingOps.current.delete(opKey);
+    }
+  };
+
+  const registerProductSale = async (productId: string, quantity: number, variantId?: string) => {
+    if (!user) throw new Error('Sign in required');
+    const opKey = `sale-${productId}`;
+    if (pendingOps.current.has(opKey)) throw new Error('Sale already pending');
+    pendingOps.current.add(opKey);
+    try {
+      const productRef = doc(db, 'products', productId);
+      const transactionRef = doc(collection(db, 'transactions'));
+      const result = await runTransaction(db, async tx => {
+        const snapshot = await tx.get(productRef);
+        if (!snapshot.exists()) throw new Error('Product not found');
+        const data = snapshot.data();
+        if (data.userId !== user.uid) throw new Error('Forbidden');
+        const inventory = deductStock({ stock: data.stock, variants: data.variants }, quantity, variantId);
+        const price = data.discountPrice > 0 ? Number(data.discountPrice) : Number(data.originalPrice);
+        if (!Number.isFinite(price) || price <= 0 || !Number.isFinite(price * quantity)) throw new Error('Invalid price');
+        const selected = inventory.variants?.find(v => v.id === variantId);
+        const label = selected ? ` (${variantLabel(selected)})` : '';
+        const entry: Transaction = {
+          id: transactionRef.id, type: 'entrada', value: Math.round(price * quantity * 100) / 100,
+          description: sanitizeText(`${data.name}${label}${quantity > 1 ? ` (${quantity}x)` : ''}`),
+          category: 'Venda', isPersonal: false, date: new Date().toISOString(),
+        };
+        const { id: _id, ...fields } = entry;
+        tx.update(productRef, { stock: inventory.stock, variants: inventory.variants ?? [], updatedAt: serverTimestamp() });
+        tx.set(transactionRef, { ...fields, userId: user.uid, productId, variantId: variantId ?? null, quantity, createdAt: serverTimestamp() });
+        return { inventory, entry };
+      });
+      setConfig(prev => ({
+        ...prev,
+        products: prev.products.map(p => p.id === productId ? { ...p, ...result.inventory } : p),
+        transactions: [result.entry, ...prev.transactions],
+      }));
     } finally {
       pendingOps.current.delete(opKey);
     }
@@ -453,7 +510,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <StoreContext.Provider value={{
-      config, updateConfig, addProduct, removeProduct, updateProduct,
+      config, updateConfig, addProduct, removeProduct, updateProduct, registerProductSale,
       addTransaction, removeTransaction, isLoading, refreshData: fetchData,
     }}>
       {children}
