@@ -20,6 +20,7 @@ vi.mock('@/contexts/StoreContext', () => ({
 }));
 vi.mock('@/components/InstagramPostGenerator', () => ({ default: () => null }));
 vi.mock('@/components/InvoiceComparator', () => ({ default: () => null }));
+vi.mock('qrcode.react', () => ({ QRCodeCanvas: () => <canvas /> }));
 
 beforeEach(() => {
   cleanup();
