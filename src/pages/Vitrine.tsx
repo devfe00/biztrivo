@@ -1,5 +1,9 @@
 import { useStore, Product } from '@/contexts/StoreContext';
-import { useNotifications } from '@/hooks/useNotifications';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import ProductVariantsEditor from '@/components/ProductVariantsEditor';
+import { productStock, validateVariants, lowStockItems, variantLabel, type ProductVariant } from '@/lib/inventory';
+import { useInventoryT } from '@/lib/inventory-i18n';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,26 +13,29 @@ import { Plus, Trash2, ExternalLink, Copy, Check, Image as ImageIcon, AlertCircl
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { QRCodeCanvas } from 'qrcode.react';
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { sanitizeText } from '@/lib/sanitize';
 import { validateImageFile } from '@/lib/fileValidation';
 import InstagramPostGenerator from '@/components/InstagramPostGenerator';
 import InvoiceComparator from '@/components/InvoiceComparator';
 import { useT } from '@/lib/i18n';
 
-const shownAlertsRef = new Set<string>();
+
 
 const Vitrine = () => {
   const t = useT();
-  const { config, updateConfig, addProduct, removeProduct, updateProduct, addTransaction } = useStore();
+  const it = useInventoryT();
+  const { config, updateConfig, addProduct, removeProduct, updateProduct, registerProductSale } = useStore();
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [igProduct, setIgProduct] = useState<Product | null>(null);
   const [invoiceOpen, setInvoiceOpen] = useState(false);
-  const { checkStockAlert } = useNotifications();
+
 const [showForm, setShowForm] = useState(false);
 const [copied, setCopied] = useState(false);
 const [registeringSaleFor, setRegisteringSaleFor] = useState<string | null>(null);
 const [saleQty, setSaleQty] = useState('1');
+const [saleVariantId, setSaleVariantId] = useState('');
+const [salePending, setSalePending] = useState(false);
   const qrRef = useRef<HTMLDivElement>(null);
 
   const slug = config.slug || config.storeName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -52,23 +59,21 @@ const [saleQty, setSaleQty] = useState('1');
   const [description, setDescription] = useState('');
   const [stock, setStock] = useState('');
 
-useEffect(() => {
-    if (config.vitrineOnlyMode) {
-      shownAlertsRef.clear();
-      return;
-    }
-    config.products.forEach(product => {
-      if (product.stock === 0) return;
-      const alertKey = `${product.id}-${product.stock}`;
-      if (!shownAlertsRef.has(alertKey)) {
-        shownAlertsRef.add(alertKey);
-        checkStockAlert(product.name, product.stock);
-      }
-    });
-  }, [config.products, config.vitrineOnlyMode]);
+  const [variants, setVariants] = useState<ProductVariant[]>([]);
+  const [lowStockThreshold, setLowStockThreshold] = useState(3);
+  const alerts = config.vitrineOnlyMode ? [] : config.products.flatMap(product =>
+    lowStockItems(product).map(item => ({ ...item, product }))
+  );
+
+  const validInventory = (list: ProductVariant[], threshold: number) => {
+    try { validateVariants(list); } catch { toast.error(it('invalid')); return false; }
+    if (!Number.isSafeInteger(threshold) || threshold < 0) { toast.error(it('thresholdInvalid')); return false; }
+    return true;
+  };
 
   const handleAddProduct = async () => {
   if (!name.trim() || (!config.vitrineOnlyMode && !originalPrice)) return;
+  if (!validInventory(variants, lowStockThreshold)) return;
   try {
     await addProduct({
       name: sanitizeText(name),
@@ -78,9 +83,10 @@ useEffect(() => {
   ? Math.max(0.01, parseFloat(discountPrice.replace(',', '.')) || 0)
   : 0,
       description: sanitizeText(description),
-      stock: Math.max(0, parseInt(stock) || 0),
+      stock: productStock({ stock: Math.max(0, Number(stock) || 0), variants }),
+      variants, lowStockThreshold,
     });
-    setName(''); setPhoto(''); setOriginalPrice(''); setDiscountPrice(''); setDescription(''); setStock('');
+    setName(''); setPhoto(''); setOriginalPrice(''); setDiscountPrice(''); setDescription(''); setStock(''); setVariants([]); setLowStockThreshold(3);
     setShowForm(false);
     toast.success(t('ext.vt_toast_added'));
   } catch (err) {
@@ -127,15 +133,18 @@ useEffect(() => {
   const handleEditSave = async () => {
     if (!editingProduct) return;
     if (!config.vitrineOnlyMode && editingProduct.originalPrice <= 0) { toast.error(t('ext.vt_toast_price_err')); return; }
+    if (!validInventory(editingProduct.variants ?? [], editingProduct.lowStockThreshold ?? 3)) return;
+    try {
     await updateProduct({
       ...editingProduct,
       name: sanitizeText(editingProduct.name),
       description: sanitizeText(editingProduct.description),
-      stock: Math.max(0, editingProduct.stock),
+      stock: productStock(editingProduct),
       originalPrice: Math.max(0, editingProduct.originalPrice),
     });
     setEditingProduct(null);
     toast.success(t('ext.vt_toast_updated'));
+    } catch { toast.error(t('ext.vt_toast_save_err')); }
   };
 
   const handleEditPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -280,7 +289,7 @@ useEffect(() => {
                 </div>
                 <div>
                   <Label>{t('ext.vt_form_stock')}</Label>
-                  <Input type="number" value={stock} onChange={e => setStock(e.target.value)} className="mt-1" placeholder="10" min="0" />
+                  <Input type="number" disabled={variants.length > 0} value={variants.length ? productStock({ stock: 0, variants }) : stock} onChange={e => setStock(e.target.value)} className="mt-1" placeholder="10" min="0" />
                 </div>
               </div>
             )}
@@ -288,6 +297,7 @@ useEffect(() => {
               <Label>{t('ext.vt_form_desc')}</Label>
               <Textarea value={description} onChange={e => setDescription(e.target.value)} className="mt-1" placeholder={t('ext.vt_form_desc_ph')} rows={2} />
             </div>
+            {!config.vitrineOnlyMode && <ProductVariantsEditor variants={variants} onChange={setVariants} threshold={lowStockThreshold} onThresholdChange={setLowStockThreshold} />}
             <div className="flex gap-3">
               <button onClick={handleAddProduct} className="px-6 py-2.5 rounded-lg gradient-primary text-primary-foreground font-medium text-sm shadow-glow hover:opacity-90 transition-opacity">{t('ext.vt_save')}</button>
               <button onClick={() => setShowForm(false)} className="px-6 py-2.5 rounded-lg bg-muted text-muted-foreground font-medium text-sm hover:bg-accent transition-colors">{t('ext.vt_cancel')}</button>
@@ -295,6 +305,17 @@ useEffect(() => {
           </Card>
         )}
 
+        {alerts.length > 0 && (
+          <section className="mb-4 border-l-4 border-warning bg-warning/5 p-4 space-y-2">
+            <h3 className="font-semibold text-sm flex items-center gap-2"><AlertCircle className="w-4 h-4 text-warning" />{it('alert')} ({alerts.length})</h3>
+            {alerts.map(({ product, label, stock: remaining }) => (
+              <div key={`${product.id}-${label}`} className="flex flex-wrap items-center justify-between gap-2 text-sm">
+                <span className="min-w-0 break-words">{product.name}{label && ` · ${label}`} <span className={remaining === 0 ? 'text-destructive' : 'text-warning'}>{remaining === 0 ? it('unavailable') : it('remaining', { n: remaining })}</span></span>
+                <Button variant="ghost" size="sm" onClick={() => setEditingProduct({ ...product })}><Pencil />{it('restock')}</Button>
+              </div>
+            ))}
+          </section>
+        )}
         {config.products.length === 0 ? (
           <Card className="p-10 border-none shadow-md text-center">
             <Rocket className="w-12 h-12 mx-auto mb-3 text-primary/30" />
@@ -313,18 +334,8 @@ useEffect(() => {
     <AlertCircle className="w-3 h-3" /> {t('ext.vt_out_of_stock')}
   </div>
 )}
-{p.stock > 0 && p.stock <= 3 && !config.vitrineOnlyMode && (
-  <div className="absolute top-2 right-2 z-10 flex flex-col items-end gap-1">
-    <span className="px-2 py-1 rounded-md bg-warning text-warning-foreground text-xs font-semibold">
-      ⚡ {p.stock} restante{p.stock > 1 ? 's' : ''}
-    </span>
-    <button
-      onClick={() => setIgProduct(p)}
-      className="px-2 py-1 rounded-md bg-pink-500 text-white text-xs font-semibold flex items-center gap-1 shadow"
-    >
-      <Instagram className="w-3 h-3" /> Post urgência
-    </button>
-  </div>
+{p.stock > 0 && lowStockItems(p).length > 0 && !config.vitrineOnlyMode && (
+  <div className="absolute top-2 right-2 z-10 px-2 py-1 rounded-md bg-warning text-warning-foreground text-xs font-semibold">{it('low')}</div>
 )}
                 {p.photo ? (
                   <div className="aspect-square bg-muted"><img src={p.photo} alt={p.name} className="w-full h-full object-cover" /></div>
@@ -358,10 +369,10 @@ useEffect(() => {
   </button>
 {!config.vitrineOnlyMode && p.stock > 0 && (
 <button
-onClick={() => { setRegisteringSaleFor(p.id); setSaleQty('1'); }}
+onClick={() => { setRegisteringSaleFor(p.id); setSaleQty('1'); setSaleVariantId(''); }}
 className="text-xs text-muted-foreground hover:text-secondary flex items-center gap-1 transition-colors"
 >
-<ShoppingCart className="w-3 h-3" /> Registrar venda
+<ShoppingCart className="w-3 h-3" /> {it('sale')}
 </button>
 )}
   <button onClick={() => { if (window.confirm('Tem certeza que deseja excluir esse produto?')) removeProduct(p.id); }} className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-1 transition-colors">
@@ -370,48 +381,32 @@ className="text-xs text-muted-foreground hover:text-secondary flex items-center 
 </div>
 
 {registeringSaleFor === p.id && !config.vitrineOnlyMode && (
-<div className="mt-3 p-3 rounded-lg bg-secondary/5 border border-secondary/20 space-y-2">
-    <p className="text-xs font-medium text-secondary">Registrar venda de "{p.name}"</p>
+  <div className="mt-3 p-3 rounded-lg bg-secondary/5 border border-secondary/20 space-y-3">
+    <p className="text-xs font-medium text-secondary">{it('sale')}: {p.name}</p>
+    {!!p.variants?.length && (
+      <Select value={saleVariantId} onValueChange={setSaleVariantId}>
+        <SelectTrigger aria-label={it('choose')}><SelectValue placeholder={it('choose')} /></SelectTrigger>
+        <SelectContent>{p.variants.map(v => <SelectItem key={v.id} value={v.id} disabled={v.stock === 0}>{variantLabel(v)} · {v.stock === 0 ? it('unavailable') : v.stock}</SelectItem>)}</SelectContent>
+      </Select>
+    )}
     <div className="flex items-center gap-2">
-      <input
-        type="number"
-        min="1"
-        value={saleQty}
-        onChange={e => setSaleQty(e.target.value)}
-        className="w-16 h-8 px-2 rounded-md border border-input bg-background text-sm text-center"
-        placeholder="Qtd"
-      />
-      <span className="text-xs text-muted-foreground">×</span>
-      <span className="text-xs font-semibold text-secondary">
-        R$ {((p.discountPrice > 0 ? p.discountPrice : p.originalPrice) * (parseInt(saleQty) || 1)).toFixed(2).replace('.', ',')}
-      </span>
+      <Input aria-label={it('quantity')} type="number" min={1} step={1} max={p.variants?.length ? p.variants.find(v => v.id === saleVariantId)?.stock ?? 0 : p.stock} value={saleQty} onChange={e => setSaleQty(e.target.value)} className="w-20" />
+      <span className="text-xs font-semibold text-secondary">R$ {((p.discountPrice > 0 ? p.discountPrice : p.originalPrice) * (Number(saleQty) || 0)).toFixed(2).replace('.', ',')}</span>
     </div>
-    <div className="flex gap-2">
-      <button
-        onClick={async () => {
-          const qty = Math.max(1, parseInt(saleQty) || 1);
-          const unitPrice = p.discountPrice > 0 ? p.discountPrice : p.originalPrice;
-          await addTransaction({
-            type: 'entrada',
-            value: unitPrice * qty,
-            description: qty > 1 ? `${p.name} (${qty}x)` : p.name,
-            category: 'Venda',
-            isPersonal: false,
-            date: new Date().toISOString(),
-          });
-          toast.success(`Venda de "${p.name}" registrada no Caixa!`);
+    <div className="flex flex-wrap gap-2">
+      <Button size="sm" variant="secondary" disabled={salePending || (!!p.variants?.length && !saleVariantId)} onClick={async () => {
+        const qty = Number(saleQty);
+        const available = p.variants?.length ? p.variants.find(v => v.id === saleVariantId)?.stock ?? 0 : p.stock;
+        if (!Number.isSafeInteger(qty) || qty <= 0 || qty > available) { toast.error(it('saleInvalid')); return; }
+        setSalePending(true);
+        try {
+          await registerProductSale(p.id, qty, saleVariantId || undefined);
+          toast.success(it('saleSuccess'));
           setRegisteringSaleFor(null);
-        }}
-        className="flex-1 py-1.5 rounded-lg bg-secondary text-secondary-foreground text-xs font-medium hover:opacity-90"
-      >
-        Confirmar
-      </button>
-      <button
-        onClick={() => setRegisteringSaleFor(null)}
-        className="px-3 py-1.5 rounded-lg bg-muted text-muted-foreground text-xs font-medium hover:bg-accent"
-      >
-        Cancelar
-      </button>
+        } catch { toast.error(it('saleError')); }
+        finally { setSalePending(false); }
+      }}>{salePending ? it('selling') : it('confirm')}</Button>
+      <Button variant="ghost" size="sm" disabled={salePending} onClick={() => setRegisteringSaleFor(null)}>{it('cancel')}</Button>
     </div>
   </div>
 )}
@@ -439,7 +434,7 @@ className="text-xs text-muted-foreground hover:text-secondary flex items-center 
       />
 
       <Dialog open={!!editingProduct} onOpenChange={open => !open && setEditingProduct(null)}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[90dvh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{t('ext.vt_edit_title')}</DialogTitle>
           </DialogHeader>
@@ -471,7 +466,7 @@ className="text-xs text-muted-foreground hover:text-secondary flex items-center 
                   </div>
                   <div>
                     <Label>{t('ext.vt_edit_stock_short')}</Label>
-                    <Input type="number" min="0" value={editingProduct.stock} onChange={e => setEditingProduct({ ...editingProduct, stock: parseInt(e.target.value) || 0 })} className="mt-1" />
+                    <Input type="number" min="0" disabled={!!editingProduct.variants?.length} value={productStock(editingProduct)} onChange={e => setEditingProduct({ ...editingProduct, stock: parseInt(e.target.value) || 0 })} className="mt-1" />
                   </div>
                 </div>
               )}
@@ -479,6 +474,7 @@ className="text-xs text-muted-foreground hover:text-secondary flex items-center 
                 <Label>{t('ext.vt_form_desc')}</Label>
                 <Textarea value={editingProduct.description} onChange={e => setEditingProduct({ ...editingProduct, description: e.target.value })} className="mt-1" rows={2} />
               </div>
+              {!config.vitrineOnlyMode && <ProductVariantsEditor variants={editingProduct.variants ?? []} onChange={list => setEditingProduct({ ...editingProduct, variants: list, stock: productStock({ stock: editingProduct.stock, variants: list }) })} threshold={editingProduct.lowStockThreshold ?? 3} onThresholdChange={threshold => setEditingProduct({ ...editingProduct, lowStockThreshold: threshold })} />}
               <div className="flex gap-3 pt-2">
                 <button onClick={handleEditSave} className="px-6 py-2.5 rounded-lg gradient-primary text-primary-foreground font-medium text-sm shadow-glow hover:opacity-90 transition-opacity">{t('ext.vt_edit_save')}</button>
                 <button onClick={() => setEditingProduct(null)} className="px-6 py-2.5 rounded-lg bg-muted text-muted-foreground font-medium text-sm hover:bg-accent transition-colors">{t('ext.vt_cancel')}</button>
