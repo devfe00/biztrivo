@@ -5,7 +5,7 @@
 - [ ] Validar no backend separado: propriedade dos produtos, variantes, preços e venda com baixa de estoque atômica; expor variantes na resposta pública (bloqueado: backend externo ao projeto)
 - [ ] Testar gravação e compra com conta real (bloqueado: prévia falha com auth/invalid-api-key)
 
-## Próximas etapas, solicitadas em novos prompts para economizar créditos
+## Etapas em conclusão neste pedido
 - [ ] Termômetro do teto MEI + prévia DASN
 - [ ] Cobrança via WhatsApp / carnês
 - [ ] Trocas e devoluções
@@ -14,6 +14,8 @@
 - [ ] Pró-labore e separação de lucros
 - [ ] Emissor NFS-e/NF-e e DAS com Pix (dependem de parceiros/API)
 - [ ] Conta PJ / Pix via parceiro (depende de parceiro)
+
+- [ ] Concluir todas as ferramentas independentes de parceiros neste pedido, com testes e contrato de validação para o backend separado.
 
 ## Entrega final
 - [ ] Ao concluir as etapas, apresentar a lista consolidada de arquivos desde o pedido de remover lançamentos, usando o histórico da conversa e das alterações
