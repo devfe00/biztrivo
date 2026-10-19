@@ -13,6 +13,10 @@ import Vitrine from "@/pages/Vitrine";
 import PostsIA from "@/pages/PostsIA";
 import Fidelidade from "@/pages/Fidelidade";
 import Etiquetas from "@/pages/Etiquetas";
+import Cobrancas from "@/pages/Cobrancas";
+import Devolucoes from "@/pages/Devolucoes";
+import Comandas from "@/pages/Comandas";
+import Alugueis from "@/pages/Alugueis";
 import CartaoFidelidade from "@/pages/CartaoFidelidade";
 import Offline from "@/pages/Offline";
 import Academy from "@/pages/Academy";
@@ -62,6 +66,10 @@ const App = () => (
               <Route path="/vitrine" element={<ProtectedRoute><AppLayout><Vitrine /></AppLayout></ProtectedRoute>} />
               <Route path="/fidelidade" element={<ProtectedRoute><AppLayout><Fidelidade /></AppLayout></ProtectedRoute>} />
               <Route path="/etiquetas" element={<ProtectedRoute><AppLayout><Etiquetas /></AppLayout></ProtectedRoute>} />
+              <Route path="/cobrancas" element={<ProtectedRoute><AppLayout><Cobrancas /></AppLayout></ProtectedRoute>} />
+              <Route path="/devolucoes" element={<ProtectedRoute><AppLayout><Devolucoes /></AppLayout></ProtectedRoute>} />
+              <Route path="/comandas" element={<ProtectedRoute><AppLayout><Comandas /></AppLayout></ProtectedRoute>} />
+              <Route path="/alugueis" element={<ProtectedRoute><AppLayout><Alugueis /></AppLayout></ProtectedRoute>} />
               <Route path="/cartao" element={<CartaoFidelidade />} />
               <Route path="/posts-ia" element={<ProtectedRoute><AppLayout><PostsIA /></AppLayout></ProtectedRoute>} />
               <Route path="/offline" element={<ProtectedRoute><AppLayout><Offline /></AppLayout></ProtectedRoute>} />

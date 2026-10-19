@@ -8,6 +8,8 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { toast } from 'sonner';
 import ptDict from '@/i18n/locales/pt.json';
+import MeiPlanning from '@/components/MeiPlanning';
+import { meiSummary } from '@/lib/business';
 
 // MEI existe apenas no Brasil: esta tela é sempre exibida em português.
 const tPt = (key: string, vars?: Record<string, string | number>): string => {
@@ -42,6 +44,7 @@ const MEI = () => {
   const [cnpjInput, setCnpjInput] = useState('');
   const [checkingCnpj, setCheckingCnpj] = useState(false);
   const [cnpjError, setCnpjError] = useState<string | null>(null);
+  const applicableLimit = meiSummary([],year,config.meiOpenedAt??'',0).limit;
 
   const report = useMemo(() => {
     const start = new Date(`${year}-01-01T00:00:00`);
@@ -81,8 +84,8 @@ const MEI = () => {
     }
 
     const mesesSemReceita = months.filter(m => m.qtd === 0 && m.mes <= new Date().getMonth() + 1 && year === new Date().getFullYear()).map(m => m.mes);
-    const acimaLimite = totalAno > LIMITE_MEI_ANUAL;
-    const percentLimite = (totalAno / LIMITE_MEI_ANUAL) * 100;
+    const acimaLimite = totalAno > applicableLimit;
+    const percentLimite = applicableLimit > 0 ? (totalAno / applicableLimit) * 100 : 0;
 
     const totalFuncionario = config.transactions
       .filter(t => {
@@ -97,7 +100,7 @@ const MEI = () => {
       mesesSemReceita, acimaLimite, percentLimite, qtdTransacoes: entradas.length,
       totalFuncionario,
     };
-  }, [config.transactions, year]);
+  }, [config.transactions, year, applicableLimit]);
 
   const fmt = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   const meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
@@ -227,11 +230,12 @@ const MEI = () => {
           <Info className="w-5 h-5 text-primary shrink-0 mt-0.5" />
           <p className="text-sm" dangerouslySetInnerHTML={{ __html: t('mei.info_disclaimer', {
             link: '<a href="https://www.gov.br/empresas-e-negocios/pt-br/empreendedor" target="_blank" rel="noopener noreferrer" class="underline text-primary">gov.br/mei</a>',
-            limit: fmt(LIMITE_MEI_ANUAL),
+            limit: fmt(applicableLimit),
           }) }} />
         </div>
       </Card>
 
+      <MeiPlanning />
       {report.totalFuncionario > 0 && (
         <Card className="p-4 border-none shadow-md border-l-4 border-l-primary bg-primary/5">
           <div className="flex items-start gap-3">

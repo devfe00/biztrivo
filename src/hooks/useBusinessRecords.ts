@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { collection, doc, onSnapshot, query, where, runTransaction, serverTimestamp, writeBatch, getDocs } from 'firebase/firestore';
 import { db } from '@/integrations/firebase/firebase';
 import { useAuth } from '@/contexts/AuthContext';
-import { validateOperation, restoreInventory, returnAmount, roundMoney, type BusinessRecord, type Operation } from '@/lib/business';
+import { validateOperation, restoreInventory, returnAmount, installmentSchedule, type BusinessRecord, type Operation } from '@/lib/business';
 import { sanitizeText } from '@/lib/sanitize';
 
 export function useBusinessRecords() {
@@ -41,15 +41,9 @@ export function useBusinessRecords() {
     const value = validateOperation(input);
     const batch = writeBatch(db);
     const groupId = crypto.randomUUID();
-    const base = new Date(`${input.due}T12:00:00`);
-    const cents = Math.round(input.amount * 100);
-    if (cents < count) throw new Error('Installment below one cent');
-    for (let i = 0; i < count; i++) {
-      const due = new Date(base.getFullYear(), base.getMonth() + i, 1, 12);
-      due.setDate(Math.min(base.getDate(), new Date(due.getFullYear(), due.getMonth() + 1, 0).getDate()));
-      const date = `${due.getFullYear()}-${String(due.getMonth()+1).padStart(2,'0')}-${String(due.getDate()).padStart(2,'0')}`;
-      batch.set(doc(collection(db, 'businessRecords')), { ...value, description: sanitizeText(`${input.description} (${i+1}/${count})`), amount: (Math.floor(cents/count) + (i < cents % count ? 1 : 0))/100, due: date, groupId, userId: user.uid, createdAt: serverTimestamp() });
-    }
+    installmentSchedule(input.amount,input.due,count).forEach((item,i)=> {
+      batch.set(doc(collection(db, 'businessRecords')), { ...value, ...item, description: sanitizeText(`${input.description} (${i+1}/${count})`), groupId, userId: user.uid, createdAt: serverTimestamp() });
+    });
     await batch.commit();
   }
 
@@ -110,7 +104,13 @@ export function useBusinessRecords() {
   async function sales() {
     if (!user) throw new Error('Sign in required');
     const snap = await getDocs(query(collection(db, 'transactions'), where('userId', '==', user.uid)));
-    return snap.docs.map(d => ({ id:d.id, ...d.data() })).filter((d: any) => d.type === 'entrada' && d.productId && d.quantity > (d.returnedQuantity ?? 0)) as {id:string;description:string;quantity:number;returnedQuantity?:number}[];
+    return snap.docs.flatMap(d => {
+      const value=d.data();
+      if (value.type!=='entrada'||typeof value.productId!=='string'||typeof value.description!=='string') return [];
+      try { returnAmount(value.value,value.quantity,value.returnedQuantity??0,1); }
+      catch { return []; }
+      return [{id:d.id,description:value.description,quantity:value.quantity as number,returnedQuantity:(value.returnedQuantity??0) as number}];
+    });
   }
   return { records, loading, error, save, createInstallments, settle, createRent, refund, sales };
 }

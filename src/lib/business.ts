@@ -7,22 +7,38 @@ const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(v => {
   const d = new Date(`${v}T12:00:00Z`);
   return Number.isFinite(d.getTime()) && d.toISOString().slice(0, 10) === v;
 });
+const rentalAdjustment = z.object({ oldAmount: money, percentage: z.number().finite().min(-99.99).max(100), effective: date });
 export const operationSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('receivable'), customer: text, phone: z.string().regex(/^\d{8,15}$/), description: text, amount: money.refine(v => v > 0), due: date, status: z.enum(['pending', 'paid', 'cancelled']), rentalId: z.string().max(80).optional() }),
   z.object({ kind: z.literal('return'), customer: text, description: text, reason: text, status: z.enum(['requested', 'approved', 'completed', 'cancelled']) }),
   z.object({ kind: z.literal('order'), customer: text, description: text, amount: money, status: z.enum(['new', 'preparing', 'ready', 'delivered', 'cancelled']) }),
   z.object({ kind: z.literal('recipe'), description: text, yield: z.number().int().positive().max(100000), price: money, ingredients: z.array(z.object({ name: text, quantity: z.number().finite().positive().max(1e6), unitCost: money })).min(1).max(100) }),
-  z.object({ kind: z.literal('rental'), customer: text, phone: z.string().regex(/^\d{8,15}$/), description: text, amount: money.refine(v => v > 0), dueDay: z.number().int().min(1).max(28), commission: z.number().finite().min(0).max(100), start: date, end: date, adjustment: z.enum(['IPCA', 'IGPM', 'manual']), status: z.enum(['active', 'ended']) }),
+  z.object({ kind: z.literal('rental'), customer: text, phone: z.string().regex(/^\d{8,15}$/), description: text, amount: money.refine(v => v > 0), dueDay: z.number().int().min(1).max(28), commission: z.number().finite().min(0).max(100), start: date, end: date, adjustment: z.enum(['IPCA', 'IGPM', 'manual']), status: z.enum(['active', 'ended']), adjustments: z.array(rentalAdjustment).max(100).default([]) }),
 ]);
-export type Operation = z.infer<typeof operationSchema>;
+type DeepRequired<T> = T extends (infer U)[] ? DeepRequired<U>[] : T extends object ? { [K in keyof T]-?: DeepRequired<T[K]> } : T;
+// Zod inference marks fields optional when the legacy project disables strictNullChecks.
+type NormalizeOperation<T> = T extends { kind?: 'receivable' } ? Omit<DeepRequired<T>, 'rentalId'> & { rentalId?: string } : DeepRequired<T>;
+export type Operation = NormalizeOperation<z.infer<typeof operationSchema>>;
 export type BusinessRecord = Operation & { id: string };
 
 export function validateOperation(input: unknown): Operation {
   const value = operationSchema.parse(input);
   if (value.kind === 'rental' && value.end < value.start) throw new Error('Invalid contract dates');
-  return value;
+  return value as Operation;
 }
 export const roundMoney = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100;
+export function installmentSchedule(amount: number, firstDue: string, count: number) {
+  date.parse(firstDue);
+  if (!Number.isInteger(count) || count < 1 || count > 24 || !Number.isFinite(amount) || amount <= 0) throw new Error('Invalid installments');
+  const cents = Math.round(amount * 100);
+  if (cents < count) throw new Error('Installment below one cent');
+  const base = new Date(`${firstDue}T12:00:00`);
+  return Array.from({length:count}, (_,i) => {
+    const due = new Date(base.getFullYear(), base.getMonth()+i, 1, 12);
+    due.setDate(Math.min(base.getDate(),new Date(due.getFullYear(),due.getMonth()+1,0).getDate()));
+    return { amount:(Math.floor(cents/count)+(i<cents%count?1:0))/100, due:`${due.getFullYear()}-${String(due.getMonth()+1).padStart(2,'0')}-${String(due.getDate()).padStart(2,'0')}` };
+  });
+}
 export function recipeCost(ingredients: { quantity: number; unitCost: number }[], yieldCount: number) {
   if (!Number.isInteger(yieldCount) || yieldCount < 1) throw new Error('Invalid yield');
   const total = roundMoney(ingredients.reduce((s, i) => {
@@ -54,13 +70,21 @@ export function returnAmount(saleAmount: number, sold: number, returned: number,
   // Cumulative rounding prevents cent differences on a final partial return.
   return roundMoney(roundMoney(saleAmount * (returned + quantity) / sold) - roundMoney(saleAmount * returned / sold));
 }
+export function revenueKind(category: string): 'commerce'|'services'|null {
+  const key=category.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  if (['vendas','venda','produtos','produto','mercadoria','comercio','revenda','fabricacao','industria','venda direta','venda online','loja'].includes(key)) return 'commerce';
+  if (['servico','servicos','consultoria','manutencao','aula','aulas','frete','entrega'].includes(key)) return 'services';
+  return null;
+}
 export const MEI_ANNUAL_LIMIT = 81000;
-export function meiSummary(transactions: { type: string; value: number; date: string; category: string; isPersonal: boolean }[], year: number, opened: string, serviceRevenue: number) {
+export function meiSummary(transactions: { id?:string; originalSaleId?:string; type: string; value: number; date: string; category: string; isPersonal: boolean }[], year: number, opened: string, serviceRevenue: number) {
   const opening = opened ? date.parse(opened) : '';
   const openingYear = opening ? Number(opening.slice(0, 4)) : year - 1;
   const months = openingYear > year ? 0 : openingYear === year ? 13 - Number(opening.slice(5, 7)) : 12;
-  const sales = transactions.filter(t => t.type === 'entrada' && !t.isPersonal && t.category === 'Venda' && new Date(t.date).getFullYear() === year && (!opening || t.date.slice(0, 10) >= opening));
-  const revenue = roundMoney(sales.reduce((s, t) => s + t.value, 0));
+  const sales = transactions.filter(t => t.type === 'entrada' && !t.isPersonal && revenueKind(t.category) && new Date(t.date).getFullYear() === year && (!opening || t.date.slice(0, 10) >= opening));
+  const saleIds=new Set(sales.map(s=>s.id).filter(Boolean));
+  const refunds=transactions.filter(t=>t.type==='saida'&&t.originalSaleId&&saleIds.has(t.originalSaleId)&&new Date(t.date).getFullYear()===year).reduce((s,t)=>s+t.value,0);
+  const revenue = Math.max(0,roundMoney(sales.reduce((s, t) => s + t.value, 0)-refunds));
   if (!Number.isFinite(serviceRevenue) || serviceRevenue < 0 || serviceRevenue > revenue) throw new Error('Invalid service revenue');
   const limit = MEI_ANNUAL_LIMIT / 12 * months;
   return { revenue, services: serviceRevenue, commerce: roundMoney(revenue - serviceRevenue), limit, percentage: limit ? revenue / limit * 100 : 0, months };

@@ -22,6 +22,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { toast } from 'sonner';
 import { MEI_DAS, getMeiAtividade, setMeiAtividade, type MeiAtividade } from '@/lib/meiDas';
+import MeiPlanning from '@/components/MeiPlanning';
 
 //BRASIL
 const BR_LIMITE_MEI_ANUAL = 81_000;
@@ -314,7 +315,7 @@ const Contador = () => {
       if (tx.type === 'entrada') { receita += tx.value; continue; }
       const cat = tx.category ?? '';
       if (cat === 'Reposição')                               cmv       += tx.value;
-      else if (cat === 'Pessoal')                            prolabore += tx.value;
+      else if (tx.isPersonal || cat === 'Pessoal' || cat === 'Pró-labore') prolabore += tx.value;
       else if (cat === 'Funcionário')                        folha     += tx.value;
       else if (['Embalagem','Frete','Outros'].includes(cat)) despesaOp += tx.value;
       else                                                   despesaOp += tx.value;
@@ -643,6 +644,7 @@ const Contador = () => {
       </div>
 
       {/*seletor de país */}
+      {pais === 'BR' && config.paisBase === 'BR' && <MeiPlanning />}
       <Card className="p-4 border-none shadow-md">
         <p className="text-sm font-medium text-muted-foreground mb-3">
           {pais === 'BR' ? 'Selecione seu país' : pais === 'ES' ? 'Selecciona tu país' : pais === 'FR' ? 'Sélectionnez votre pays' : 'Select your country'}
