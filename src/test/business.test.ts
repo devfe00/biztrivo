@@ -20,4 +20,8 @@ describe('Commercial rules',()=>{
  it('separates rental management fee from owner proceeds without moving money',()=>expect(rentalDistribution(1500,10)).toEqual({fee:150,owner:1350}));
  it('rejects contracts ending before they start',()=>expect(()=>validateOperation({kind:'rental',customer:'Ana',phone:'5511999999999',description:'Casa',amount:1500,dueDay:10,commission:10,start:'2026-10-01',end:'2026-09-01',adjustment:'IPCA',status:'active'})).toThrow());
  it('bounds advisory exempt profit to actual profit',()=>expect(profitEstimate(10000,5000,9500,500)).toEqual({profit:500,exemptEstimate:500,potentiallyTaxable:0}));
+ it('includes recorded service income in advisory revenue',()=>expect(meiSummary([{type:'entrada',value:100,date:'2026-10-01',category:'Serviços',isPersonal:false}],2026,'',100).revenue).toBe(100));
+ it('subtracts same-year linked refunds without counting owner withdrawals',()=>{
+  expect(meiSummary([{id:'s',type:'entrada',value:100,date:'2026-10-01',category:'Venda',isPersonal:false},{originalSaleId:'s',type:'saida',value:25,date:'2026-10-02',category:'Devolução',isPersonal:false}],2026,'',0).revenue).toBe(75);
+ });
 });

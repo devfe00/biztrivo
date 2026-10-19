@@ -7,6 +7,7 @@ import { meiSummary, profitEstimate } from '@/lib/business';
 import { TextField } from '@/components/BusinessFields';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import OwnerPayments from '@/components/OwnerPayments';
 
 export default function MeiPlanning(){
  const {config,updateConfig}=useStore();const now=new Date();const [year,setYear]=useState(now.getFullYear());
@@ -28,5 +29,5 @@ export default function MeiPlanning(){
  <p className="text-xs text-muted-foreground">Estimativa sem escrituração: 8% para comércio/indústria e 32% para serviços comuns, limitada ao lucro. Não contempla transporte nem situações especiais. Pró-labore e distribuição de lucros não são equivalentes; retiradas do Caixa não definem automaticamente seu tratamento tributário.</p>
  <div className="flex flex-wrap gap-2"><Button variant="outline" onClick={exportPreview}><Download/>Baixar prévia DASN</Button><Button asChild variant="outline"><a href="https://www.gov.br/empresas-e-negocios/pt-br/empreendedor/servicos-para-mei/declaracao-anual-de-faturamento" target="_blank" rel="noopener noreferrer"><ExternalLink/>Declaração oficial</a></Button><Button asChild variant="outline"><a href="https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/pgmei.app/" target="_blank" rel="noopener noreferrer"><ExternalLink/>Emitir DAS oficial</a></Button></div>
  <p className="text-xs text-muted-foreground">DASN: prazo geral de 31 de maio do ano seguinte, sujeito a prorrogações. DAS: dia 20 do mês seguinte, prorrogado ao próximo dia útil quando aplicável. Pix e guias oficiais são obtidos no portal da Receita, nunca gerados como cobranças fictícias aqui.</p></>}
- </section>;
+ <OwnerPayments /></section>;
 }
