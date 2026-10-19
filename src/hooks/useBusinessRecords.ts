@@ -104,7 +104,13 @@ export function useBusinessRecords() {
   async function sales() {
     if (!user) throw new Error('Sign in required');
     const snap = await getDocs(query(collection(db, 'transactions'), where('userId', '==', user.uid)));
-    return snap.docs.map(d => ({ id:d.id, ...d.data() })).filter((d: any) => d.type === 'entrada' && d.productId && d.quantity > (d.returnedQuantity ?? 0)) as {id:string;description:string;quantity:number;returnedQuantity?:number}[];
+    return snap.docs.flatMap(d => {
+      const value=d.data();
+      if (value.type!=='entrada'||typeof value.productId!=='string'||typeof value.description!=='string') return [];
+      try { returnAmount(value.value,value.quantity,value.returnedQuantity??0,1); }
+      catch { return []; }
+      return [{id:d.id,description:value.description,quantity:value.quantity as number,returnedQuantity:(value.returnedQuantity??0) as number}];
+    });
   }
   return { records, loading, error, save, createInstallments, settle, createRent, refund, sales };
 }

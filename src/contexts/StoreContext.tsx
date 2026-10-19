@@ -73,6 +73,7 @@ export interface Transaction {
   category: string;
   isPersonal: boolean;
   date: string;
+  originalSaleId?: string;
 }
 
 export interface StoreConfig {
@@ -203,6 +204,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
           category: t.category,
           isPersonal: t.isPersonal ?? false,
           date: t.date?.toDate ? t.date.toDate().toISOString() : t.date,
+          originalSaleId: typeof t.originalSaleId === 'string' ? t.originalSaleId : undefined,
         };
       });
 
