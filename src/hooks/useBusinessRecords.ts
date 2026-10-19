@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { collection, doc, onSnapshot, query, where, runTransaction, serverTimestamp, writeBatch, getDocs } from 'firebase/firestore';
 import { db } from '@/integrations/firebase/firebase';
 import { useAuth } from '@/contexts/AuthContext';
-import { validateOperation, restoreInventory, returnAmount, roundMoney, type BusinessRecord, type Operation } from '@/lib/business';
+import { validateOperation, restoreInventory, returnAmount, installmentSchedule, type BusinessRecord, type Operation } from '@/lib/business';
 import { sanitizeText } from '@/lib/sanitize';
 
 export function useBusinessRecords() {
@@ -41,15 +41,9 @@ export function useBusinessRecords() {
     const value = validateOperation(input);
     const batch = writeBatch(db);
     const groupId = crypto.randomUUID();
-    const base = new Date(`${input.due}T12:00:00`);
-    const cents = Math.round(input.amount * 100);
-    if (cents < count) throw new Error('Installment below one cent');
-    for (let i = 0; i < count; i++) {
-      const due = new Date(base.getFullYear(), base.getMonth() + i, 1, 12);
-      due.setDate(Math.min(base.getDate(), new Date(due.getFullYear(), due.getMonth() + 1, 0).getDate()));
-      const date = `${due.getFullYear()}-${String(due.getMonth()+1).padStart(2,'0')}-${String(due.getDate()).padStart(2,'0')}`;
-      batch.set(doc(collection(db, 'businessRecords')), { ...value, description: sanitizeText(`${input.description} (${i+1}/${count})`), amount: (Math.floor(cents/count) + (i < cents % count ? 1 : 0))/100, due: date, groupId, userId: user.uid, createdAt: serverTimestamp() });
-    }
+    installmentSchedule(input.amount,input.due,count).forEach((item,i)=> {
+      batch.set(doc(collection(db, 'businessRecords')), { ...value, ...item, description: sanitizeText(`${input.description} (${i+1}/${count})`), groupId, userId: user.uid, createdAt: serverTimestamp() });
+    });
     await batch.commit();
   }
 

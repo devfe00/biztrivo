@@ -17,7 +17,7 @@ export default function Cobrancas() {
   const [amount,setAmount]=useState(''); const [due,setDue]=useState(''); const [count,setCount]=useState('1'); const [busy,setBusy]=useState(false);
   const charges=records.filter((r):r is Extract<BusinessRecord,{kind:'receivable'}>=>r.kind==='receivable').sort((a,b)=>a.due.localeCompare(b.due));
   const fmt=(v:number)=>v.toLocaleString({pt:'pt-BR',en:'en-US',es:'es-ES',fr:'fr-FR'}[lang],{style:'currency',currency:'BRL'});
-  const today=new Date().toLocaleDateString('en-CA');
+  const now=new Date(); const today=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
   const pending=charges.filter(r=>r.status==='pending');
   async function act(fn:()=>Promise<void>) {setBusy(true);try {await fn();toast.success(t('saved'));}catch {toast.error(t('error'));}finally{setBusy(false);}}
   function receipt(r:Extract<BusinessRecord,{kind:'receivable'}>){

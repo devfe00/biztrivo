@@ -26,6 +26,18 @@ export function validateOperation(input: unknown): Operation {
   return value as Operation;
 }
 export const roundMoney = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100;
+export function installmentSchedule(amount: number, firstDue: string, count: number) {
+  date.parse(firstDue);
+  if (!Number.isInteger(count) || count < 1 || count > 24 || !Number.isFinite(amount) || amount <= 0) throw new Error('Invalid installments');
+  const cents = Math.round(amount * 100);
+  if (cents < count) throw new Error('Installment below one cent');
+  const base = new Date(`${firstDue}T12:00:00`);
+  return Array.from({length:count}, (_,i) => {
+    const due = new Date(base.getFullYear(), base.getMonth()+i, 1, 12);
+    due.setDate(Math.min(base.getDate(),new Date(due.getFullYear(),due.getMonth()+1,0).getDate()));
+    return { amount:(Math.floor(cents/count)+(i<cents%count?1:0))/100, due:`${due.getFullYear()}-${String(due.getMonth()+1).padStart(2,'0')}-${String(due.getDate()).padStart(2,'0')}` };
+  });
+}
 export function recipeCost(ingredients: { quantity: number; unitCost: number }[], yieldCount: number) {
   if (!Number.isInteger(yieldCount) || yieldCount < 1) throw new Error('Invalid yield');
   const total = roundMoney(ingredients.reduce((s, i) => {

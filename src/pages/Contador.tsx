@@ -315,7 +315,7 @@ const Contador = () => {
       if (tx.type === 'entrada') { receita += tx.value; continue; }
       const cat = tx.category ?? '';
       if (cat === 'Reposição')                               cmv       += tx.value;
-      else if (cat === 'Pessoal')                            prolabore += tx.value;
+      else if (tx.isPersonal || cat === 'Pessoal' || cat === 'Pró-labore') prolabore += tx.value;
       else if (cat === 'Funcionário')                        folha     += tx.value;
       else if (['Embalagem','Frete','Outros'].includes(cat)) despesaOp += tx.value;
       else                                                   despesaOp += tx.value;
