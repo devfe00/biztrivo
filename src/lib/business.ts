@@ -14,13 +14,15 @@ export const operationSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('recipe'), description: text, yield: z.number().int().positive().max(100000), price: money, ingredients: z.array(z.object({ name: text, quantity: z.number().finite().positive().max(1e6), unitCost: money })).min(1).max(100) }),
   z.object({ kind: z.literal('rental'), customer: text, phone: z.string().regex(/^\d{8,15}$/), description: text, amount: money.refine(v => v > 0), dueDay: z.number().int().min(1).max(28), commission: z.number().finite().min(0).max(100), start: date, end: date, adjustment: z.enum(['IPCA', 'IGPM', 'manual']), status: z.enum(['active', 'ended']) }),
 ]);
-export type Operation = z.infer<typeof operationSchema>;
+type DeepRequired<T> = T extends (infer U)[] ? DeepRequired<U>[] : T extends object ? { [K in keyof T]-?: DeepRequired<T[K]> } : T;
+// Zod inference marks fields optional when the legacy project disables strictNullChecks.
+export type Operation = DeepRequired<z.infer<typeof operationSchema>>;
 export type BusinessRecord = Operation & { id: string };
 
 export function validateOperation(input: unknown): Operation {
   const value = operationSchema.parse(input);
   if (value.kind === 'rental' && value.end < value.start) throw new Error('Invalid contract dates');
-  return value;
+  return value as Operation;
 }
 export const roundMoney = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100;
 export function recipeCost(ingredients: { quantity: number; unitCost: number }[], yieldCount: number) {
