@@ -8,6 +8,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { toast } from 'sonner';
 import ptDict from '@/i18n/locales/pt.json';
+import MeiPlanning from '@/components/MeiPlanning';
 
 // MEI existe apenas no Brasil: esta tela é sempre exibida em português.
 const tPt = (key: string, vars?: Record<string, string | number>): string => {
@@ -232,6 +233,7 @@ const MEI = () => {
         </div>
       </Card>
 
+      <MeiPlanning />
       {report.totalFuncionario > 0 && (
         <Card className="p-4 border-none shadow-md border-l-4 border-l-primary bg-primary/5">
           <div className="flex items-start gap-3">

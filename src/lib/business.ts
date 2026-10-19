@@ -16,7 +16,8 @@ export const operationSchema = z.discriminatedUnion('kind', [
 ]);
 type DeepRequired<T> = T extends (infer U)[] ? DeepRequired<U>[] : T extends object ? { [K in keyof T]-?: DeepRequired<T[K]> } : T;
 // Zod inference marks fields optional when the legacy project disables strictNullChecks.
-export type Operation = DeepRequired<z.infer<typeof operationSchema>>;
+type NormalizeOperation<T> = T extends { kind?: 'receivable' } ? Omit<DeepRequired<T>, 'rentalId'> & { rentalId?: string } : DeepRequired<T>;
+export type Operation = NormalizeOperation<z.infer<typeof operationSchema>>;
 export type BusinessRecord = Operation & { id: string };
 
 export function validateOperation(input: unknown): Operation {

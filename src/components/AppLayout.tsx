@@ -10,6 +10,7 @@ import Footer from '@/components/Footer';
 import TrialCountdown from '@/components/TrialCountdown';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useI18n, LANGUAGES } from '@/lib/i18n';
+import { useBusinessT } from '@/lib/business-i18n';
 
 const navItemsBase = [
   { path: '/dashboard', key: 'nav.dashboard', icon: LayoutDashboard },
@@ -17,6 +18,10 @@ const navItemsBase = [
   { path: '/vitrine', key: 'nav.vitrine', icon: Store },
   { path: '/fidelidade', key: 'nav.fidelidade', icon: Heart },
   { path: '/etiquetas', key: 'nav.etiquetas', icon: Package },
+  { path: '/cobrancas', key: 'business.receivable', icon: Wallet },
+  { path: '/devolucoes', key: 'business.returns', icon: Package },
+  { path: '/comandas', key: 'business.food', icon: Store },
+  { path: '/alugueis', key: 'business.rentals', icon: FileText },
   { path: '/posts-ia', key: 'nav.posts_ia', icon: Instagram },
   { path: '/offline', key: 'nav.offline', icon: WifiOff },
   { path: '/calculadora', key: 'nav.calculadora', icon: Calculator },
@@ -38,9 +43,10 @@ const langDropdownRef = useRef<HTMLDivElement>(null);
   const { config } = useStore();
   const { signOut } = useAuth();
   const { t, lang, setLang } = useI18n();
+  const bt = useBusinessT();
   const navItems = navItemsBase
     .filter(i => (i.path === '/mei' ? config.paisBase === 'BR' : true))
-    .map(i => ({ ...i, label: t(i.key) }));
+    .map(i => ({ ...i, label: i.key === 'business.receivable' ? bt('receivable') : i.key === 'business.returns' ? bt('returns') : i.key === 'business.food' ? bt('food') : i.key === 'business.rentals' ? bt('rentals') : t(i.key) }));
 
   const storeName = config.storeName || 'Minha Loja';
   const profileImage = config.profileImage || '';
@@ -121,7 +127,7 @@ const langDropdownRef = useRef<HTMLDivElement>(null);
             className="w-64 h-full bg-card border-r border-border pt-16 animate-slide-in flex flex-col"
             onClick={e => e.stopPropagation()}
           >
-            <nav className="px-3 space-y-1 flex-1">
+            <nav className="px-3 space-y-1 flex-1 overflow-y-auto min-h-0">
               {navItems.map(item => {
                 const active = location.pathname === item.path;
                 return (

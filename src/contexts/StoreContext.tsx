@@ -93,6 +93,7 @@ export interface StoreConfig {
   cnpj: string;
   paisBase: 'BR' | 'outros';
   meiAtividade: MeiAtividade;
+  meiOpenedAt: string;
   loyaltyCustomers: LoyaltyCustomer[];
   loyaltyGoal: number;
 }
@@ -137,6 +138,7 @@ const defaultConfig: StoreConfig = {
   cnpj: '',
   paisBase: navigator.language?.startsWith('pt-BR') ? 'BR' : 'outros',
   meiAtividade: getMeiAtividade(),
+  meiOpenedAt: '',
   loyaltyCustomers: [],
   loyaltyGoal: 10,
 };
@@ -221,6 +223,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
         cnpj: priv?.cnpj ?? '',
         paisBase: priv?.paisBase ?? (navigator.language?.startsWith('pt-BR') ? 'BR' : 'outros'),
         meiAtividade: priv?.meiAtividade && priv.meiAtividade in MEI_DAS ? priv.meiAtividade : getMeiAtividade(),
+        meiOpenedAt: typeof priv?.meiOpenedAt === 'string' ? priv.meiOpenedAt : '',
         loyaltyCustomers: Array.isArray(priv?.loyaltyCustomers) ? priv.loyaltyCustomers : [],
         loyaltyGoal: Number(priv?.loyaltyGoal) || 10,
         products,
@@ -281,6 +284,10 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
     }
     if (partial.isMei !== undefined) privateUpdate.isMei = partial.isMei;
     if (partial.paisBase !== undefined) privateUpdate.paisBase = partial.paisBase;
+    if (partial.meiOpenedAt !== undefined) {
+      if (partial.meiOpenedAt && !/^\d{4}-\d{2}-\d{2}$/.test(partial.meiOpenedAt)) throw new Error('Invalid opening date');
+      privateUpdate.meiOpenedAt = partial.meiOpenedAt;
+    }
     if (partial.meiAtividade !== undefined && partial.meiAtividade in MEI_DAS) {
       privateUpdate.meiAtividade = partial.meiAtividade;
       setMeiAtividade(partial.meiAtividade);
@@ -309,6 +316,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
       writes.push(setDoc(doc(db, 'privateProfiles', user.uid), privateUpdate, { merge: true }));
     }
 
+    await Promise.all(writes);
     setConfig(prev => ({
       ...prev,
       ...partial,
@@ -317,7 +325,6 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
       cnpj: cnpjDigits ?? prev.cnpj,
     }));
 
-    await Promise.all(writes);
   };
 
   const addProduct = async (product: Omit<Product, 'id'>) => {
