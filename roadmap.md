@@ -1,4 +1,8 @@
 # Roadmap
+- [ ] Criar preparação de NFS-e e nota de produtos com acesso aos portais oficiais, sem emissão fictícia.
+- [ ] Criar acesso ao PGMEI para pagar DAS, sem gerar Pix próprio.
+- [ ] Criar preparação de cobranças Pix/boleto Mercado Pago e contrato de limites/segurança para o backend externo.
+- [ ] Conferir testes e consolidar arquivos desta entrega.
 - [x] Gerador de etiqueta de envio + declaração de conteúdo
 - [x] Grade de variações (tamanho/cor) com estoque e seleção na vitrine pública
 - [x] Alerta de estoque baixo por variação com limite configurável
