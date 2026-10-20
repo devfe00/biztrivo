@@ -24,6 +24,13 @@ export type BusinessRecord = Operation & { id: string };
 export function validateOperation(input: unknown): Operation {
   const value = operationSchema.parse(input);
   if (value.kind === 'rental' && value.end < value.start) throw new Error('Invalid contract dates');
+  if (value.kind === 'rental') {
+    let previous = value.start;
+    for (const item of value.adjustments) {
+      if (item.effective < previous || item.effective > value.end) throw new Error('Invalid adjustment date');
+      previous = item.effective;
+    }
+  }
   return value as Operation;
 }
 export const roundMoney = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100;

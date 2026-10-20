@@ -30,7 +30,16 @@ export function useBusinessRecords() {
       const old = await tx.get(target);
       if (old.exists()) {
         const value = old.data();
-        if (value.userId !== user.uid || value.kind !== fields.kind || ['paid', 'completed', 'delivered'].includes(value.status)) throw new Error('Locked record');
+        if (value.userId !== user.uid || value.kind !== fields.kind || ['paid', 'completed', 'delivered', 'cancelled', 'ended'].includes(value.status)) throw new Error('Locked record');
+        if (fields.kind === 'order') {
+          const next: Record<string,string> = {new:'preparing',preparing:'ready',ready:'delivered'};
+          if (fields.status !== 'cancelled' && fields.status !== next[value.status]) throw new Error('Invalid order transition');
+        }
+        if (fields.kind === 'return') {
+          const next: Record<string,string> = {requested:'approved',approved:'completed'};
+          if (fields.status !== 'cancelled' && fields.status !== next[value.status]) throw new Error('Invalid return transition');
+        }
+        if (fields.kind === 'receivable' && fields.status !== 'cancelled') throw new Error('Use settlement operation');
       }
       tx.set(target, { ...fields, userId: user.uid, updatedAt: serverTimestamp(), ...(!old.exists() ? { createdAt: serverTimestamp() } : {}) }, { merge: true });
     });
@@ -74,7 +83,11 @@ export function useBusinessRecords() {
       if (data.kind !== 'rental' || data.status !== 'active') throw new Error('Inactive lease');
       const due = `${month}-${String(data.dueDay).padStart(2, '0')}`;
       if (due < data.start || due > data.end) throw new Error('Outside contract period');
-      tx.set(chargeRef, { kind: 'receivable', customer: data.customer, phone: data.phone, description: `${data.description} ${month}`, amount: data.amount, due, status: 'pending', rentalId: id, userId: user.uid, createdAt: serverTimestamp() });
+      let amount = data.amount;
+      for (const adjustment of [...data.adjustments].reverse()) {
+        if (due < adjustment.effective) amount = adjustment.oldAmount;
+      }
+      tx.set(chargeRef, { kind: 'receivable', customer: data.customer, phone: data.phone, description: `${data.description} ${month}`, amount, due, status: 'pending', rentalId: id, userId: user.uid, createdAt: serverTimestamp() });
     });
   }
 
