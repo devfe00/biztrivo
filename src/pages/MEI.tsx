@@ -53,7 +53,7 @@ const MEI = () => {
     const entradas = config.transactions.filter(t => {
       if (t.type !== 'entrada' || t.isPersonal) return false;
       const d = new Date(t.date);
-      return d >= start && d < end;
+      return d >= start && d < end && (!config.meiOpenedAt || t.date.slice(0,10) >= config.meiOpenedAt);
     });
 
     const months = Array.from({ length: 12 }, (_, i) => ({
@@ -83,6 +83,21 @@ const MEI = () => {
       else totalDesconhecido += v;
     }
 
+    for (const refund of config.transactions) {
+      if (refund.type !== 'saida' || !refund.originalSaleId) continue;
+      const sale = entradas.find(t => t.id === refund.originalSaleId);
+      const d = new Date(refund.date);
+      if (!sale || d < start || d >= end) continue;
+      const tipo = classify(sale.category);
+      const m = d.getMonth();
+      months[m].total -= refund.value;
+      months[m][tipo] -= refund.value;
+      totalAno -= refund.value;
+      if (tipo === 'comercio') totalComercio -= refund.value;
+      else if (tipo === 'servicos') totalServicos -= refund.value;
+      else totalDesconhecido -= refund.value;
+    }
+
     const mesesSemReceita = months.filter(m => m.qtd === 0 && m.mes <= new Date().getMonth() + 1 && year === new Date().getFullYear()).map(m => m.mes);
     const acimaLimite = totalAno > applicableLimit;
     const percentLimite = applicableLimit > 0 ? (totalAno / applicableLimit) * 100 : 0;
@@ -100,7 +115,7 @@ const MEI = () => {
       mesesSemReceita, acimaLimite, percentLimite, qtdTransacoes: entradas.length,
       totalFuncionario,
     };
-  }, [config.transactions, year, applicableLimit]);
+  }, [config.transactions, year, applicableLimit, config.meiOpenedAt]);
 
   const fmt = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   const meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];

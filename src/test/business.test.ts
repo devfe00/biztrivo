@@ -19,6 +19,7 @@ describe('Commercial rules',()=>{
  it('calculates ingredient cost per serving',()=>expect(recipeCost([{quantity:2,unitCost:5},{quantity:1,unitCost:4}],7)).toEqual({total:14,unit:2}));
  it('separates rental management fee from owner proceeds without moving money',()=>expect(rentalDistribution(1500,10)).toEqual({fee:150,owner:1350}));
  it('rejects contracts ending before they start',()=>expect(()=>validateOperation({kind:'rental',customer:'Ana',phone:'5511999999999',description:'Casa',amount:1500,dueDay:10,commission:10,start:'2026-10-01',end:'2026-09-01',adjustment:'IPCA',status:'active'})).toThrow());
+ it('rejects rent adjustments outside the contract period',()=>expect(()=>validateOperation({kind:'rental',customer:'Ana',phone:'5511999999999',description:'Casa',amount:1500,dueDay:10,commission:10,start:'2026-10-01',end:'2027-10-01',adjustment:'IPCA',status:'active',adjustments:[{oldAmount:1400,percentage:7.14,effective:'2027-11-01'}]})).toThrow());
  it('bounds advisory exempt profit to actual profit',()=>expect(profitEstimate(10000,5000,9500,500)).toEqual({profit:500,exemptEstimate:500,potentiallyTaxable:0}));
  it('includes recorded service income in advisory revenue',()=>expect(meiSummary([{type:'entrada',value:100,date:'2026-10-01',category:'Serviços',isPersonal:false}],2026,'',100).revenue).toBe(100));
  it('subtracts same-year linked refunds without counting owner withdrawals',()=>{
