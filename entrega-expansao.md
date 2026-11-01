@@ -7,6 +7,8 @@ O backend separado precisa implementar os contratos `backend-inventory-contract.
 
 Atualização: preparação validada de NFS-e e notas de produtos, cópia dos dados e acesso aos portais oficiais implementados. DAS tem tela em português com acesso ao PGMEI, sem geração automática de Pix. Pix/boletos têm preparação e download de solicitação não enviada; nenhuma cobrança real é gerada. Notas fiscais e pagamentos respeitam os quatro idiomas e só aparecem para operação brasileira. Dados dessas telas não são persistidos.
 
+Verificação desta etapa: 35 testes focados passaram (13 novos testes fiscais e 22 comerciais existentes). Checagens automáticas sem erros. Tentativa real de abrir `/notas-fiscais` confirmou que a inicialização Firebase ainda falha com `auth/invalid-api-key`, antes de renderizar a tela; portanto não foi possível verificar login, aparência ou uso autenticado de ponta a ponta.
+
 Não conectados: emissão oficial por API de NF-e/NFS-e, geração automática de DAS/Pix, recebimento Mercado Pago/Pix/boletos e envio automático WhatsApp. Backend externo precisa de autorização individual de vendedor, limites obrigatórios ainda não numerados, idempotência e webhook validado. Não há conta bancária própria, score de crédito nem split. Contrato: `backend-fiscal-payments-contract.md`.
 
 ## Todos os arquivos desde o pedido de remover lançamentos
