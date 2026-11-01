@@ -1,8 +1,8 @@
 # Roadmap
-- [ ] Criar preparação de NFS-e e nota de produtos com acesso aos portais oficiais, sem emissão fictícia.
-- [ ] Criar acesso ao PGMEI para pagar DAS, sem gerar Pix próprio.
-- [ ] Criar preparação de cobranças Pix/boleto Mercado Pago e contrato de limites/segurança para o backend externo.
-- [ ] Conferir testes e consolidar arquivos desta entrega.
+- [x] Criar preparação de NFS-e e nota de produtos com acesso aos portais oficiais, sem emissão fictícia.
+- [x] Criar acesso ao PGMEI para pagar DAS, sem gerar Pix próprio.
+- [x] Criar preparação de cobranças Pix/boleto Mercado Pago e contrato de limites/segurança para o backend externo.
+- [x] Conferir testes e consolidar arquivos desta entrega: 35 testes focados passaram; prévia autenticada bloqueada por configuração Firebase inválida.
 - [x] Gerador de etiqueta de envio + declaração de conteúdo
 - [x] Grade de variações (tamanho/cor) com estoque e seleção na vitrine pública
 - [x] Alerta de estoque baixo por variação com limite configurável
@@ -16,9 +16,9 @@
 - [x] Comanda digital com etapas + ficha técnica e custo por porção
 - [x] Contratos de aluguel, cobranças mensais únicas, cálculos de taxa e reajustes manuais com histórico
 - [x] Registro separado de pró-labore, distribuição de lucros e retiradas; estimativas auxiliares de lucro
-- [ ] Emissor NFS-e/NF-e (bloqueado: provedor fiscal, certificado/autorização e backend externo)
-- [ ] DAS com Pix automático (bloqueado: integração fiscal autorizada; disponível acesso ao emissor oficial)
-- [ ] Conta PJ / Pix via parceiro (bloqueado: contratação de parceiro regulado e credenciais)
+- [x] Emissão fiscal assistida, sem custo de API: preparação NFS-e/produtos e acesso a portais oficiais. Emissão oficial ocorre fora da Biztrivo; API fiscal não habilitada.
+- [x] DAS: acesso ao PGMEI conforme escopo aprovado; Pix oficial é gerado pelo usuário no portal, não automaticamente pela Biztrivo.
+- [ ] Pix e boletos Mercado Pago: geração, autorização individual, cotas e conciliação (bloqueado: backend externo, conta autorizada e valores de limites ainda não definidos; contrato em backend-fiscal-payments-contract.md)
 - [ ] Cobrança WhatsApp automática e boletos bancários (bloqueado: provedores de mensagens/pagamentos e consentimentos)
 - [ ] Validar autorização e persistência das operações comerciais (bloqueado: backend Firebase separado; contrato em backend-business-contract.md)
 

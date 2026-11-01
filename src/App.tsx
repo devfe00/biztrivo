@@ -17,6 +17,9 @@ import Cobrancas from "@/pages/Cobrancas";
 import Devolucoes from "@/pages/Devolucoes";
 import Comandas from "@/pages/Comandas";
 import Alugueis from "@/pages/Alugueis";
+import NotasFiscais from "@/pages/NotasFiscais";
+import DasMei from "@/pages/DasMei";
+import Pagamentos from "@/pages/Pagamentos";
 import CartaoFidelidade from "@/pages/CartaoFidelidade";
 import Offline from "@/pages/Offline";
 import Academy from "@/pages/Academy";
@@ -70,6 +73,9 @@ const App = () => (
               <Route path="/devolucoes" element={<ProtectedRoute><AppLayout><Devolucoes /></AppLayout></ProtectedRoute>} />
               <Route path="/comandas" element={<ProtectedRoute><AppLayout><Comandas /></AppLayout></ProtectedRoute>} />
               <Route path="/alugueis" element={<ProtectedRoute><AppLayout><Alugueis /></AppLayout></ProtectedRoute>} />
+              <Route path="/notas-fiscais" element={<ProtectedRoute><AppLayout><NotasFiscais /></AppLayout></ProtectedRoute>} />
+              <Route path="/das-mei" element={<ProtectedRoute><AppLayout><DasMei /></AppLayout></ProtectedRoute>} />
+              <Route path="/pagamentos" element={<ProtectedRoute><AppLayout><Pagamentos /></AppLayout></ProtectedRoute>} />
               <Route path="/cartao" element={<CartaoFidelidade />} />
               <Route path="/posts-ia" element={<ProtectedRoute><AppLayout><PostsIA /></AppLayout></ProtectedRoute>} />
               <Route path="/offline" element={<ProtectedRoute><AppLayout><Offline /></AppLayout></ProtectedRoute>} />
