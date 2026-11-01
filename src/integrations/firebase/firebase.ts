@@ -35,6 +35,10 @@ export const FUNCTIONS = {
   grantTrialAccess:     'https://southamerica-east1-biztrivo-491617.cloudfunctions.net/grantTrialAccess',
   listTrialAccess:      'https://southamerica-east1-biztrivo-491617.cloudfunctions.net/listTrialAccess',
   revokeTrialAccess:    'https://southamerica-east1-biztrivo-491617.cloudfunctions.net/revokeTrialAccess',
+  sellerConnectMercadoPago:   'https://southamerica-east1-biztrivo-491617.cloudfunctions.net/sellerConnectMercadoPago',
+  sellerMercadoPagoCallback:  'https://southamerica-east1-biztrivo-491617.cloudfunctions.net/sellerMercadoPagoCallback',
+  createSellerCharge:         'https://southamerica-east1-biztrivo-491617.cloudfunctions.net/createSellerCharge',
+  mercadopagoWebhook:         'https://southamerica-east1-biztrivo-491617.cloudfunctions.net/mercadopagoWebhook',
 };
 
 // Helper para chamar functions autenticadas
