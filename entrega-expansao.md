@@ -5,7 +5,9 @@ Ferramentas implementadas: etiquetas, variações/estoque, fidelidade e recompra
 
 O backend separado precisa implementar os contratos `backend-inventory-contract.md` e `backend-business-contract.md`. Nenhuma regra de autorização foi relaxada neste projeto.
 
-Não conectados: NF-e/NFS-e, DAS/Pix automático, conta PJ/Pix bancário, boletos e envio automático WhatsApp. Dependem de parceiros, credenciais, autorização fiscal e/ou backend separado. Não há score de crédito nem split.
+Atualização: preparação validada de NFS-e e notas de produtos, cópia dos dados e acesso aos portais oficiais implementados. DAS tem tela em português com acesso ao PGMEI, sem geração automática de Pix. Pix/boletos têm preparação e download de solicitação não enviada; nenhuma cobrança real é gerada. Notas fiscais e pagamentos respeitam os quatro idiomas e só aparecem para operação brasileira. Dados dessas telas não são persistidos.
+
+Não conectados: emissão oficial por API de NF-e/NFS-e, geração automática de DAS/Pix, recebimento Mercado Pago/Pix/boletos e envio automático WhatsApp. Backend externo precisa de autorização individual de vendedor, limites obrigatórios ainda não numerados, idempotência e webhook validado. Não há conta bancária própria, score de crédito nem split. Contrato: `backend-fiscal-payments-contract.md`.
 
 ## Todos os arquivos desde o pedido de remover lançamentos
 Conferência: histórico Git desde o commit que introduziu `meiDas.ts`, histórico anterior do pedido e alterações desta expansão. `Planos.tsx` é citado na conversa anterior, mas não apresenta alteração no intervalo Git disponível; incluído explicitamente como referência do histórico, não como alteração comprovada pelo Git.
@@ -28,6 +30,9 @@ Conferência: histórico Git desde o commit que introduziu `meiDas.ts`, históri
 - `src/pages/Devolucoes.tsx`
 - `src/pages/Comandas.tsx`
 - `src/pages/Alugueis.tsx`
+- `src/pages/NotasFiscais.tsx` (novo nesta etapa)
+- `src/pages/DasMei.tsx` (novo nesta etapa)
+- `src/pages/Pagamentos.tsx` (novo nesta etapa)
 
 ### Navegação, controles e contexto
 - `src/App.tsx`
@@ -38,6 +43,7 @@ Conferência: histórico Git desde o commit que introduziu `meiDas.ts`, históri
 - `src/components/BusinessFields.tsx`
 - `src/components/MeiPlanning.tsx`
 - `src/components/OwnerPayments.tsx`
+- `src/components/FiscalFields.tsx` (novo nesta etapa)
 - `src/contexts/StoreContext.tsx`
 - `src/hooks/useBusinessRecords.ts`
 
@@ -48,6 +54,8 @@ Conferência: histórico Git desde o commit que introduziu `meiDas.ts`, históri
 - `src/lib/inventory-i18n.ts`
 - `src/lib/business.ts`
 - `src/lib/business-i18n.ts`
+- `src/lib/fiscal.ts` (novo nesta etapa)
+- `src/lib/fiscal-i18n.ts` (novo nesta etapa)
 - `src/i18n/locales/pt.json`
 - `src/i18n/locales/en.json`
 - `src/i18n/locales/es.json`
@@ -60,12 +68,15 @@ Conferência: histórico Git desde o commit que introduziu `meiDas.ts`, históri
 - `src/test/inventory-flow.test.tsx`
 - `src/test/business.test.ts`
 - `src/test/business-flow.test.tsx`
+- `src/test/fiscal.test.ts` (novo nesta etapa)
+- `src/test/fiscal-flow.test.tsx` (novo nesta etapa)
 
 ### Documentação
 - `AGENTS.md`
 - `roadmap.md`
 - `backend-inventory-contract.md`
 - `backend-business-contract.md`
+- `backend-fiscal-payments-contract.md` (novo nesta etapa)
 - `entrega-expansao.md`
 
 ### Arquivo gerenciado pela plataforma
