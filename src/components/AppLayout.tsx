@@ -11,6 +11,7 @@ import TrialCountdown from '@/components/TrialCountdown';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useI18n, LANGUAGES } from '@/lib/i18n';
 import { useBusinessT } from '@/lib/business-i18n';
+import { useFiscalT } from '@/lib/fiscal-i18n';
 
 const navItemsBase = [
   { path: '/dashboard', key: 'nav.dashboard', icon: LayoutDashboard },
@@ -22,6 +23,9 @@ const navItemsBase = [
   { path: '/devolucoes', key: 'business.returns', icon: Package },
   { path: '/comandas', key: 'business.food', icon: Store },
   { path: '/alugueis', key: 'business.rentals', icon: FileText },
+  { path: '/notas-fiscais', key: 'fiscal.fiscal', icon: FileText },
+  { path: '/das-mei', key: 'fiscal.das', icon: FileText },
+  { path: '/pagamentos', key: 'fiscal.payments', icon: Wallet },
   { path: '/posts-ia', key: 'nav.posts_ia', icon: Instagram },
   { path: '/offline', key: 'nav.offline', icon: WifiOff },
   { path: '/calculadora', key: 'nav.calculadora', icon: Calculator },
@@ -44,9 +48,10 @@ const langDropdownRef = useRef<HTMLDivElement>(null);
   const { signOut } = useAuth();
   const { t, lang, setLang } = useI18n();
   const bt = useBusinessT();
+  const ft = useFiscalT();
   const navItems = navItemsBase
-    .filter(i => (i.path === '/mei' ? config.paisBase === 'BR' : true))
-    .map(i => ({ ...i, label: i.key === 'business.receivable' ? bt('receivable') : i.key === 'business.returns' ? bt('returns') : i.key === 'business.food' ? bt('food') : i.key === 'business.rentals' ? bt('rentals') : t(i.key) }));
+    .filter(i => (['/mei','/das-mei','/notas-fiscais','/pagamentos'].includes(i.path) ? config.paisBase === 'BR' : true))
+    .map(i => ({ ...i, label: i.key === 'fiscal.fiscal' ? ft('fiscal') : i.key === 'fiscal.das' ? 'DAS do MEI' : i.key === 'fiscal.payments' ? ft('payments') : i.key === 'business.receivable' ? bt('receivable') : i.key === 'business.returns' ? bt('returns') : i.key === 'business.food' ? bt('food') : i.key === 'business.rentals' ? bt('rentals') : t(i.key) }));
 
   const storeName = config.storeName || 'Minha Loja';
   const profileImage = config.profileImage || '';
