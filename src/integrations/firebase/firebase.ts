@@ -1,5 +1,3 @@
-// src/integrations/firebase/firebase.ts
-// Substitui src/integrations/supabase/client.ts
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
