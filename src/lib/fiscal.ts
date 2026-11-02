@@ -9,7 +9,6 @@ export const OFFICIAL_PORTALS = {
   mercadoPago: 'https://www.mercadopago.com.br/',
 } as const;
 
-// Includes the alphanumeric CNPJ format introduced in 2026; existing numeric CNPJs remain valid.
 export function normalizeTaxId(value: string) { return value.replace(/[.\/\-\s]/g, '').toUpperCase(); }
 export function validTaxId(value: string): boolean {
   const id = normalizeTaxId(value);

@@ -156,7 +156,6 @@ if (!validTaxId(normalizeTaxId(form.taxId)))
     }
   }
 
-  // ── Copia texto ───────────────────────────────────────────────────────────
   async function handleCopy(text: string) {
     try {
       await navigator.clipboard.writeText(text);
@@ -188,7 +187,6 @@ if (!validTaxId(normalizeTaxId(form.taxId)))
         <Wallet className="text-primary" />{t('payments')}
       </h1>
 
-      {/* Aviso de segurança */}
       <p className="text-sm text-muted-foreground flex gap-2 items-start">
         <ShieldCheck className="w-4 h-4 text-primary mt-0.5 shrink-0" />
         {t('paymentNotice')}
@@ -261,7 +259,6 @@ if (!validTaxId(normalizeTaxId(form.taxId)))
                 />
               </div>
 
-              {/* Valor */}
               <div className="space-y-1.5">
                 <label className="text-sm font-medium">{t('amount')}</label>
                 <Input

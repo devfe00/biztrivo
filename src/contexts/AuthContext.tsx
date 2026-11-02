@@ -16,7 +16,7 @@ import { auth, FUNCTIONS, callFunction } from '@/integrations/firebase/firebase'
 
 interface AuthContextType {
   user: User | null;
-  session: User | null; // mantém compatibilidade — aponta pro mesmo user
+  session: User | null; 
   loading: boolean;
   signUp: (email: string, password: string, storeName: string) => Promise<{ error: string | null }>;
   signIn: (email: string, password: string) => Promise<{ error: string | null; user: User | null }>;
