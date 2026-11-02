@@ -7,4 +7,4 @@
 - Business calculations and translations are shared focused modules; tax previews are advisory and must never imply official filing, payment confirmation, or bank functionality.
 - Account settings update visible state only after successful persistence so failed writes are not shown as saved.
 - Fiscal preparation uses shared Zod schemas and transient component state; official portals receive no automatic submission or sensitive query parameters, so preparation cannot be mistaken for authorized issuance.
-- Payment preparation must remain a non-submitted draft until the separately maintained backend implements seller authorization, server-side limits and verified reconciliation; never reuse the platform owner's payment token for all sellers.
+- Seller payments call the separately maintained authenticated backend and read only the current user's private profile connection status; OAuth callback parameters never authorize charge creation, and payment creation never implies settlement. Seller tokens, quotas and reconciliation stay exclusively in the backend; never reuse the platform owner's payment token for all sellers.

@@ -1,4 +1,5 @@
 # Roadmap
+- [ ] Reescrever Pagamentos com status privado em tempo real, OAuth individual e cobrança real Pix/boleto; testar integração de tela e registrar arquivos.
 - [x] Criar preparação de NFS-e e nota de produtos com acesso aos portais oficiais, sem emissão fictícia.
 - [x] Criar acesso ao PGMEI para pagar DAS, sem gerar Pix próprio.
 - [x] Criar preparação de cobranças Pix/boleto Mercado Pago e contrato de limites/segurança para o backend externo.
