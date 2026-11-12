@@ -58,6 +58,8 @@
 
     --font-heading: 'Space Grotesk', sans-serif;
     --font-body: 'Inter', sans-serif;
+    --pix-paper: 0 0% 100%;
+    --pix-ink: 0 0% 0%;
   }
 
   /* Tema escuro padrão (reservado para uso futuro via classe .dark) */
@@ -195,6 +197,15 @@
 }
 
 @layer utilities {
+  .pix-qr {
+    background: hsl(var(--pix-paper));
+  }
+  .pix-qr path:first-of-type {
+    fill: hsl(var(--pix-paper));
+  }
+  .pix-qr path:last-of-type {
+    fill: hsl(var(--pix-ink));
+  }
   .gradient-primary {
     background: var(--gradient-primary);
   }

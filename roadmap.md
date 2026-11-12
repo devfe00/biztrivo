@@ -1,5 +1,5 @@
 # Roadmap
-- [ ] Reescrever Pagamentos com status privado em tempo real, OAuth individual e cobrança real Pix/boleto; bloqueado: arquivo atualizado com contratos de sellerConnectMercadoPago e createSellerCharge não foi anexado.
+- [x] Substituir Mercado Pago em /pagamentos por Pix estático direto, com validação, QR Code, Copia e Cola e download; sem confirmação automática ou boleto.
 - [x] Criar preparação de NFS-e e nota de produtos com acesso aos portais oficiais, sem emissão fictícia.
 - [x] Criar acesso ao PGMEI para pagar DAS, sem gerar Pix próprio.
 - [x] Criar preparação de cobranças Pix/boleto Mercado Pago e contrato de limites/segurança para o backend externo.
@@ -19,7 +19,7 @@
 - [x] Registro separado de pró-labore, distribuição de lucros e retiradas; estimativas auxiliares de lucro
 - [x] Emissão fiscal assistida, sem custo de API: preparação NFS-e/produtos e acesso a portais oficiais. Emissão oficial ocorre fora da Biztrivo; API fiscal não habilitada.
 - [x] DAS: acesso ao PGMEI conforme escopo aprovado; Pix oficial é gerado pelo usuário no portal, não automaticamente pela Biztrivo.
-- [ ] Pix e boletos Mercado Pago: geração, autorização individual, cotas e conciliação (bloqueado: backend externo, conta autorizada e valores de limites ainda não definidos; contrato em backend-fiscal-payments-contract.md)
+- [x] Abandonar integração Mercado Pago conforme decisão do usuário; Pix direto não depende de OAuth, secrets ou provedores.
 - [ ] Cobrança WhatsApp automática e boletos bancários (bloqueado: provedores de mensagens/pagamentos e consentimentos)
 - [ ] Validar autorização e persistência das operações comerciais (bloqueado: backend Firebase separado; contrato em backend-business-contract.md)
 

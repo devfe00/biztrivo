@@ -1,6 +1,9 @@
 # Entrega da expansão Biztrivo
 
 ## Situação real
+Atualização de pagamentos: `/pagamentos` substitui OAuth Mercado Pago por Pix estático direto para a chave do vendedor, com valor, referência, validação, QR Code, Copia e Cola e download SVG. Não confirma recebimento, não lança entrada automaticamente e não gera boleto. O código não expira nem impede pagamento duplicado. Nenhum backend foi alterado nesta atualização.
+
+Arquivos desta atualização: `src/pages/Pagamentos.tsx`, `src/lib/pix.ts` (novo), `src/lib/pix-i18n.ts` (novo), `src/lib/fiscal-i18n.ts`, `src/index.css`, `src/test/pix.test.ts` (novo), `src/test/fiscal-flow.test.tsx`, `package.json`, `bun.lock`, `AGENTS.md`, `roadmap.md`, `entrega-expansao.md`.
 Ferramentas implementadas: etiquetas, variações/estoque, fidelidade e recompra, cobranças parceladas e mensagens WhatsApp manuais, devoluções vinculadas às vendas, solicitações de troca, comandas, fichas técnicas, contratos/cobranças de aluguéis, prévia DASN e remuneração do titular. Cálculos e formulários têm testes automatizados. A prévia real continua em branco por `Firebase auth/invalid-api-key`, portanto persistência autenticada, concorrência, impressão e PDFs reais não foram verificados de ponta a ponta. Não é uma declaração de segurança pronta para produção.
 
 O backend separado precisa implementar os contratos `backend-inventory-contract.md` e `backend-business-contract.md`. Nenhuma regra de autorização foi relaxada neste projeto.

@@ -5,6 +5,7 @@ import NotasFiscais from '@/pages/NotasFiscais';
 import DasMei from '@/pages/DasMei';
 import Pagamentos from '@/pages/Pagamentos';
 import { OFFICIAL_PORTALS } from '@/lib/fiscal';
+import { parsePix, hasError } from 'pix-utils';
 
 vi.mock('@/contexts/StoreContext',()=>({useStore:()=>({config:{paisBase:'BR'}})}));
 const copy=vi.fn();
@@ -19,7 +20,14 @@ describe('Assisted fiscal and payment flows',()=>{
   it('opens official PGMEI without CNPJ or competence in URL',()=>{
     const open=vi.spyOn(window,'open').mockReturnValue(null);render(<DasMei/>);fill({'CNPJ do MEI':'11222333000181','Competência':'2026-10'});fireEvent.click(screen.getByRole('button',{name:'Pagar DAS do Mês'}));expect(open).toHaveBeenCalledWith(OFFICIAL_PORTALS.das,'_blank','noopener,noreferrer');
   });
-  it('prepares a payment draft without contacting a provider or claiming settlement',()=>{
-    const fetch=vi.spyOn(globalThis,'fetch');render(<I18nProvider><Pagamentos/></I18nProvider>);fill({'Nome do cliente':'Cliente teste','CPF/CNPJ do cliente':'52998224725','E-mail do cliente':'test@example.com','Descrição':'Livro','Valor (R$)':'50','Vencimento':'2026-10-20'});fireEvent.click(screen.getByRole('button',{name:'Preparar cobrança'}));const draft=JSON.parse((screen.getByLabelText('Dados para conferência') as HTMLTextAreaElement).value);expect(draft.status).toBe('draft_not_submitted');expect(draft.amount).toBe(50);expect(draft.method).toBe('pix');expect(fetch).not.toHaveBeenCalled();
+  it('generates a direct Pix locally and copies the exact payload without settlement',async()=>{
+    const fetch=vi.spyOn(globalThis,'fetch');render(<I18nProvider><Pagamentos/></I18nProvider>);
+    fill({'Chave Pix do vendedor':'123e4567-e89b-12d3-a456-426614174000','Nome do recebedor':'Loja teste','Cidade do recebedor':'São Paulo','Descrição (opcional)':'Livro','Valor (R$)':'50,25'});
+    fireEvent.click(screen.getByRole('button',{name:'Gerar Pix'}));
+    const payload=(screen.getByLabelText('Pix Copia e Cola') as HTMLTextAreaElement).value;
+    const parsed=parsePix(payload);expect(hasError(parsed)).toBe(false);
+    if(hasError(parsed)) throw new Error('Invalid Pix');
+    expect(parsed.transactionAmount).toBe(50.25);expect(parsed.pixKey).toBe('123e4567-e89b-12d3-a456-426614174000');
+    fireEvent.click(screen.getByRole('button',{name:'Copiar Pix'}));await waitFor(()=>expect(copy).toHaveBeenCalledWith(payload));expect(fetch).not.toHaveBeenCalled();
   });
 });
