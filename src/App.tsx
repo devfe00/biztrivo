@@ -15,7 +15,6 @@ import Fidelidade from "@/pages/Fidelidade";
 import Etiquetas from "@/pages/Etiquetas";
 import Cobrancas from "@/pages/Cobrancas";
 import Devolucoes from "@/pages/Devolucoes";
-import Comandas from "@/pages/Comandas";
 import Alugueis from "@/pages/Alugueis";
 import NotasFiscais from "@/pages/NotasFiscais";
 import DasMei from "@/pages/DasMei";
@@ -71,7 +70,6 @@ const App = () => (
               <Route path="/etiquetas" element={<ProtectedRoute><AppLayout><Etiquetas /></AppLayout></ProtectedRoute>} />
               <Route path="/cobrancas" element={<ProtectedRoute><AppLayout><Cobrancas /></AppLayout></ProtectedRoute>} />
               <Route path="/devolucoes" element={<ProtectedRoute><AppLayout><Devolucoes /></AppLayout></ProtectedRoute>} />
-              <Route path="/comandas" element={<ProtectedRoute><AppLayout><Comandas /></AppLayout></ProtectedRoute>} />
               <Route path="/alugueis" element={<ProtectedRoute><AppLayout><Alugueis /></AppLayout></ProtectedRoute>} />
               <Route path="/notas-fiscais" element={<ProtectedRoute><AppLayout><NotasFiscais /></AppLayout></ProtectedRoute>} />
               <Route path="/das-mei" element={<ProtectedRoute><AppLayout><DasMei /></AppLayout></ProtectedRoute>} />

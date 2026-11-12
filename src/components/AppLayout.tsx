@@ -21,7 +21,6 @@ const navItemsBase = [
   { path: '/etiquetas', key: 'nav.etiquetas', icon: Package },
   { path: '/cobrancas', key: 'business.receivable', icon: Wallet },
   { path: '/devolucoes', key: 'business.returns', icon: Package },
-  { path: '/comandas', key: 'business.food', icon: Store },
   { path: '/alugueis', key: 'business.rentals', icon: FileText },
   { path: '/notas-fiscais', key: 'fiscal.fiscal', icon: FileText },
   { path: '/das-mei', key: 'fiscal.das', icon: FileText },

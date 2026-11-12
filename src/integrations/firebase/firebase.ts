@@ -17,7 +17,6 @@ export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 
-// URLs das Cloud Functions
 export const FUNCTIONS = {
   setupUser:            'https://setupuser-mfnr6ijotq-rj.a.run.app',
   stripeWebhook:        'https://stripewebhook-mfnr6ijotq-rj.a.run.app',
