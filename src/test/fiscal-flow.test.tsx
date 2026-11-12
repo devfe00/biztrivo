@@ -26,6 +26,7 @@ describe('Assisted fiscal and payment flows',()=>{
     fireEvent.click(screen.getByRole('button',{name:'Gerar Pix'}));
     const payload=(screen.getByLabelText('Pix Copia e Cola') as HTMLTextAreaElement).value;
     const parsed=parsePix(payload);expect(hasError(parsed)).toBe(false);
+    if(hasError(parsed)) throw new Error('Invalid Pix');
     if(!isStaticPix(parsed)) throw new Error('Invalid static Pix');
     expect(parsed.transactionAmount).toBe(50.25);expect(parsed.pixKey).toBe('123e4567-e89b-12d3-a456-426614174000');
     fireEvent.click(screen.getByRole('button',{name:'Copiar Pix'}));await waitFor(()=>expect(copy).toHaveBeenCalledWith(payload));expect(fetch).not.toHaveBeenCalled();

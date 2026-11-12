@@ -6,7 +6,7 @@ function crc(text:string) { let crc=0xffff; for(const char of text) { crc ^= cha
 describe('Direct static Pix',()=>{
   it('encodes seller key, BRL amount and reference with independently verified CRC16',()=>{
     const result=generatePix(input,'BIZ123');const parsed=parsePix(result.payload);
-    expect(hasError(parsed)).toBe(false);if(!isStaticPix(parsed)) throw new Error('Invalid static Pix');
+    expect(hasError(parsed)).toBe(false);if(hasError(parsed)) throw new Error('Invalid Pix');if(!isStaticPix(parsed)) throw new Error('Invalid static Pix');
     expect(parsed.pixKey).toBe('seller@example.com');expect(parsed.transactionAmount).toBe(50.25);expect(parsed.txid).toBe('BIZ123');expect(parsed.merchantName).toBe('LOJA SAO JOAO');expect(parsed.merchantCity).toBe('SAO PAULO');expect(parsed.transactionCurrency).toBe('986');
     expect(result.payload.slice(-4)).toBe(crc(result.payload.slice(0,-4)));
   });
