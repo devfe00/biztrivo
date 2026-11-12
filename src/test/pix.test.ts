@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { hasError, parsePix } from 'pix-utils';
+import { hasError, isStaticPix, parsePix } from 'pix-utils';
 import { generatePix, normalizePixKey, pixAmountCents, type PixInput } from '@/lib/pix';
 const input: PixInput = { keyType:'email', key:'seller@example.com', name:'Loja São João', city:'São Paulo', amount:'50,25', description:'Livro' };
 function crc(text:string) { let crc=0xffff; for(const char of text) { crc ^= char.charCodeAt(0)<<8; for(let i=0;i<8;i++) crc=((crc<<1)^((crc&0x8000)?0x1021:0))&0xffff; } return crc.toString(16).toUpperCase().padStart(4,'0'); }
 describe('Direct static Pix',()=>{
   it('encodes seller key, BRL amount and reference with independently verified CRC16',()=>{
     const result=generatePix(input,'BIZ123');const parsed=parsePix(result.payload);
-    expect(hasError(parsed)).toBe(false);if(hasError(parsed)) throw new Error('Invalid Pix');
+    expect(hasError(parsed)).toBe(false);if(!isStaticPix(parsed)) throw new Error('Invalid static Pix');
     expect(parsed.pixKey).toBe('seller@example.com');expect(parsed.transactionAmount).toBe(50.25);expect(parsed.txid).toBe('BIZ123');expect(parsed.merchantName).toBe('LOJA SAO JOAO');expect(parsed.merchantCity).toBe('SAO PAULO');expect(parsed.transactionCurrency).toBe('986');
     expect(result.payload.slice(-4)).toBe(crc(result.payload.slice(0,-4)));
   });
