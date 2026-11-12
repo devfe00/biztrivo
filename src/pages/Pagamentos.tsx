@@ -1,404 +1,109 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { toast } from 'sonner';
-import { Wallet, ShieldCheck, CheckCircle2, AlertCircle, Copy, Check, ExternalLink, QrCode, Barcode, ArrowRight } from 'lucide-react';
+import { Copy, Download, QrCode, ShieldCheck, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useStore } from '@/contexts/StoreContext';
-import { useAuth } from '@/contexts/AuthContext';
-import { db, FUNCTIONS, callFunction } from '@/integrations/firebase/firebase';
-import { doc, onSnapshot } from 'firebase/firestore';
-import { useFiscalT } from '@/lib/fiscal-i18n';
-import { validTaxId, normalizeTaxId } from '@/lib/fiscal';
-
-interface ChargeForm {
-  customer: string;
-  taxId: string;
-  email: string;
-  description: string;
-  amount: string;
-  method: 'pix' | 'boleto';
-  due: string;
-}
-
-interface ChargeResult {
-  chargeId: string;
-  pixQrCode?: string;
-  pixQrCodeBase64?: string;
-  boletoUrl?: string;
-  boletoBarcode?: string;
-  boletoDueDate?: string;
-}
-
-const INITIAL_FORM: ChargeForm = {
-  customer: '',
-  taxId: '',
-  email: '',
-  description: '',
-  amount: '',
-  method: 'pix',
-  due: '',
-};
-
-function randomIdempotencyKey() {
-  return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-}
-
-function formatCurrency(value: string) {
-  const num = parseFloat(value);
-  if (isNaN(num)) return '';
-  return num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-}
+import { generatePix, inferPixKeyType, pixText, type PixInput, type PixKeyType } from '@/lib/pix';
+import { usePixT } from '@/lib/pix-i18n';
+import { brl } from '@/lib/fiscal';
 
 export default function Pagamentos() {
-  const t = useFiscalT();
-  const { config } = useStore();
-  const { user } = useAuth();
-
-  const [mpConnected, setMpConnected] = useState<boolean | null>(null);
-
-  const [form, setForm] = useState<ChargeForm>(INITIAL_FORM);
-  const [formErrors, setFormErrors] = useState<Partial<Record<keyof ChargeForm, string>>>({});
-
-  const [connecting, setConnecting] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [chargeResult, setChargeResult] = useState<ChargeResult | null>(null);
-  const [copied, setCopied] = useState(false);
-
+  const t = usePixT();
+  const { config, isLoading } = useStore();
+  const [form, setForm] = useState<PixInput>({ keyType: inferPixKeyType(config.pixKey || ''), key: config.pixKey || '', name: pixText(config.storeName || '').slice(0, 25), city: '', amount: '', description: '' });
+  const [errors, setErrors] = useState<Partial<Record<keyof PixInput, boolean>>>({});
+  const [result, setResult] = useState<ReturnType<typeof generatePix> | null>(null);
+  const qr = useRef<HTMLDivElement>(null);
+  const editedReceiver = useRef(false);
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const mpParam = params.get('mp');
-    if (mpParam === 'connected') {
-      toast.success('Conta Mercado Pago conectada com sucesso!');
-      window.history.replaceState({}, '', window.location.pathname);
-    } else if (mpParam === 'error') {
-      toast.error('Erro ao conectar conta Mercado Pago. Tente novamente.');
-      window.history.replaceState({}, '', window.location.pathname);
-    }
-  }, []);
+    if (!editedReceiver.current) setForm(prev => ({ ...prev, key: config.pixKey || '', keyType: inferPixKeyType(config.pixKey || ''), name: pixText(config.storeName || '').slice(0, 25) }));
+  }, [config.pixKey, config.storeName]);
 
-  useEffect(() => {
-    if (!user?.uid) return;
-    const ref = doc(db, 'privateProfiles', user.uid);
-    const unsub = onSnapshot(ref, (snap) => {
-      if (snap.exists()) {
-        setMpConnected(snap.data()?.mpConnected === true);
-      } else {
-        setMpConnected(false);
-      }
-    });
-    return unsub;
-  }, [user?.uid]);
-
-  async function handleConnect() {
-    setConnecting(true);
+  function update(field: keyof PixInput, value: string) {
+    if (field === 'key' || field === 'keyType' || field === 'name') editedReceiver.current = true;
+    setForm(prev => ({ ...prev, [field]: value }));
+    setErrors({});
+  }
+  function submit(event: React.FormEvent) {
+    event.preventDefault();
     try {
-      const { authUrl } = await callFunction<{ authUrl: string }>(
-        FUNCTIONS.sellerConnectMercadoPago
-      );
-      window.location.href = authUrl;
-    } catch {
-      toast.error('Erro ao iniciar conexão com o Mercado Pago.');
-      setConnecting(false);
+      const reference = crypto.randomUUID().replace(/-/g, '').slice(0, 25);
+      setResult(generatePix(form, reference));
+      setErrors({});
+    } catch (error) {
+      const field = error instanceof Error ? error.message : '';
+      setErrors({ [field]: true });
+      toast.error(t('invalid'));
     }
   }
-
-  function validate(): boolean {
-    const errors: Partial<Record<keyof ChargeForm, string>> = {};
-
-    if (!form.customer.trim() || form.customer.trim().length < 2)
-      errors.customer = 'Nome obrigatório (mínimo 2 caracteres)';
-
-if (!validTaxId(normalizeTaxId(form.taxId)))
-      errors.taxId = 'CPF ou CNPJ inválido';
-
-    if (!form.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
-      errors.email = 'E-mail inválido';
-
-    const amountNum = parseFloat(form.amount);
-    if (!form.amount || isNaN(amountNum) || amountNum <= 0)
-      errors.amount = 'Valor inválido';
-    else if (Math.abs(amountNum * 100 - Math.round(amountNum * 100)) >= 0.00001)
-      errors.amount = 'Valor inválido (máximo 2 casas decimais)';
-
-    if (form.method === 'boleto' && !form.due)
-      errors.due = 'Vencimento obrigatório para boleto';
-
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
+  async function copy() {
+    if (!result) return;
+    try { await navigator.clipboard.writeText(result.payload); toast.success(t('copied')); }
+    catch { toast.error(t('copyError')); }
   }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!validate()) return;
-
-    setSubmitting(true);
-    try {
-      const amountCents = Math.round(parseFloat(form.amount) * 100);
-      const result = await callFunction<ChargeResult>(FUNCTIONS.createSellerCharge, {
-        method: form.method,
-        amountCents,
-        payerName: form.customer.trim(),
-        payerTaxId: form.taxId.replace(/\D/g, ''),
-        payerEmail: form.email.trim(),
-        description: form.description.trim() || undefined,
-        dueDate: form.due || undefined,
-        idempotencyKey: randomIdempotencyKey(),
-      });
-      setChargeResult(result);
-      setForm(INITIAL_FORM);
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Erro ao gerar cobrança';
-      toast.error(message);
-    } finally {
-      setSubmitting(false);
-    }
+  function download() {
+    const svg = qr.current?.querySelector('svg');
+    if (!svg || !result) { toast.error(t('downloadError')); return; }
+    const url = URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(svg)], { type: 'image/svg+xml' }));
+    const link = document.createElement('a');
+    link.href = url; link.download = `pix-${result.txid}.svg`; link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
-
-  async function handleCopy(text: string) {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      toast.success('Copiado!');
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      toast.error('Não foi possível copiar. Selecione e copie manualmente.');
-    }
-  }
-
-  if (config.paisBase !== 'BR')
-    return <p className="text-muted-foreground">{t('brazil')}</p>;
-
-  if (mpConnected === null) {
-    return (
-      <div className="space-y-6">
-        <h1 className="font-heading text-2xl font-bold flex gap-2 items-center">
-          <Wallet className="text-primary" />{t('payments')}
-        </h1>
-        <p className="text-sm text-muted-foreground animate-pulse">Verificando conexão...</p>
-      </div>
-    );
-  }
-
+  if (isLoading) return <p className="text-muted-foreground" role="status">{t('loading')}</p>;
+  if (config.paisBase !== 'BR') return <p className="text-muted-foreground">{t('brazil')}</p>;
+  const fields = [
+    { field: 'key', label: 'key', error: 'keyError', max: 77 },
+    { field: 'name', label: 'name', error: 'nameError', max: 25 },
+    { field: 'city', label: 'city', error: 'cityError', max: 15 },
+    { field: 'amount', label: 'amount', error: 'amountError', max: 13 },
+    { field: 'description', label: 'description', error: 'descriptionError', max: 73 },
+  ] as const;
   return (
-    <div className="space-y-6">
-      <h1 className="font-heading text-2xl font-bold flex gap-2 items-center">
-        <Wallet className="text-primary" />{t('payments')}
-      </h1>
-
-      <p className="text-sm text-muted-foreground flex gap-2 items-start">
-        <ShieldCheck className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-        {t('paymentNotice')}
-      </p>
-
-      {!mpConnected && (
-        <div className="border border-border rounded-xl p-6 space-y-4 bg-muted/30">
-          <div className="flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-muted-foreground mt-0.5 shrink-0" />
-            <div className="space-y-1">
-              <p className="font-medium text-sm">Conta Mercado Pago não conectada</p>
-              <p className="text-sm text-muted-foreground">{t('blocked')}</p>
-            </div>
+    <div className="max-w-3xl space-y-6">
+      <h1 className="font-heading text-2xl font-bold flex items-center gap-2"><Wallet className="text-primary shrink-0" />{t('title')}</h1>
+      <p className="text-sm text-muted-foreground flex gap-2 items-start"><ShieldCheck className="h-5 w-5 shrink-0 text-primary" />{t('notice')}</p>
+      <form onSubmit={submit} noValidate className="space-y-5">
+        <div className="grid gap-5 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="pix-key-type">{t('keyType')}</Label>
+            <Select value={form.keyType} onValueChange={value => update('keyType', value as PixKeyType)}>
+              <SelectTrigger id="pix-key-type"><SelectValue /></SelectTrigger>
+              <SelectContent>{(['cpf', 'cnpj', 'email', 'phone', 'random'] as const).map(type => <SelectItem key={type} value={type}>{t(type)}</SelectItem>)}</SelectContent>
+            </Select>
           </div>
-          <Button onClick={handleConnect} disabled={connecting} className="gap-2">
-            {connecting ? 'Redirecionando...' : 'Conectar Mercado Pago'}
-            {!connecting && <ArrowRight className="w-4 h-4" />}
-          </Button>
+          {fields.map(({ field, label, error, max }) => (
+            <div key={field} className="space-y-2 min-w-0">
+              <Label htmlFor={`pix-${field}`}>{t(label)}</Label>
+              <Input id={`pix-${field}`} value={form[field]} maxLength={max} inputMode={field === 'amount' ? 'decimal' : 'text'} autoComplete="off" onChange={event => update(field, event.target.value)} aria-invalid={!!errors[field]} aria-describedby={errors[field] ? `pix-${field}-error` : undefined} />
+              {errors[field] && <p id={`pix-${field}-error`} role="alert" className="text-xs text-destructive">{t(error)}</p>}
+            </div>
+          ))}
         </div>
-      )}
-
-      {mpConnected && (
-        <>
-          <div className="flex items-center gap-2 text-sm">
-            <CheckCircle2 className="w-4 h-4 text-green-500" />
-            <span className="text-muted-foreground">Conta Mercado Pago conectada</span>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid sm:grid-cols-2 gap-4">
-
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium">{t('customer')}</label>
-                <Input
-                  value={form.customer}
-                  onChange={e => setForm(f => ({ ...f, customer: e.target.value }))}
-                  placeholder="Nome completo"
-                />
-                {formErrors.customer && <p className="text-xs text-destructive">{formErrors.customer}</p>}
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium">{t('taxId')}</label>
-                <Input
-                  value={form.taxId}
-                  onChange={e => setForm(f => ({ ...f, taxId: e.target.value }))}
-                  placeholder="000.000.000-00 ou 00.000.000/0000-00"
-                  maxLength={18}
-                />
-                {formErrors.taxId && <p className="text-xs text-destructive">{formErrors.taxId}</p>}
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium">{t('email')}</label>
-                <Input
-                  type="email"
-                  value={form.email}
-                  onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                  placeholder="cliente@email.com"
-                />
-                {formErrors.email && <p className="text-xs text-destructive">{formErrors.email}</p>}
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium">{t('description')} <span className="text-muted-foreground font-normal">(opcional)</span></label>
-                <Input
-                  value={form.description}
-                  onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                  placeholder="Ex: Encomenda de vestido rosa"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium">{t('amount')}</label>
-                <Input
-                  type="number"
-                  min="0.01"
-                  step="0.01"
-                  value={form.amount}
-                  onChange={e => setForm(f => ({ ...f, amount: e.target.value }))}
-                  placeholder="0,00"
-                />
-                {form.amount && !formErrors.amount && (
-                  <p className="text-xs text-muted-foreground">{formatCurrency(form.amount)}</p>
-                )}
-                {formErrors.amount && <p className="text-xs text-destructive">{formErrors.amount}</p>}
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium">{t('method')}</label>
-                <select
-                  value={form.method}
-                  onChange={e => setForm(f => ({ ...f, method: e.target.value as 'pix' | 'boleto' }))}
-                  className="h-10 w-full border border-input bg-background rounded-md px-3 text-sm"
-                >
-                  <option value="pix">Pix</option>
-                  <option value="boleto">Boleto</option>
-                </select>
-              </div>
-
-              {form.method === 'boleto' && (
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium">{t('due')}</label>
-                  <Input
-                    type="date"
-                    value={form.due}
-                    min={new Date().toISOString().split('T')[0]}
-                    onChange={e => setForm(f => ({ ...f, due: e.target.value }))}
-                  />
-                  {formErrors.due && <p className="text-xs text-destructive">{formErrors.due}</p>}
-                </div>
-              )}
-            </div>
-
-            <div className="flex gap-2">
-              <Button type="submit" disabled={submitting} className="gap-2">
-                {submitting ? 'Gerando...' : form.method === 'pix' ? (
-                  <><QrCode className="w-4 h-4" /> Gerar Pix</>
-                ) : (
-                  <><Barcode className="w-4 h-4" /> Gerar Boleto</>
-                )}
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => { setForm(INITIAL_FORM); setFormErrors({}); }}
-              >
-                {t('clear')}
-              </Button>
-            </div>
-          </form>
-        </>
-      )}
-
-      <Dialog open={!!chargeResult} onOpenChange={(open) => { if (!open) setChargeResult(null); }}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-green-500" />
-              {chargeResult?.pixQrCode ? 'Pix gerado' : 'Boleto gerado'}
-            </DialogTitle>
-            <DialogDescription>
-              Compartilhe com o cliente para receber o pagamento.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4">
-
-            {chargeResult?.pixQrCode && (
-              <div className="space-y-3">
-                <div className="flex justify-center p-4 bg-white rounded-lg border">
-                  <QRCodeSVG value={chargeResult.pixQrCode} size={180} />
-                </div>
-                <div className="space-y-1.5">
-                  <p className="text-xs text-muted-foreground font-medium">Pix copia e cola</p>
-                  <div className="flex gap-2">
-                    <Input
-                      value={chargeResult.pixQrCode}
-                      readOnly
-                      className="text-xs font-mono"
-                    />
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => handleCopy(chargeResult.pixQrCode!)}
-                    >
-                      {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
-            {chargeResult?.boletoBarcode && (
-              <div className="space-y-3">
-                <div className="space-y-1.5">
-                  <p className="text-xs text-muted-foreground font-medium">Linha digitável</p>
-                  <div className="flex gap-2">
-                    <Input
-                      value={chargeResult.boletoBarcode}
-                      readOnly
-                      className="text-xs font-mono"
-                    />
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => handleCopy(chargeResult.boletoBarcode!)}
-                    >
-                      {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
-                    </Button>
-                  </div>
-                </div>
-                {chargeResult.boletoUrl && (
-                  <Button variant="outline" className="w-full gap-2" asChild>
-                    <a href={chargeResult.boletoUrl} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="w-4 h-4" /> Abrir boleto
-                    </a>
-                  </Button>
-                )}
-                {chargeResult.boletoDueDate && (
-                  <p className="text-xs text-muted-foreground">
-                    Vencimento: {new Date(chargeResult.boletoDueDate).toLocaleDateString('pt-BR')}
-                  </p>
-                )}
-              </div>
-            )}
-
-            <p className="text-xs text-muted-foreground">{t('privacy')}</p>
-          </div>
+        <div className="flex flex-wrap gap-2">
+          <Button type="submit" className="gap-2"><QrCode className="h-4 w-4" />{t('generate')}</Button>
+          <Button type="button" variant="ghost" onClick={() => { setForm(prev => ({ ...prev, amount: '', description: '' })); setErrors({}); }}>{t('clear')}</Button>
+        </div>
+      </form>
+      <p className="text-xs text-muted-foreground">{t('privacy')}</p>
+      <Dialog open={!!result} onOpenChange={open => { if (!open) setResult(null); }}>
+        <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-md">
+          <DialogHeader><DialogTitle>{t('ready')}</DialogTitle><DialogDescription>{t('pending')}</DialogDescription></DialogHeader>
+          {result && <div className="space-y-4 min-w-0">
+            <div className="text-center"><p className="font-heading text-3xl font-bold">{brl(result.cents / 100)}</p><p className="text-sm break-words">{result.name} · {result.city}</p><p className="text-xs text-muted-foreground break-all">{result.key}</p></div>
+            <div ref={qr} className="flex justify-center"><QRCodeSVG value={result.payload} size={220} marginSize={4} level="M" title={t('code')} className="pix-qr max-w-full h-auto" /></div>
+            <div className="space-y-2"><Label htmlFor="pix-code">{t('code')}</Label><textarea id="pix-code" readOnly value={result.payload} onFocus={event => event.target.select()} className="w-full rounded-md border border-input bg-background p-3 font-mono text-xs break-all min-h-24 resize-none" /></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2"><Button onClick={copy} className="gap-2"><Copy className="w-4 h-4" />{t('copy')}</Button><Button onClick={download} variant="outline" className="gap-2"><Download className="w-4 h-4" />{t('download')}</Button></div>
+            <p className="text-xs text-muted-foreground break-all">{t('reference')}: {result.txid}</p>
+            <p className="text-xs text-muted-foreground">{t('reuse')}</p>
+            <Button variant="ghost" className="w-full" onClick={() => setResult(null)}>{t('close')}</Button>
+          </div>}
         </DialogContent>
       </Dialog>
-
-      <p className="text-xs text-muted-foreground">{t('privacy')}</p>
     </div>
   );
 }
