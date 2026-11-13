@@ -7,4 +7,4 @@
 - Business calculations and translations are shared focused modules; tax previews are advisory and must never imply official filing, payment confirmation, or bank functionality.
 - Account settings update visible state only after successful persistence so failed writes are not shown as saved.
 - Fiscal preparation uses shared Zod schemas and transient component state; official portals receive no automatic submission or sensitive query parameters, so preparation cannot be mistaken for authorized issuance.
-- Direct Pix uses pix-utils for static BR Code generation and a focused shared validation module; local QR generation never confirms settlement, expires a charge, or writes cash entries, because only bank reconciliation or explicit seller verification can establish receipt.
+- Direct Pix uses a browser-native TLV/CRC16 BR Code generator and shared validation, with an independent test decoder; no Node polyfills are needed. Local generation never confirms settlement, expires a charge, or writes cash entries, because only bank reconciliation or explicit seller verification can establish receipt.

@@ -1,4 +1,5 @@
 # Roadmap
+- [ ] Substituir pix-utils pelo gerador nativo de BR Code, conferir testes e explicar .lovable; preservar configuração gerenciada do Cloud.
 - [x] Substituir Mercado Pago em /pagamentos por Pix estático direto, com validação, QR Code, Copia e Cola e download; sem confirmação automática ou boleto.
 - [x] Criar preparação de NFS-e e nota de produtos com acesso aos portais oficiais, sem emissão fictícia.
 - [x] Criar acesso ao PGMEI para pagar DAS, sem gerar Pix próprio.
