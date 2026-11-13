@@ -51,7 +51,7 @@ const Fidelidade = () => {
         <p className="text-muted-foreground mt-1">Cartão "compre {goal}, ganhe 1" e alertas de clientes que pararam de comprar.</p>
       </div>
 
-      <Card className="p-6 border-none shadow-md">
+      <Card data-tour="dormant" className="p-6 border-none shadow-md">
         <div className="flex items-center gap-2 mb-3"><AlertTriangle className="w-5 h-5 text-warning" /><h2 className="font-semibold font-heading">Venda parada</h2></div>
         <div className="flex items-center gap-2 text-sm mb-4">
           Clientes sem comprar há pelo menos
@@ -70,7 +70,7 @@ const Fidelidade = () => {
       </Card>
 
       <div className="grid md:grid-cols-[1fr_auto] gap-6">
-        <Card className="p-6 border-none shadow-md space-y-3">
+        <Card data-tour="loyalty" className="p-6 border-none shadow-md space-y-3">
           <h2 className="font-semibold font-heading">Novo cliente no cartão</h2>
           <div className="grid sm:grid-cols-2 gap-3">
             <Input placeholder="Nome" value={name} onChange={e => setName(e.target.value)} maxLength={80} />

@@ -60,6 +60,10 @@
     --font-body: 'Inter', sans-serif;
     --pix-paper: 0 0% 100%;
     --pix-ink: 0 0% 0%;
+    --tour-overlay: 220 25% 6%;
+    --tour-background: 217 80% 35%;
+    --tour-foreground: 0 0% 100%;
+    --tour-shadow: 0 12px 36px hsl(220 25% 6% / 0.3);
   }
 
   /* Tema escuro padrão (reservado para uso futuro via classe .dark) */
@@ -233,4 +237,47 @@
 @keyframes wave {
   0%, 100% { transform: translateY(0px); }
   50%       { transform: translateY(-12px); }
+}
+
+/* Contextual first-visit tips, kept readable in every application theme. */
+.driver-popover.biztrivo-tour {
+  background: hsl(var(--tour-background));
+  color: hsl(var(--tour-foreground));
+  border-radius: 8px;
+  box-shadow: var(--tour-shadow);
+  padding: 20px;
+  width: 340px;
+  min-width: 0;
+  max-width: calc(100vw - 24px);
+  max-height: calc(100dvh - 24px);
+  overflow-y: auto;
+  font-family: var(--font-body);
+  --primary: var(--tour-foreground);
+  --primary-foreground: var(--tour-background);
+  --accent: var(--tour-background);
+  --accent-foreground: var(--tour-foreground);
+  --ring: var(--tour-foreground);
+}
+.biztrivo-tour .driver-popover-title {
+  font-family: var(--font-heading);
+  font-size: 18px;
+  line-height: 1.4;
+  letter-spacing: 0;
+}
+.biztrivo-tour .driver-popover-description {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.6;
+  margin-top: 8px;
+}
+.biztrivo-tour .driver-popover-footer { flex-wrap: wrap; gap: 12px; }
+.biztrivo-tour .driver-popover-progress-text { color: inherit; font-size: 12px; }
+.biztrivo-tour .driver-popover-navigation-btns { flex: 1; }
+.biztrivo-tour .driver-popover-footer button { text-shadow: none; font-family: var(--font-body); font-size: 12px; }
+.biztrivo-tour .driver-popover-arrow-side-left { border-left-color: hsl(var(--tour-background)); }
+.biztrivo-tour .driver-popover-arrow-side-right { border-right-color: hsl(var(--tour-background)); }
+.biztrivo-tour .driver-popover-arrow-side-top { border-top-color: hsl(var(--tour-background)); }
+.biztrivo-tour .driver-popover-arrow-side-bottom { border-bottom-color: hsl(var(--tour-background)); }
+@media (prefers-reduced-motion: reduce) {
+  .driver-active *, .driver-popover { scroll-behavior: auto !important; }
 }

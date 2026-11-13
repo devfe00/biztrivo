@@ -247,7 +247,7 @@ const Relatorios = () => {
           <p className="text-muted-foreground mt-1">{t('relatorios.subtitle')}</p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
-          <button onClick={exportToPDF} className="flex items-center gap-2 px-4 py-2 rounded-lg gradient-primary text-primary-foreground hover:opacity-90 transition-all font-medium shadow-glow">
+          <button data-tour="export" onClick={exportToPDF} className="flex items-center gap-2 px-4 py-2 rounded-lg gradient-primary text-primary-foreground hover:opacity-90 transition-all font-medium shadow-glow">
             <Download className="w-4 h-4" /> {t('relatorios.pdf')}
           </button>
           <button onClick={exportToCSV} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-all font-medium shadow-sm">

@@ -651,6 +651,7 @@ Responda APENAS com JSON, sem markdown: [{"slide":"Slide 1 - Teaser","texto":"..
           </div>
 
           <button
+            data-tour="post-generate"
             onClick={generate}
             disabled={loading || !selectedProduct}
             className="w-full py-3 rounded-xl gradient-primary text-primary-foreground font-medium text-sm shadow-glow hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"

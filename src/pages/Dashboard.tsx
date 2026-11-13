@@ -85,7 +85,7 @@ const Dashboard = () => {
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="p-5 border-none shadow-md">
+        <Card data-tour="balance" className="p-5 border-none shadow-md">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">{t('dashboard.balance_day')}</p>
@@ -202,7 +202,7 @@ const Dashboard = () => {
             <h2 className="text-lg font-semibold font-heading">{t('dashboard.quick_cash')}</h2>
           </div>
           <p className="text-sm text-muted-foreground mb-4">{t('dashboard.quick_cash_sub')}</p>
-          <div className="flex gap-3">
+          <div data-tour="quick-cash" className="flex gap-3">
             <Link to="/caixa" className="flex-1 py-3 rounded-lg bg-secondary text-secondary-foreground font-semibold text-sm text-center hover:opacity-90 transition-opacity shadow-glow-green">{t('dashboard.income')}</Link>
             <Link to="/caixa" className="flex-1 py-3 rounded-lg bg-destructive text-destructive-foreground font-semibold text-sm text-center hover:opacity-90 transition-opacity">{t('dashboard.expense')}</Link>
           </div>
