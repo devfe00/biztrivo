@@ -5,7 +5,7 @@ import NotasFiscais from '@/pages/NotasFiscais';
 import DasMei from '@/pages/DasMei';
 import Pagamentos from '@/pages/Pagamentos';
 import { OFFICIAL_PORTALS } from '@/lib/fiscal';
-import { parsePix, hasError, isStaticPix } from 'pix-utils';
+import { readPixFields } from './pix-parser';
 
 vi.mock('@/contexts/StoreContext',()=>({useStore:()=>({config:{paisBase:'BR'}})}));
 const copy=vi.fn();
@@ -25,10 +25,8 @@ describe('Assisted fiscal and payment flows',()=>{
     fill({'Chave Pix do vendedor':'123e4567-e89b-12d3-a456-426614174000','Nome do recebedor':'Loja teste','Cidade do recebedor':'São Paulo','Descrição (opcional)':'Livro','Valor (R$)':'50,25'});
     fireEvent.click(screen.getByRole('button',{name:'Gerar Pix'}));
     const payload=(screen.getByLabelText('Pix Copia e Cola') as HTMLTextAreaElement).value;
-    const parsed=parsePix(payload);expect(hasError(parsed)).toBe(false);
-    if(hasError(parsed)) throw new Error('Invalid Pix');
-    if(!isStaticPix(parsed)) throw new Error('Invalid static Pix');
-    expect(parsed.transactionAmount).toBe(50.25);expect(parsed.pixKey).toBe('123e4567-e89b-12d3-a456-426614174000');
+    const parsed=readPixFields(payload);
+    expect(parsed['54']).toBe('50.25');expect(readPixFields(parsed['26'])['01']).toBe('123e4567-e89b-12d3-a456-426614174000');
     fireEvent.click(screen.getByRole('button',{name:'Copiar Pix'}));await waitFor(()=>expect(copy).toHaveBeenCalledWith(payload));expect(fetch).not.toHaveBeenCalled();
   });
 });

@@ -1,4 +1,3 @@
-import { createStaticPix, hasError } from 'pix-utils';
 import { validTaxId } from './fiscal';
 
 export type PixKeyType = 'cpf' | 'cnpj' | 'email' | 'phone' | 'random';
@@ -36,6 +35,23 @@ export function pixAmountCents(value: string): number {
   if (!Number.isSafeInteger(cents) || cents <= 0) throw new Error('amount');
   return cents;
 }
+function tlv(tag: string, value: string): string {
+  const length = new TextEncoder().encode(value).length;
+  if (length > 99) throw new Error('invalid');
+  return tag + String(length).padStart(2, '0') + value;
+}
+
+function crc16(value: string): string {
+  let crc = 0xffff;
+  for (const byte of new TextEncoder().encode(value)) {
+    crc ^= byte << 8;
+    for (let bit = 0; bit < 8; bit++) {
+      crc = ((crc << 1) ^ ((crc & 0x8000) ? 0x1021 : 0)) & 0xffff;
+    }
+  }
+  return crc.toString(16).toUpperCase().padStart(4, '0');
+}
+
 export function generatePix(input: PixInput, txid: string) {
   const key = normalizePixKey(input.keyType, input.key);
   const name = pixText(input.name), city = pixText(input.city), description = pixText(input.description);
@@ -45,7 +61,10 @@ export function generatePix(input: PixInput, txid: string) {
   if (description.length > Math.max(0, 99 - 22 - key.length - 4)) throw new Error('description');
   if (!/^[A-Za-z0-9]{1,25}$/.test(txid)) throw new Error('reference');
   const cents = pixAmountCents(input.amount);
-  const pix = createStaticPix({ merchantName: name, merchantCity: city, pixKey: key, transactionAmount: cents / 100, txid, ...(description ? { infoAdicional: description } : {}) });
-  if (hasError(pix)) throw new Error('invalid');
-  return { payload: pix.toBRCode(), key, name, city, description, cents, txid };
+  const account = tlv('00', 'br.gov.bcb.pix') + tlv('01', key) + (description ? tlv('02', description) : '');
+  const amount = `${Math.floor(cents / 100)}.${String(cents % 100).padStart(2, '0')}`;
+  const body = tlv('00', '01') + tlv('26', account) + tlv('52', '0000')
+    + tlv('53', '986') + tlv('54', amount) + tlv('58', 'BR')
+    + tlv('59', name) + tlv('60', city) + tlv('62', tlv('05', txid)) + '6304';
+  return { payload: body + crc16(body), key, name, city, description, cents, txid };
 }
