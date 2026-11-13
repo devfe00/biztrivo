@@ -231,7 +231,7 @@ const MEI = () => {
         </div>
         <div className="flex items-center gap-2">
           <label className="text-sm text-muted-foreground">{t('mei.year')}</label>
-          <select value={year} onChange={e => setYear(Number(e.target.value))} className="h-9 px-3 rounded-md border border-input bg-background text-sm">
+          <select data-tour="mei-year" value={year} onChange={e => setYear(Number(e.target.value))} className="h-9 px-3 rounded-md border border-input bg-background text-sm">
             {[year + 0, year - 1, year - 2].map(y => <option key={y} value={y}>{y}</option>)}
           </select>
           <button onClick={exportPDF} className="flex items-center gap-2 px-4 py-2 rounded-lg gradient-primary text-primary-foreground text-sm font-medium shadow-glow">

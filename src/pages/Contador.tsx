@@ -636,6 +636,7 @@ const Contador = () => {
           <p className="text-muted-foreground mt-1">{t.subtitulo(MESES[mesAtual], anoAtual)}</p>
         </div>
         <button
+          data-tour="accounting-export"
           onClick={exportarContabil}
           className="flex items-center gap-2 px-4 py-2 rounded-lg gradient-primary text-primary-foreground text-sm font-medium shadow-glow"
         >

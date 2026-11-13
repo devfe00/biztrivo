@@ -155,7 +155,7 @@ const Caixa = () => {
           <Input id="desc" placeholder={tr('ext.cx_desc_ph')} value={description} onChange={e => setDescription(e.target.value)} className="mt-1" />
         </div>
 
-        <div className="flex items-center gap-3">
+        <div data-tour="personal" className="flex items-center gap-3">
           <Switch checked={isPersonal} onCheckedChange={setIsPersonal} />
           <Label className="text-sm cursor-pointer">{tr('ext.cx_personal')} <span className="text-muted-foreground">{tr('ext.cx_personal_hint')}</span></Label>
         </div>

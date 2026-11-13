@@ -210,7 +210,7 @@ const [salePending, setSalePending] = useState(false);
         <Label className="text-sm text-muted-foreground">{t('ext.vt_link')}</Label>
         <div className="flex items-center gap-2">
           <div className="flex-1 px-4 py-2.5 rounded-lg bg-muted text-sm font-mono truncate">{publicUrl}</div>
-          <button onClick={handleCopy} className="px-4 py-2.5 rounded-lg gradient-primary text-primary-foreground text-sm font-medium flex items-center gap-2 shadow-glow hover:opacity-90 transition-opacity">
+          <button data-tour="store-link" onClick={handleCopy} className="px-4 py-2.5 rounded-lg gradient-primary text-primary-foreground text-sm font-medium flex items-center gap-2 shadow-glow hover:opacity-90 transition-opacity">
             {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
             {copied ? t('ext.vt_copied') : t('ext.vt_copy')}
           </button>
@@ -256,7 +256,7 @@ const [salePending, setSalePending] = useState(false);
             <button onClick={() => setInvoiceOpen(true)} className="px-4 py-2 rounded-lg bg-muted text-sm font-medium flex items-center gap-2 hover:bg-accent transition-colors">
               <FileText className="w-4 h-4" /> {t('ext.vt_compare')}
             </button>
-            <button onClick={() => setShowForm(!showForm)} className="px-4 py-2 rounded-lg gradient-primary text-primary-foreground text-sm font-medium flex items-center gap-2 shadow-glow hover:opacity-90 transition-opacity">
+            <button data-tour="add-product" onClick={() => setShowForm(!showForm)} className="px-4 py-2 rounded-lg gradient-primary text-primary-foreground text-sm font-medium flex items-center gap-2 shadow-glow hover:opacity-90 transition-opacity">
               <Plus className="w-4 h-4" /> {t('ext.vt_add')}
             </button>
           </div>

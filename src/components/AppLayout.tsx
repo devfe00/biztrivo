@@ -12,6 +12,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { useI18n, LANGUAGES } from '@/lib/i18n';
 import { useBusinessT } from '@/lib/business-i18n';
 import { useFiscalT } from '@/lib/fiscal-i18n';
+import PageTour, { ReplayTutorials } from '@/components/PageTour';
 
 const navItemsBase = [
   { path: '/dashboard', key: 'nav.dashboard', icon: LayoutDashboard },
@@ -43,8 +44,8 @@ const [langOpen, setLangOpen] = useState(false);
 const dropdownRef = useRef<HTMLDivElement>(null);
 const langDropdownRef = useRef<HTMLDivElement>(null);
 
-  const { config } = useStore();
-  const { signOut } = useAuth();
+  const { config, isLoading } = useStore();
+  const { signOut, user } = useAuth();
   const { t, lang, setLang } = useI18n();
   const bt = useBusinessT();
   const ft = useFiscalT();
@@ -282,8 +283,9 @@ const langDropdownRef = useRef<HTMLDivElement>(null);
         </header>
 
         <div className="flex-1 md:p-8 p-4 pt-16 md:pt-8">
-          <div className="max-w-5xl mx-auto animate-fade-in">
+          <div className="max-w-5xl mx-auto animate-fade-in" data-tour-page>
             {children}
+            {location.pathname === '/configuracoes' && user && <div className="mt-6"><ReplayTutorials uid={user.uid} /></div>}
             <TrialCountdown />
             <Footer />
           </div>
@@ -291,6 +293,7 @@ const langDropdownRef = useRef<HTMLDivElement>(null);
       </main>
 
       <Toaster position="top-right" richColors />
+      {user && <PageTour uid={user.uid} path={location.pathname} ready={!isLoading && !mobileOpen} />}
     </div>
   );
 };

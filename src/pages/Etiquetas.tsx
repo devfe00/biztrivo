@@ -82,7 +82,7 @@ const Etiquetas = () => {
         <h1 className="text-3xl font-bold font-heading flex items-center gap-2"><Package className="w-7 h-7" /> Etiquetas de Envio</h1>
         <p className="text-muted-foreground mt-1">Gere a etiqueta com endereço e a declaração de conteúdo para postar nos Correios.</p>
       </div>
-      <AddrFields title="Destinatário (cliente)" v={dest} set={setDest} />
+      <div data-tour="recipient"><AddrFields title="Destinatário (cliente)" v={dest} set={setDest} /></div>
       <AddrFields title="Remetente (sua loja)" v={rem} set={setRem} />
       <Card className="p-5 border-none shadow-md space-y-3">
         <h2 className="font-semibold font-heading">Conteúdo do pacote</h2>
