@@ -190,7 +190,7 @@ const translations = {
       ],
       cta: 'Testar PostsAI grátis',
     },
-    // Pricing
+    //pricing
     pricing: {
       eyebrow: 'Planos',
       title: 'Simples e sem surpresas',
@@ -201,16 +201,24 @@ const translations = {
       price: 'R$ 19,90',
       period: '/mês',
       items: [
-        'Caixa Diário',
-        'Vitrine Online',
-        'Relatórios Financeiros',
-        'Calculadora de Preço',
-        'Academy completo',
-        'Suporte por email',
-        'Modo Contador',
-        'MEI',
-        'PostsAI',
+        'Caixa Diário com Separação Pessoal',
+        'Vitrine Online com Pedidos no WhatsApp',
+        'Cobranças Pix (QR Code e Copia e Cola)',
+        'Variações de Estoque (Cores e Tamanhos)',
+        'Programa de Fidelidade Digital',
+        'Alertas de Recompra (Clientes Inativos)',
+        'Etiquetas de Envio e Declaração de Conteúdo',
+        'Gestão de Devoluções e Trocas',
+        'Cobranças Parceladas',
+        'Contratos e Aluguéis Recorrentes',
+        'Módulo Fiscal e Guia DAS MEI',
+        'Relatórios Financeiros (PDF e CSV)',
+        'Calculadora de Preço com Lucro Real',
+        'PostsAI (IA para Redes Sociais)',
         'Modo Offline',
+        'Modo Contador',
+        'Academy Completo',
+        'Suporte por email',
       ],
       cta: 'Assinar agora',
     },
@@ -398,16 +406,24 @@ const translations = {
       price: '$ 8.90',
       period: '/month',
       items: [
-        'Daily Cash Register',
-        'Online Storefront',
-        'Financial Reports',
-        'Price Calculator',
+        'Daily Cash Flow with Personal Expense Split',
+        'Online Storefront with WhatsApp Orders',
+        'Direct Pix & QR Code Payment Charges',
+        'Product Variants (Sizes and Colors)',
+        'Digital Customer Loyalty Program',
+        'Repurchase Alerts (Inactive Customers)',
+        'Shipping Labels & Content Declarations',
+        'Returns and Exchanges Management',
+        'Installment Charges Tracking',
+        'Recurring Rental Contracts',
+        'Fiscal Helper and Tax Guides',
+        'Financial Reports (PDF and CSV)',
+        'Ideal Pricing Calculator with Real Profit',
+        'PostsAI (AI Social Media Post Generator)',
+        'Offline Mode',
+        'Accountant Mode',
         'Full Academy',
         'Email support',
-        'Accountant Mode',
-        'Smart MEI',
-        'PostsAI',
-        'Offline Mode',
       ],
       cta: 'Subscribe now',
     },
@@ -594,16 +610,24 @@ const translations = {
       price: '$ 8.90',
       period: '/mes',
       items: [
-        'Caja Diaria',
-        'Vitrina Online',
-        'Informes Financieros',
-        'Calculadora de Precios',
-        'Academy completo',
-        'Soporte por email',
-        'Modo Contador',
-        'MEI Inteligente',
-        'PostsAI',
+        'Caja Diaria con Separación de Gastos Personales',
+        'Vitrina Online con Pedidos por WhatsApp',
+        'Cobros Directos con QR Code y Copia y Pega',
+        'Variaciones de Stock (Tallas y Colores)',
+        'Programa de Fidelidad Digital',
+        'Alertas de Recompra (Clientes Inactivos)',
+        'Etiquetas de Envío y Declaración de Contenido',
+        'Gestión de Devoluciones y Cambios',
+        'Cobros en Cuotas',
+        'Contratos y Alquileres Recurrentes',
+        'Módulo Fiscal y Guías Tributarias',
+        'Informes Financieros (PDF y CSV)',
+        'Calculadora de Precios con Ganancia Real',
+        'PostsAI (IA para Redes Sociales)',
         'Modo Offline',
+        'Modo Contador',
+        'Academy Completo',
+        'Soporte por email',
       ],
       cta: 'Suscribirme ahora',
     },
@@ -792,16 +816,24 @@ const translations = {
      price: '$ 8.90',
       period: '/mois',
       items: [
-        'Caisse Journalière',
-        'Vitrine en Ligne',
-        'Rapports Financiers',
-        'Calculateur de Prix',
-        'Academy complet',
-        'Support par email',
-        'Mode Comptable',
-        'MEI Intelligent',
-        'PostsAI',
+        'Caisse Journalière avec Séparation des Dépenses',
+        'Vitrine en Ligne avec Commandes WhatsApp',
+        'Encaissements Directs et QR Code',
+        'Déclinaisons de Stock (Tailles et Couleurs)',
+        'Programme de Fidélité Digital',
+        'Alertes de Réachat (Clients Inactifs)',
+        'Étiquettes d Expédition et Déclaration',
+        'Gestion des Retours et Échanges',
+        'Suivi des Règlements Échelonnés',
+        'Contrats et Locations Récurrentes',
+        'Module Fiscal et Guides Déclaratifs',
+        'Rapports Financiers (PDF et CSV)',
+        'Calculateur de Prix avec Marge Réelle',
+        'PostsAI (IA pour Réseaux Sociaux)',
         'Mode Hors-ligne',
+        'Mode Comptable',
+        'Academy Complet',
+        'Support par email',
       ],
       cta: "S'abonner maintenant",
     },
@@ -1174,7 +1206,6 @@ const HeroDashboard: React.FC<{ isDark: boolean; lang: Lang }> = ({ isDark, lang
               </div>
             )}
 
-            {/* ── ABA: POSTS IA ── */}
             {activeTab === 'posts' && (
               <div className="h-full grid grid-cols-12 gap-3 p-4">
                 {/* preview do post */}
@@ -1294,7 +1325,6 @@ const HeroDashboard: React.FC<{ isDark: boolean; lang: Lang }> = ({ isDark, lang
               </div>
             )}
 
-            {/* ── ABA: VITRINE ── */}
             {activeTab === 'vitrine' && (
               <div className="h-full grid grid-cols-12 gap-3 p-4">
                 {/* info da loja */}
@@ -1395,7 +1425,6 @@ const HeroDashboard: React.FC<{ isDark: boolean; lang: Lang }> = ({ isDark, lang
               </div>
             )}
 
-            {/* ── ABA: CONTADOR ── */}
             {activeTab === 'contador' && (
               <div className="h-full grid grid-cols-12 gap-3 p-4">
                 {/* DRE */}
@@ -1521,7 +1550,7 @@ const HeroDashboard: React.FC<{ isDark: boolean; lang: Lang }> = ({ isDark, lang
         </div>
       </div>
 
-      {/* fade bottom */}
+      {/*fade bottom*/}
       <div
         className="absolute bottom-0 left-0 right-0 h-16 rounded-b-2xl pointer-events-none"
         style={{ background: isDark ? 'linear-gradient(to bottom, transparent, #071f12)' : 'linear-gradient(to bottom, transparent, rgba(220,252,231,0.6))' }}

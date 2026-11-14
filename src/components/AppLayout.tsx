@@ -103,11 +103,6 @@ const langDropdownRef = useRef<HTMLDivElement>(null);
             );
           })}
         </nav>
-
-        {/* ThemeToggle no rodapé da sidebar desktop */}
-        <div className="p-3 border-t border-border">
-          <ThemeToggle showLabel className="w-full justify-start" />
-        </div>
       </aside>
 
       {/* ── Topbar mobile ── */}
@@ -202,9 +197,12 @@ const langDropdownRef = useRef<HTMLDivElement>(null);
 
       {/*area principal */}
       <main className="flex-1 flex flex-col overflow-auto">
-        {/* Header desktop */}
+        {/*header desktop */}
         <header className="hidden md:flex items-center justify-end px-8 py-4 border-b border-border bg-card gap-2">
-          {/* Lang dropdown */}
+          {/*themetoggle desktop */}
+          <ThemeToggle className="rounded-lg border border-border bg-card hover:bg-muted transition-all text-foreground shadow-sm px-2.5 py-1.5" />
+
+          {/*lang dropdown */}
           <div className="relative" ref={langDropdownRef}>
             <button
               onClick={() => setLangOpen(!langOpen)}
