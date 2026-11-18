@@ -205,9 +205,10 @@ const Caixa = () => {
               {tr('ext.cx_link_product')}
             </Label>
             <Select
-              value={selectedProductId}
+              value={selectedProductId || 'none'}
               disabled={config.products.length === 0}
-              onValueChange={id => {
+              onValueChange={val => {
+                const id = val === 'none' ? '' : val;
                 setSelectedProductId(id);
                 setSelectedVariantId('');
                 setQuantity(1);
@@ -235,7 +236,7 @@ const Caixa = () => {
                 />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">{tr('ext.cx_link_none')}</SelectItem>
+                <SelectItem value="none">{tr('ext.cx_link_none')}</SelectItem>
                 {config.products
                   .filter(p => productStock(p) > 0)
                   .map(p => (
