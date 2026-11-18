@@ -1092,7 +1092,20 @@
     "vt_edit_photo": "Foto",
     "cx_period": "Período",
     "cx_today": "Hoy",
-    "cx_confirm_rm": "¿Eliminar este registro?"
+    "cx_confirm_rm": "¿Eliminar este registro?",
+    "cx_err_value": "Ingresa un monto válido mayor que cero",
+    "cx_err_product": "Producto no encontrado",
+    "cx_err_stock": "Cantidad inválida o mayor al stock disponible",
+    "cx_err_save": "Error al registrar el movimiento. Intenta de nuevo.",
+    "cx_ok_save": "Movimiento registrado con éxito!",
+    "cx_ok_product_sale": "Venta y descuento de stock registrados!",
+    "cx_link_product": "Vincular producto de la Vitrina (opcional)",
+    "cx_link_none": "Ninguno (movimiento libre)",
+    "cx_in_stock": "en stock",
+    "cx_variant": "Variante",
+    "cx_variant_ph": "Selecciona una variante",
+    "cx_no_stock": "Sin stock",
+    "cx_qty": "Cantidad"
   },
   "academy": {
     "subtitle": "Aprende a vender más y mejor",

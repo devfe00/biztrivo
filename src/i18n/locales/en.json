@@ -1092,7 +1092,20 @@
     "vt_edit_photo": "Photo",
     "cx_period": "Period",
     "cx_today": "Today",
-    "cx_confirm_rm": "Remove this entry?"
+    "cx_confirm_rm": "Remove this entry?",
+    "cx_err_value": "Please enter a valid amount greater than zero",
+    "cx_err_product": "Product not found",
+    "cx_err_stock": "Invalid quantity or exceeds available stock",
+    "cx_err_save": "Failed to save entry. Please try again.",
+    "cx_ok_save": "Entry saved successfully!",
+    "cx_ok_product_sale": "Sale and stock deduction recorded!",
+    "cx_link_product": "Link a product from your Store (optional)",
+    "cx_link_none": "None (manual entry)",
+    "cx_in_stock": "in stock",
+    "cx_variant": "Variant",
+    "cx_variant_ph": "Select a variant",
+    "cx_no_stock": "Out of stock",
+    "cx_qty": "Quantity"
   },
   "academy": {
     "subtitle": "Learn how to sell more and better",

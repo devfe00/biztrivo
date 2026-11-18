@@ -6,10 +6,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { TrendingUp, TrendingDown, Trash2, Search, Wallet } from 'lucide-react';
+import { TrendingUp, TrendingDown, Trash2, Search, Wallet, Package, ChevronDown, ChevronUp } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import { toast } from 'sonner';
 import { useLang } from '@/lib/useLang';
+import { productStock, variantLabel } from '@/lib/inventory';
 
 const CATEGORY_KEYS = ['Venda', 'Reposição', 'Embalagem', 'Frete', 'Pessoal', 'Funcionário', 'Outros'] as const;
 const CAT_LABEL_KEY: Record<string, string> = {
@@ -24,7 +25,7 @@ const CAT_LABEL_KEY: Record<string, string> = {
 
 const Caixa = () => {
   const tr = useT();
-  const { config, addTransaction, removeTransaction } = useStore();
+  const { config, addTransaction, removeTransaction, registerProductSale } = useStore();
   const { notifySale, notifyPersonalExpense } = useNotifications();
   const [value, setValue] = useState('');
   const [description, setDescription] = useState('');
@@ -32,6 +33,9 @@ const Caixa = () => {
   const [isPersonal, setIsPersonal] = useState(false);
   const [search, setSearch] = useState('');
   const [filterCategory, setFilterCategory] = useState('Todas');
+  const [selectedProductId, setSelectedProductId] = useState('');
+  const [selectedVariantId, setSelectedVariantId] = useState('');
+  const [quantity, setQuantity] = useState(1);
 
   const { lang } = useLang();
   const [period, setPeriod] = useState('today');
@@ -72,25 +76,72 @@ const Caixa = () => {
   const formatCurrency = (v: number) =>
     v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
+  const resetProductSelection = () => {
+    setSelectedProductId('');
+    setSelectedVariantId('');
+    setQuantity(1);
+  };
+
   const handleAdd = async (type: 'entrada' | 'saida') => {
     const numValue = parseFloat(value.replace(',', '.'));
-    if (!numValue || numValue <= 0 || !description.trim()) return;
 
-    await addTransaction({
-      type,
-      value: numValue,
-      description: description.trim(),
-      category,
-      isPersonal: type === 'saida' && isPersonal,
-      date: new Date().toISOString(),
-    });
+    if (!numValue || numValue <= 0) {
+      toast.error(tr('ext.cx_err_value'));
+      return;
+    }
 
-    if (type === 'entrada') notifySale(numValue);
-    if (type === 'saida' && isPersonal) notifyPersonalExpense();
+    const resolvedDescription = description.trim() || category;
 
-    setValue('');
-    setDescription('');
-    setIsPersonal(false);
+    if (type === 'entrada' && selectedProductId) {
+      const product = config.products.find(p => p.id === selectedProductId);
+      if (!product) { toast.error(tr('ext.cx_err_product')); return; }
+
+      const available = product.variants?.length
+        ? product.variants.find(v => v.id === selectedVariantId)?.stock ?? 0
+        : productStock(product);
+
+      if (!Number.isSafeInteger(quantity) || quantity <= 0 || quantity > available) {
+        toast.error(tr('ext.cx_err_stock'));
+        return;
+      }
+
+      try {
+        await registerProductSale(selectedProductId, quantity, selectedVariantId || undefined);
+        toast.success(tr('ext.cx_ok_product_sale'));
+        notifySale(numValue);
+        setValue('');
+        setDescription('');
+        setIsPersonal(false);
+        resetProductSelection();
+      } catch (err) {
+        console.error('Erro ao registrar venda com produto:', err);
+        toast.error(tr('ext.cx_err_save'));
+      }
+      return;
+    }
+
+    try {
+      await addTransaction({
+        type,
+        value: numValue,
+        description: resolvedDescription,
+        category,
+        isPersonal: type === 'saida' && isPersonal,
+        date: new Date().toISOString(),
+      });
+
+      toast.success(tr('ext.cx_ok_save'));
+      if (type === 'entrada') notifySale(numValue);
+      if (type === 'saida' && isPersonal) notifyPersonalExpense();
+
+      setValue('');
+      setDescription('');
+      setIsPersonal(false);
+      resetProductSelection();
+    } catch (err) {
+      console.error('Erro ao registrar lançamento:', err);
+      toast.error(tr('ext.cx_err_save'));
+    }
   };
 
   const handleRemove = async (id: string) => {
@@ -155,8 +206,125 @@ const Caixa = () => {
           <Input id="desc" placeholder={tr('ext.cx_desc_ph')} value={description} onChange={e => setDescription(e.target.value)} className="mt-1" />
         </div>
 
-        <div data-tour="personal" className="flex items-center gap-3">
-          <Switch checked={isPersonal} onCheckedChange={setIsPersonal} />
+        {!config.vitrineOnlyMode && config.products.length > 0 && (
+          <div>
+            <Label>{tr('ext.cx_link_product')}</Label>
+            <Select
+              value={selectedProductId}
+              onValueChange={id => {
+                setSelectedProductId(id);
+                setSelectedVariantId('');
+                setQuantity(1);
+                if (id) {
+                  const p = config.products.find(pr => pr.id === id);
+                  if (p) {
+                    const price = p.discountPrice > 0 ? p.discountPrice : p.originalPrice;
+                    setValue(price.toFixed(2).replace('.', ','));
+                    setDescription(p.name);
+                    setCategory('Venda');
+                  }
+                } else {
+                  setValue('');
+                  setDescription('');
+                }
+              }}
+            >
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder={tr('ext.cx_link_none')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">{tr('ext.cx_link_none')}</SelectItem>
+                {config.products
+                  .filter(p => productStock(p) > 0)
+                  .map(p => (
+                    <SelectItem key={p.id} value={p.id}>
+                      <span className="flex items-center gap-2">
+                        <Package className="w-3.5 h-3.5" />
+                        {p.name} · {productStock(p)} {tr('ext.cx_in_stock')}
+                      </span>
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+
+            {selectedProductId && (() => {
+              const p = config.products.find(pr => pr.id === selectedProductId);
+              return p?.variants?.length ? (
+                <div className="mt-2">
+                  <Label>{tr('ext.cx_variant')}</Label>
+                  <Select
+                    value={selectedVariantId}
+                    onValueChange={vid => {
+                      setSelectedVariantId(vid);
+                      const p2 = config.products.find(pr => pr.id === selectedProductId);
+                      const v = p2?.variants?.find(va => va.id === vid);
+                      if (p2 && v) {
+                        const price = p2.discountPrice > 0 ? p2.discountPrice : p2.originalPrice;
+                        setValue((price * quantity).toFixed(2).replace('.', ','));
+                        setDescription(`${p2.name} (${variantLabel(v)})`);
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder={tr('ext.cx_variant_ph')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {p.variants.map(v => (
+                        <SelectItem key={v.id} value={v.id} disabled={v.stock === 0}>
+                          {variantLabel(v)} · {v.stock === 0 ? tr('ext.cx_no_stock') : `${v.stock} un.`}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : null;
+            })()}
+
+            {selectedProductId && (
+              <div className="mt-2 flex items-center gap-3">
+                <Label>{tr('ext.cx_qty')}</Label>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const next = Math.max(1, quantity - 1);
+                      setQuantity(next);
+                      const p = config.products.find(pr => pr.id === selectedProductId);
+                      if (p) {
+                        const price = p.discountPrice > 0 ? p.discountPrice : p.originalPrice;
+                        setValue((price * next).toFixed(2).replace('.', ','));
+                      }
+                    }}
+                    className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center hover:bg-accent transition-colors"
+                  >
+                    <ChevronDown className="w-4 h-4" />
+                  </button>
+                  <span className="w-10 text-center font-semibold text-sm">{quantity}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const p = config.products.find(pr => pr.id === selectedProductId);
+                      if (!p) return;
+                      const maxStock = p.variants?.length
+                        ? p.variants.find(v => v.id === selectedVariantId)?.stock ?? 0
+                        : productStock(p);
+                      const next = Math.min(maxStock, quantity + 1);
+                      setQuantity(next);
+                      const price = p.discountPrice > 0 ? p.discountPrice : p.originalPrice;
+                      setValue((price * next).toFixed(2).replace('.', ','));
+                    }}
+                    className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center hover:bg-accent transition-colors"
+                  >
+                    <ChevronUp className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="flex items-center gap-3">
+          <Switch checked={isPersonal} onCheckedChange={setIsPersonal} disabled={!!selectedProductId} />
           <Label className="text-sm cursor-pointer">{tr('ext.cx_personal')} <span className="text-muted-foreground">{tr('ext.cx_personal_hint')}</span></Label>
         </div>
 
@@ -165,7 +333,7 @@ const Caixa = () => {
             className="flex-1 py-4 rounded-xl bg-secondary text-secondary-foreground font-bold text-lg flex items-center justify-center gap-2 hover:opacity-90 transition-opacity shadow-glow-green">
             <TrendingUp className="w-6 h-6" /> {tr('ext.cx_btn_in')}
           </button>
-          <button onClick={() => handleAdd('saida')}
+          <button onClick={() => { resetProductSelection(); handleAdd('saida'); }}
             className="flex-1 py-4 rounded-xl bg-destructive text-destructive-foreground font-bold text-lg flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
             <TrendingDown className="w-6 h-6" /> {tr('ext.cx_btn_out')}
           </button>
