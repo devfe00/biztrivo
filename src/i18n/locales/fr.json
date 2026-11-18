@@ -1101,6 +1101,7 @@
     "cx_ok_product_sale": "Vente et déduction du stock enregistrées !",
     "cx_link_product": "Lier un produit de la Vitrine (optionnel)",
     "cx_link_none": "Aucun (saisie manuelle)",
+"cx_link_no_products": "Aucun produit dans la Vitrine (ajoutez-en là-bas)",
     "cx_in_stock": "en stock",
     "cx_variant": "Variante",
     "cx_variant_ph": "Sélectionnez une variante",

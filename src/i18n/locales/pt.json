@@ -1164,6 +1164,7 @@
     "cx_ok_product_sale": "Venda e baixa no estoque registradas!",
     "cx_link_product": "Vincular produto da Vitrine (opcional)",
     "cx_link_none": "Nenhum (lançamento avulso)",
+"cx_link_no_products": "Nenhum produto na Vitrine (cadastre na Vitrine)",
     "cx_in_stock": "em estoque",
     "cx_variant": "Variação",
     "cx_variant_ph": "Selecione a variação",

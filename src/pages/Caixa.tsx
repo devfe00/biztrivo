@@ -185,7 +185,7 @@ const Caixa = () => {
 
       {/* Input Form */}
       <Card className="p-6 border-none shadow-md space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <Label htmlFor="value">{tr('ext.cx_value')}</Label>
             <Input id="value" type="text" placeholder="0,00" value={value} onChange={e => setValue(e.target.value)} className="mt-1 text-lg font-semibold" />
@@ -199,18 +199,14 @@ const Caixa = () => {
               </SelectContent>
             </Select>
           </div>
-        </div>
-
-        <div>
-          <Label htmlFor="desc">{tr('ext.cx_desc')}</Label>
-          <Input id="desc" placeholder={tr('ext.cx_desc_ph')} value={description} onChange={e => setDescription(e.target.value)} className="mt-1" />
-        </div>
-
-        {!config.vitrineOnlyMode && config.products.length > 0 && (
           <div>
-            <Label>{tr('ext.cx_link_product')}</Label>
+            <Label className="flex items-center gap-1.5">
+              <Package className="w-3.5 h-3.5" />
+              {tr('ext.cx_link_product')}
+            </Label>
             <Select
               value={selectedProductId}
+              disabled={config.products.length === 0}
               onValueChange={id => {
                 setSelectedProductId(id);
                 setSelectedVariantId('');
@@ -230,7 +226,13 @@ const Caixa = () => {
               }}
             >
               <SelectTrigger className="mt-1">
-                <SelectValue placeholder={tr('ext.cx_link_none')} />
+                <SelectValue
+                  placeholder={
+                    config.products.length === 0
+                      ? tr('ext.cx_link_no_products')
+                      : tr('ext.cx_link_none')
+                  }
+                />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="">{tr('ext.cx_link_none')}</SelectItem>
@@ -246,80 +248,85 @@ const Caixa = () => {
                   ))}
               </SelectContent>
             </Select>
+          </div>
+        </div>
 
-            {selectedProductId && (() => {
-              const p = config.products.find(pr => pr.id === selectedProductId);
-              return p?.variants?.length ? (
-                <div className="mt-2">
-                  <Label>{tr('ext.cx_variant')}</Label>
-                  <Select
-                    value={selectedVariantId}
-                    onValueChange={vid => {
-                      setSelectedVariantId(vid);
-                      const p2 = config.products.find(pr => pr.id === selectedProductId);
-                      const v = p2?.variants?.find(va => va.id === vid);
-                      if (p2 && v) {
-                        const price = p2.discountPrice > 0 ? p2.discountPrice : p2.originalPrice;
-                        setValue((price * quantity).toFixed(2).replace('.', ','));
-                        setDescription(`${p2.name} (${variantLabel(v)})`);
-                      }
-                    }}
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder={tr('ext.cx_variant_ph')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {p.variants.map(v => (
-                        <SelectItem key={v.id} value={v.id} disabled={v.stock === 0}>
-                          {variantLabel(v)} · {v.stock === 0 ? tr('ext.cx_no_stock') : `${v.stock} un.`}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              ) : null;
-            })()}
+        <div>
+          <Label htmlFor="desc">{tr('ext.cx_desc')}</Label>
+          <Input id="desc" placeholder={tr('ext.cx_desc_ph')} value={description} onChange={e => setDescription(e.target.value)} className="mt-1" />
+        </div>
 
-            {selectedProductId && (
-              <div className="mt-2 flex items-center gap-3">
-                <Label>{tr('ext.cx_qty')}</Label>
-                <div className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const next = Math.max(1, quantity - 1);
-                      setQuantity(next);
-                      const p = config.products.find(pr => pr.id === selectedProductId);
-                      if (p) {
-                        const price = p.discountPrice > 0 ? p.discountPrice : p.originalPrice;
-                        setValue((price * next).toFixed(2).replace('.', ','));
-                      }
-                    }}
-                    className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center hover:bg-accent transition-colors"
-                  >
-                    <ChevronDown className="w-4 h-4" />
-                  </button>
-                  <span className="w-10 text-center font-semibold text-sm">{quantity}</span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const p = config.products.find(pr => pr.id === selectedProductId);
-                      if (!p) return;
-                      const maxStock = p.variants?.length
-                        ? p.variants.find(v => v.id === selectedVariantId)?.stock ?? 0
-                        : productStock(p);
-                      const next = Math.min(maxStock, quantity + 1);
-                      setQuantity(next);
-                      const price = p.discountPrice > 0 ? p.discountPrice : p.originalPrice;
-                      setValue((price * next).toFixed(2).replace('.', ','));
-                    }}
-                    className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center hover:bg-accent transition-colors"
-                  >
-                    <ChevronUp className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            )}
+        {selectedProductId && (() => {
+          const p = config.products.find(pr => pr.id === selectedProductId);
+          return p?.variants?.length ? (
+            <div className="mt-2">
+              <Label>{tr('ext.cx_variant')}</Label>
+              <Select
+                value={selectedVariantId}
+                onValueChange={vid => {
+                  setSelectedVariantId(vid);
+                  const p2 = config.products.find(pr => pr.id === selectedProductId);
+                  const v = p2?.variants?.find(va => va.id === vid);
+                  if (p2 && v) {
+                    const price = p2.discountPrice > 0 ? p2.discountPrice : p2.originalPrice;
+                    setValue((price * quantity).toFixed(2).replace('.', ','));
+                    setDescription(`${p2.name} (${variantLabel(v)})`);
+                  }
+                }}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder={tr('ext.cx_variant_ph')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {p.variants.map(v => (
+                    <SelectItem key={v.id} value={v.id} disabled={v.stock === 0}>
+                      {variantLabel(v)} · {v.stock === 0 ? tr('ext.cx_no_stock') : `${v.stock} un.`}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          ) : null;
+        })()}
+
+        {selectedProductId && (
+          <div className="mt-2 flex items-center gap-3">
+            <Label>{tr('ext.cx_qty')}</Label>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => {
+                  const next = Math.max(1, quantity - 1);
+                  setQuantity(next);
+                  const p = config.products.find(pr => pr.id === selectedProductId);
+                  if (p) {
+                    const price = p.discountPrice > 0 ? p.discountPrice : p.originalPrice;
+                    setValue((price * next).toFixed(2).replace('.', ','));
+                  }
+                }}
+                className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center hover:bg-accent transition-colors"
+              >
+                <ChevronDown className="w-4 h-4" />
+              </button>
+              <span className="w-10 text-center font-semibold text-sm">{quantity}</span>
+              <button
+                type="button"
+                onClick={() => {
+                  const p = config.products.find(pr => pr.id === selectedProductId);
+                  if (!p) return;
+                  const maxStock = p.variants?.length
+                    ? p.variants.find(v => v.id === selectedVariantId)?.stock ?? 0
+                    : productStock(p);
+                  const next = Math.min(maxStock, quantity + 1);
+                  setQuantity(next);
+                  const price = p.discountPrice > 0 ? p.discountPrice : p.originalPrice;
+                  setValue((price * next).toFixed(2).replace('.', ','));
+                }}
+                className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center hover:bg-accent transition-colors"
+              >
+                <ChevronUp className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         )}
 

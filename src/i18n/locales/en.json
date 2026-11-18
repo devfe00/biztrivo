@@ -1101,6 +1101,7 @@
     "cx_ok_product_sale": "Sale and stock deduction recorded!",
     "cx_link_product": "Link a product from your Store (optional)",
     "cx_link_none": "None (manual entry)",
+"cx_link_no_products": "No products in the Storefront (add one there)",
     "cx_in_stock": "in stock",
     "cx_variant": "Variant",
     "cx_variant_ph": "Select a variant",
