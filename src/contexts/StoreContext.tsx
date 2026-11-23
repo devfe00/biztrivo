@@ -118,7 +118,7 @@ interface StoreContextType {
   addProduct: (product: Omit<Product, 'id'>) => Promise<void>;
   removeProduct: (id: string) => Promise<void>;
   updateProduct: (product: Product) => Promise<void>;
-  registerProductSale: (productId: string, quantity: number, variantId?: string, totalValue?: number) => Promise<void>;
+  registerProductSale: (productId: string, quantity: number, variantId?: string, totalValue?: number, saleDate?: string) => Promise<void>;
   addTransaction: (transaction: Omit<Transaction, 'id'>) => Promise<void>;
   removeTransaction: (id: string) => Promise<Transaction | undefined>;
   cancelSale: (id: string, options: { restock: boolean }) => Promise<{ removed: Transaction; restocked: boolean }>;
@@ -434,8 +434,9 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const registerProductSale = async (productId: string, quantity: number, variantId?: string, totalValue?: number) => {
+  const registerProductSale = async (productId: string, quantity: number, variantId?: string, totalValue?: number, saleDate?: string) => {
     if (!user) throw new Error('Sign in required');
+    if (saleDate !== undefined && !Number.isFinite(Date.parse(saleDate))) throw new Error('Invalid date');
     const opKey = `sale-${productId}`;
     if (pendingOps.current.has(opKey)) throw new Error('Sale already pending');
     pendingOps.current.add(opKey);
@@ -461,7 +462,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
         const entry: Transaction = {
           id: transactionRef.id, type: 'entrada', value,
           description: sanitizeText(`${data.name}${label}${quantity > 1 ? ` (${quantity}x)` : ''}`),
-          category: 'Venda', isPersonal: false, date: new Date().toISOString(),
+          category: 'Venda', isPersonal: false, date: saleDate ?? new Date().toISOString(),
           productId, variantId, quantity,
         };
         const { id: _id, ...fields } = entry;

@@ -385,7 +385,21 @@
     "no_connection": "No connection. Connect to the internet to sync.",
     "sales_synced": "{{count}} sale(s) synced",
     "sync_failed": "{{count}} failed, please try again",
-    "connection_restored": "Connection restored! Syncing pending sales…"
+    "connection_restored": "Connection restored! Syncing pending sales…",
+    "catalog_product": "Storefront product",
+    "free_sale": "Custom sale (outside the catalog)",
+    "no_catalog": "No products loaded on this device. You can record a custom sale.",
+    "variant": "Variant",
+    "select_variant": "Select a variant",
+    "quantity": "Quantity",
+    "total_value": "Total amount (BRL)",
+    "payment_label": "Payment method",
+    "available_stock": "Loaded stock: {{count}} unit(s)",
+    "stock_error": "Insufficient stock or unavailable variant. Check stock and try again.",
+    "product_error": "Product removed or unavailable for this account. The sale remains queued.",
+    "sync_error": "Unable to sync. The sale remains queued for retry.",
+    "storage_error": "Unable to access this browser’s storage. The queue was not saved.",
+    "remove_sale": "Remove queued sale"
   },
   "calculadora": {
     "title": "Price Calculator",

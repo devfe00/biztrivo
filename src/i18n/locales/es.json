@@ -385,7 +385,21 @@
     "no_connection": "Sin conexión. Conéctese a internet para sincronizar.",
     "sales_synced": "{{count}} venta(s) sincronizada(s)",
     "sync_failed": "{{count}} fallaron, intente de nuevo",
-    "connection_restored": "¡Conexión restaurada! Sincronizando ventas pendientes…"
+    "connection_restored": "¡Conexión restaurada! Sincronizando ventas pendientes…",
+    "catalog_product": "Producto de la tienda",
+    "free_sale": "Venta libre (fuera del catálogo)",
+    "no_catalog": "No hay productos cargados en este dispositivo. Puede registrar una venta libre.",
+    "variant": "Variación",
+    "select_variant": "Seleccione la variación",
+    "quantity": "Cantidad",
+    "total_value": "Importe total (BRL)",
+    "payment_label": "Forma de pago",
+    "available_stock": "Stock cargado: {{count}} unidad(es)",
+    "stock_error": "Stock insuficiente o variación no disponible. Revise el stock e inténtelo de nuevo.",
+    "product_error": "Producto eliminado o no disponible para esta cuenta. La venta sigue en la cola.",
+    "sync_error": "No se pudo sincronizar. La venta sigue en la cola para reintentar.",
+    "storage_error": "No se pudo acceder al almacenamiento del navegador. La cola no se guardó.",
+    "remove_sale": "Eliminar venta de la cola"
   },
   "calculadora": {
     "title": "Calculadora de Precio",

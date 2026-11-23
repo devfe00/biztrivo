@@ -385,7 +385,21 @@
     "no_connection": "Aucune connexion. Connectez-vous à internet pour synchroniser.",
     "sales_synced": "{{count}} vente(s) synchronisée(s)",
     "sync_failed": "{{count}} ont échoué, réessayez",
-    "connection_restored": "Connexion rétablie ! Synchronisation des ventes en attente…"
+    "connection_restored": "Connexion rétablie ! Synchronisation des ventes en attente…",
+    "catalog_product": "Produit de la boutique",
+    "free_sale": "Vente libre (hors catalogue)",
+    "no_catalog": "Aucun produit chargé sur cet appareil. Vous pouvez enregistrer une vente libre.",
+    "variant": "Variante",
+    "select_variant": "Sélectionnez une variante",
+    "quantity": "Quantité",
+    "total_value": "Montant total (BRL)",
+    "payment_label": "Mode de paiement",
+    "available_stock": "Stock chargé : {{count}} unité(s)",
+    "stock_error": "Stock insuffisant ou variante indisponible. Vérifiez le stock et réessayez.",
+    "product_error": "Produit supprimé ou indisponible pour ce compte. La vente reste en attente.",
+    "sync_error": "Synchronisation impossible. La vente reste en attente pour réessayer.",
+    "storage_error": "Impossible d’accéder au stockage du navigateur. La file n’a pas été enregistrée.",
+    "remove_sale": "Supprimer la vente en attente"
   },
   "calculadora": {
     "title": "Calculateur de Prix",

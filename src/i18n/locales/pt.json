@@ -386,7 +386,21 @@
     "no_connection": "Sem conexão. Conecte-se à internet para sincronizar.",
     "sales_synced": "{{count}} venda(s) sincronizada(s)",
     "sync_failed": "{{count}} falharam, tente novamente",
-    "connection_restored": "Conexão restaurada! Sincronizando vendas pendentes…"
+    "connection_restored": "Conexão restaurada! Sincronizando vendas pendentes…",
+    "catalog_product": "Produto da vitrine",
+    "free_sale": "Venda avulsa (fora do catálogo)",
+    "no_catalog": "Nenhum produto carregado neste aparelho. Você pode registrar uma venda avulsa.",
+    "variant": "Variação",
+    "select_variant": "Selecione a variação",
+    "quantity": "Quantidade",
+    "total_value": "Valor total (R$)",
+    "payment_label": "Forma de pagamento",
+    "available_stock": "Estoque carregado: {{count}} unidade(s)",
+    "stock_error": "Estoque insuficiente ou variação indisponível. Confira o estoque e tente novamente.",
+    "product_error": "Produto removido ou indisponível para esta conta. A venda continua na fila.",
+    "sync_error": "Não foi possível sincronizar. A venda continua na fila para tentar novamente.",
+    "storage_error": "Não foi possível acessar o armazenamento deste navegador. A fila não foi salva.",
+    "remove_sale": "Remover venda da fila"
   },
   "calculadora": {
     "title": "Calculadora de Preço",

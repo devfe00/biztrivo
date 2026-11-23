@@ -1,4 +1,6 @@
 # Roadmap
+- [x] Atualizar Modo Offline com produto, variação, quantidade e preço editável; sincronizar com baixa atômica, data original e manter falhas na fila. Traduções PT/EN/ES/FR conferidas; 26 testes passaram e compilação OK.
+- [ ] Verificar venda offline com conta real na prévia (bloqueado: Firebase retorna auth/invalid-api-key antes de exibir a página).
 - [x] Adicionar tutoriais contextuais às 19 telas internas com pular, tradução e reinício nas configurações; testar persistência e apresentação.
 - [x] Substituir pix-utils pelo gerador nativo de BR Code: 21 testes passaram e compilação OK; configuração gerenciada do Cloud preservada. Verificação da tela bloqueada por auth/invalid-api-key.
 - [x] Substituir Mercado Pago em /pagamentos por Pix estático direto, com validação, QR Code, Copia e Cola e download; sem confirmação automática ou boleto.
