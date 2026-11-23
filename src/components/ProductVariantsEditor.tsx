@@ -15,15 +15,22 @@ interface Props {
 export default function ProductVariantsEditor({ variants, onChange, threshold, onThresholdChange }: Props) {
   const t = useInventoryT();
   const update = (id: string, partial: Partial<ProductVariant>) => onChange(variants.map(v => v.id === id ? { ...v, ...partial } : v));
+  const setPrice = (id: string, raw: string) => onChange(variants.map(v => {
+    if (v.id !== id) return v;
+    const { price: _previous, ...rest } = v;
+    const parsed = Number(raw);
+    return raw.trim() === '' || !Number.isFinite(parsed) ? rest : { ...rest, price: parsed };
+  }));
   return (
     <section className="space-y-3 border-t border-border pt-4">
       <h3 className="text-sm font-semibold">{t('variants')}</h3>
       {variants.map(v => (
-        <div key={v.id} className="grid grid-cols-[1fr_1fr_80px_36px] gap-2 items-end">
+        <div key={v.id} className="grid grid-cols-2 sm:grid-cols-[1fr_1fr_80px_96px_36px] gap-2 items-end">
           <div className="min-w-0"><Label htmlFor={`size-${v.id}`}>{t('size')}</Label><Input id={`size-${v.id}`} maxLength={40} value={v.size} onChange={e => update(v.id, { size: e.target.value })} /></div>
           <div className="min-w-0"><Label htmlFor={`color-${v.id}`}>{t('color')}</Label><Input id={`color-${v.id}`} maxLength={40} value={v.color} onChange={e => update(v.id, { color: e.target.value })} /></div>
           <div><Label htmlFor={`stock-${v.id}`}>{t('stock')}</Label><Input id={`stock-${v.id}`} type="number" min={0} step={1} value={Number.isNaN(v.stock) ? '' : v.stock} onChange={e => update(v.id, { stock: e.target.value === '' ? NaN : Number(e.target.value) })} /></div>
-          <Button variant="ghost" size="icon" className="w-9" title={t('remove')} aria-label={t('remove')} onClick={() => onChange(variants.filter(item => item.id !== v.id))}><Trash2 /></Button>
+          <div><Label htmlFor={`price-${v.id}`}>{t('price')}</Label><Input id={`price-${v.id}`} type="number" min={0.01} step="0.01" title={t('priceHint')} placeholder="—" value={v.price ?? ''} onChange={e => setPrice(v.id, e.target.value)} /></div>
+          <Button variant="ghost" size="icon" className="w-9 col-span-2 sm:col-span-1 justify-self-end" title={t('remove')} aria-label={t('remove')} onClick={() => onChange(variants.filter(item => item.id !== v.id))}><Trash2 /></Button>
         </div>
       ))}
       <div className="flex flex-wrap items-center gap-3 justify-between">

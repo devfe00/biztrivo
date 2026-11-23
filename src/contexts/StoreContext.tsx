@@ -9,7 +9,7 @@ import { db, storage } from '@/integrations/firebase/firebase';
 import { sanitizeText } from '@/lib/sanitize';
 import { onlyDigits } from '@/lib/cnpj';
 import { MEI_DAS, getMeiAtividade, setMeiAtividade, type MeiAtividade } from '@/lib/meiDas';
-import { deductStock, productStock, validateVariants, variantLabel, type ProductVariant } from '@/lib/inventory';
+import { deductStock, restoreStock, unitPrice, productStock, validateVariants, variantLabel, type InventoryProduct, type ProductVariant } from '@/lib/inventory';
 
 async function compressImage(dataUrl: string, maxSize = 1600, quality = 0.82): Promise<string> {
   return new Promise((resolve) => {
@@ -74,6 +74,10 @@ export interface Transaction {
   isPersonal: boolean;
   date: string;
   originalSaleId?: string;
+  productId?: string;
+  variantId?: string;
+  quantity?: number;
+  returnedQuantity?: number;
 }
 
 export interface StoreConfig {
@@ -114,9 +118,11 @@ interface StoreContextType {
   addProduct: (product: Omit<Product, 'id'>) => Promise<void>;
   removeProduct: (id: string) => Promise<void>;
   updateProduct: (product: Product) => Promise<void>;
-  registerProductSale: (productId: string, quantity: number, variantId?: string) => Promise<void>;
+  registerProductSale: (productId: string, quantity: number, variantId?: string, totalValue?: number) => Promise<void>;
   addTransaction: (transaction: Omit<Transaction, 'id'>) => Promise<void>;
   removeTransaction: (id: string) => Promise<Transaction | undefined>;
+  cancelSale: (id: string, options: { restock: boolean }) => Promise<{ removed: Transaction; restocked: boolean }>;
+  undoCancelSale: (removed: Transaction, restocked: boolean) => Promise<void>;
   isLoading: boolean;
   refreshData: () => Promise<void>;
 }
@@ -205,6 +211,10 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
           isPersonal: t.isPersonal ?? false,
           date: t.date?.toDate ? t.date.toDate().toISOString() : t.date,
           originalSaleId: typeof t.originalSaleId === 'string' ? t.originalSaleId : undefined,
+          productId: typeof t.productId === 'string' ? t.productId : undefined,
+          variantId: typeof t.variantId === 'string' ? t.variantId : undefined,
+          quantity: Number.isSafeInteger(t.quantity) && t.quantity > 0 ? t.quantity : undefined,
+          returnedQuantity: Number.isSafeInteger(t.returnedQuantity) && t.returnedQuantity > 0 ? t.returnedQuantity : undefined,
         };
       });
 
@@ -424,7 +434,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const registerProductSale = async (productId: string, quantity: number, variantId?: string) => {
+  const registerProductSale = async (productId: string, quantity: number, variantId?: string, totalValue?: number) => {
     if (!user) throw new Error('Sign in required');
     const opKey = `sale-${productId}`;
     if (pendingOps.current.has(opKey)) throw new Error('Sale already pending');
@@ -438,14 +448,21 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
         const data = snapshot.data();
         if (data.userId !== user.uid) throw new Error('Forbidden');
         const inventory = deductStock({ stock: data.stock, variants: data.variants }, quantity, variantId);
-        const price = data.discountPrice > 0 ? Number(data.discountPrice) : Number(data.originalPrice);
-        if (!Number.isFinite(price) || price <= 0 || !Number.isFinite(price * quantity)) throw new Error('Invalid price');
+        const price = unitPrice(
+          { originalPrice: Number(data.originalPrice) || 0, discountPrice: Number(data.discountPrice) || 0, variants: inventory.variants },
+          variantId,
+        );
+        const value = totalValue !== undefined
+          ? Math.round(totalValue * 100) / 100
+          : Math.round(price * quantity * 100) / 100;
+        if (!Number.isFinite(value) || value <= 0) throw new Error('Invalid price');
         const selected = inventory.variants?.find(v => v.id === variantId);
         const label = selected ? ` (${variantLabel(selected)})` : '';
         const entry: Transaction = {
-          id: transactionRef.id, type: 'entrada', value: Math.round(price * quantity * 100) / 100,
+          id: transactionRef.id, type: 'entrada', value,
           description: sanitizeText(`${data.name}${label}${quantity > 1 ? ` (${quantity}x)` : ''}`),
           category: 'Venda', isPersonal: false, date: new Date().toISOString(),
+          productId, variantId, quantity,
         };
         const { id: _id, ...fields } = entry;
         tx.update(productRef, { stock: inventory.stock, variants: inventory.variants ?? [], updatedAt: serverTimestamp() });
@@ -517,10 +534,119 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+    const cancelSale = async (id: string, options: { restock: boolean }) => {
+    if (!user) throw new Error('Sign in required');
+    const opKey = `rm-tx-${id}`;
+    if (pendingOps.current.has(opKey)) throw new Error('Removal already pending');
+    pendingOps.current.add(opKey);
+    try {
+      const txRef = doc(db, 'transactions', id);
+      const result = await runTransaction(db, async tx => {
+        const txSnap = await tx.get(txRef);
+        if (!txSnap.exists()) throw new Error('Transaction not found');
+        const data = txSnap.data();
+        if (data.userId !== user.uid) throw new Error('Forbidden');
+        if (Number(data.returnedQuantity) > 0) throw new Error('HAS_RETURNS');
+
+        const quantity = Number(data.quantity);
+        const validQuantity = Number.isSafeInteger(quantity) && quantity > 0;
+        const productId = typeof data.productId === 'string' && data.productId ? data.productId : undefined;
+        const variantId = typeof data.variantId === 'string' ? data.variantId : undefined;
+
+        let inventory: InventoryProduct | undefined;
+        if (options.restock && productId && validQuantity) {
+          const productSnap = await tx.get(doc(db, 'products', productId));
+          if (productSnap.exists() && productSnap.data().userId === user.uid) {
+            try {
+              inventory = restoreStock(
+                { stock: productSnap.data().stock, variants: productSnap.data().variants },
+                quantity,
+                variantId,
+              );
+            } catch {
+              inventory = undefined;
+            }
+          }
+        }
+
+        if (inventory && productId) {
+          tx.update(doc(db, 'products', productId), {
+            stock: inventory.stock,
+            variants: inventory.variants ?? [],
+            updatedAt: serverTimestamp(),
+          });
+        }
+        tx.delete(txRef);
+
+        const removed: Transaction = {
+          id,
+          type: data.type as 'entrada' | 'saida',
+          value: Number(data.value),
+          description: data.description,
+          category: data.category,
+          isPersonal: data.isPersonal ?? false,
+          date: data.date?.toDate ? data.date.toDate().toISOString() : data.date,
+          originalSaleId: typeof data.originalSaleId === 'string' ? data.originalSaleId : undefined,
+          productId,
+          variantId,
+          quantity: validQuantity ? quantity : undefined,
+        };
+        return { removed, inventory };
+      });
+
+      setConfig(prev => ({
+        ...prev,
+        transactions: prev.transactions.filter(t => t.id !== id),
+        products: result.inventory && result.removed.productId
+          ? prev.products.map(p => p.id === result.removed.productId ? { ...p, ...result.inventory } : p)
+          : prev.products,
+      }));
+      return { removed: result.removed, restocked: !!result.inventory };
+    } finally {
+      pendingOps.current.delete(opKey);
+    }
+  };
+
+  const undoCancelSale = async (removed: Transaction, restocked: boolean) => {
+    if (!user) throw new Error('Sign in required');
+    const txRef = doc(collection(db, 'transactions'));
+    const linked = !!removed.productId && !!removed.quantity;
+    const inventory = await runTransaction(db, async tx => {
+      let next: InventoryProduct | undefined;
+      if (restocked && linked) {
+        const productRef = doc(db, 'products', removed.productId!);
+        const snap = await tx.get(productRef);
+        if (!snap.exists() || snap.data().userId !== user.uid) throw new Error('Product not found');
+        next = deductStock({ stock: snap.data().stock, variants: snap.data().variants }, removed.quantity!, removed.variantId);
+        tx.update(productRef, { stock: next.stock, variants: next.variants ?? [], updatedAt: serverTimestamp() });
+      }
+      tx.set(txRef, {
+        userId: user.uid,
+        type: removed.type,
+        value: removed.value,
+        description: sanitizeText(removed.description),
+        category: sanitizeText(removed.category),
+        isPersonal: removed.isPersonal,
+        date: removed.date,
+        ...(removed.originalSaleId ? { originalSaleId: removed.originalSaleId } : {}),
+        ...(linked ? { productId: removed.productId, variantId: removed.variantId ?? null, quantity: removed.quantity } : {}),
+        createdAt: serverTimestamp(),
+      });
+      return next;
+    });
+    setConfig(prev => ({
+      ...prev,
+      transactions: [{ ...removed, id: txRef.id }, ...prev.transactions],
+      products: inventory && removed.productId
+        ? prev.products.map(p => p.id === removed.productId ? { ...p, ...inventory } : p)
+        : prev.products,
+    }));
+  };
+
   return (
     <StoreContext.Provider value={{
       config, updateConfig, addProduct, removeProduct, updateProduct, registerProductSale,
-      addTransaction, removeTransaction, isLoading, refreshData: fetchData,
+      addTransaction, removeTransaction, cancelSale, undoCancelSale, isLoading, refreshData: fetchData,
     }}>
       {children}
     </StoreContext.Provider>

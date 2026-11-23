@@ -5,14 +5,15 @@ import { useAuth } from '@/contexts/AuthContext';
 import { validateOperation, restoreInventory, returnAmount, installmentSchedule, type BusinessRecord, type Operation } from '@/lib/business';
 import { sanitizeText } from '@/lib/sanitize';
 
-export function useBusinessRecords() {
+export function useBusinessRecords(options: { subscribe?: boolean } = {}) {
+  const subscribe = options.subscribe ?? true;
   const { user } = useAuth();
   const [records, setRecords] = useState<BusinessRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   useEffect(() => {
     setRecords([]); setError(false); setLoading(true);
-    if (!user) { setLoading(false); return; }
+    if (!user || !subscribe) { setLoading(false); return; }
     return onSnapshot(query(collection(db, 'businessRecords'), where('userId', '==', user.uid)), snap => {
       try {
         setRecords(snap.docs.map(d => ({ ...validateOperation(d.data()), id: d.id })));
@@ -20,7 +21,7 @@ export function useBusinessRecords() {
       } catch { setError(true); }
       setLoading(false);
     }, () => { setError(true); setLoading(false); });
-  }, [user?.uid]);
+  }, [user?.uid, subscribe]);
 
   async function save(input: Operation, id?: string) {
     if (!user) throw new Error('Sign in required');

@@ -10,7 +10,9 @@ import { TrendingUp, TrendingDown, Trash2, Search, Wallet, Package, ChevronDown,
 import { useT } from '@/lib/i18n';
 import { toast } from 'sonner';
 import { useLang } from '@/lib/useLang';
-import { productStock, variantLabel } from '@/lib/inventory';
+import { productStock, variantLabel, unitPrice } from '@/lib/inventory';
+import RemoveTransactionDialog, { type RemovalChoice } from '@/components/RemoveTransactionDialog';
+import { useBusinessRecords } from '@/hooks/useBusinessRecords';
 
 const CATEGORY_KEYS = ['Venda', 'Reposição', 'Embalagem', 'Frete', 'Pessoal', 'Funcionário', 'Outros'] as const;
 const CAT_LABEL_KEY: Record<string, string> = {
@@ -25,7 +27,8 @@ const CAT_LABEL_KEY: Record<string, string> = {
 
 const Caixa = () => {
   const tr = useT();
-  const { config, addTransaction, removeTransaction, registerProductSale } = useStore();
+  const { config, addTransaction, removeTransaction, cancelSale, undoCancelSale, registerProductSale, refreshData } = useStore();
+  const businessApi = useBusinessRecords({ subscribe: false });
   const { notifySale, notifyPersonalExpense } = useNotifications();
   const [value, setValue] = useState('');
   const [description, setDescription] = useState('');
@@ -36,6 +39,8 @@ const Caixa = () => {
   const [selectedProductId, setSelectedProductId] = useState('');
   const [selectedVariantId, setSelectedVariantId] = useState('');
   const [quantity, setQuantity] = useState(1);
+  const [removing, setRemoving] = useState<Transaction | null>(null);
+  const [removeBusy, setRemoveBusy] = useState(false);
 
   const { lang } = useLang();
   const [period, setPeriod] = useState('today');
@@ -106,7 +111,7 @@ const Caixa = () => {
       }
 
       try {
-        await registerProductSale(selectedProductId, quantity, selectedVariantId || undefined);
+        await registerProductSale(selectedProductId, quantity, selectedVariantId || undefined, numValue);
         toast.success(tr('ext.cx_ok_product_sale'));
         notifySale(numValue);
         setValue('');
@@ -145,6 +150,11 @@ const Caixa = () => {
   };
 
   const handleRemove = async (id: string) => {
+    const target = config.transactions.find(t => t.id === id);
+    if (target?.productId && target.quantity) {
+      setRemoving(target);
+      return;
+    }
     const removed = await removeTransaction(id);
     if (!removed) return;
     const { id: _id, ...data } = removed;
@@ -156,6 +166,67 @@ const Caixa = () => {
         onClick: () => { addTransaction(data); },
       },
     });
+  };
+
+    const tl = (pt: string, en: string, es: string, fr: string) =>
+    lang === 'pt' ? pt : lang === 'es' ? es : lang === 'fr' ? fr : en;
+
+  const confirmRemove = async (choice: RemovalChoice) => {
+    if (!removing) return;
+    if (!navigator.onLine) {
+      toast.error(tl(
+        'Sem conexão. Remover ou devolver uma venda exige internet.',
+        'No connection. Removing or returning a sale requires internet.',
+        'Sin conexión. Eliminar o devolver una venta requiere internet.',
+        'Pas de connexion. Supprimer ou retourner une vente nécessite internet.',
+      ));
+      return;
+    }
+    setRemoveBusy(true);
+    try {
+      if (choice.reason === 'devolucao') {
+        await businessApi.refund(removing.id, choice.quantity, choice.restock, 'Caixa');
+        await refreshData();
+        toast.success(tl('Devolução registrada', 'Return recorded', 'Devolución registrada', 'Retour enregistré'));
+        setRemoving(null);
+        return;
+      }
+      const { removed, restocked } = await cancelSale(removing.id, { restock: choice.restock });
+      setRemoving(null);
+      toast(tl('Venda removida', 'Sale removed', 'Venta eliminada', 'Vente supprimée'), {
+        description: removed.description,
+        duration: 8000,
+        action: {
+          label: tl('Desfazer', 'Undo', 'Deshacer', 'Annuler'),
+          onClick: async () => {
+            try {
+              await undoCancelSale(removed, restocked);
+            } catch {
+              toast.error(tl(
+                'Não foi possível desfazer. Confira o estoque.',
+                'Could not undo. Check stock.',
+                'No se pudo deshacer. Revisa el inventario.',
+                'Impossible d’annuler. Vérifiez le stock.',
+              ));
+            }
+          },
+        },
+      });
+      if (choice.restock && !restocked) {
+        toast.warning(tl(
+          'Venda removida, mas o estoque não pôde ser devolvido (produto ou variação não existe mais).',
+          'Sale removed, but stock could not be restored (product or variant no longer exists).',
+          'Venta eliminada, pero no se pudo devolver el inventario (el producto o la variante ya no existe).',
+          'Vente supprimée, mais le stock n’a pas pu être remis (produit ou variante inexistant).',
+        ));
+      }
+    } catch (err) {
+      toast.error(err instanceof Error && err.message === 'HAS_RETURNS'
+        ? tl('Esta venda já tem devolução registrada.', 'This sale already has a return.', 'Esta venta ya tiene una devolución.', 'Cette vente a déjà un retour.')
+        : tr('ext.cx_err_save'));
+    } finally {
+      setRemoveBusy(false);
+    }
   };
 
   return (
@@ -215,7 +286,7 @@ const Caixa = () => {
                 if (id) {
                   const p = config.products.find(pr => pr.id === id);
                   if (p) {
-                    const price = p.discountPrice > 0 ? p.discountPrice : p.originalPrice;
+                    const price = unitPrice(p);
                     setValue(price.toFixed(2).replace('.', ','));
                     setDescription(p.name);
                     setCategory('Venda');
@@ -269,7 +340,7 @@ const Caixa = () => {
                   const p2 = config.products.find(pr => pr.id === selectedProductId);
                   const v = p2?.variants?.find(va => va.id === vid);
                   if (p2 && v) {
-                    const price = p2.discountPrice > 0 ? p2.discountPrice : p2.originalPrice;
+                    const price = unitPrice(p2, vid);
                     setValue((price * quantity).toFixed(2).replace('.', ','));
                     setDescription(`${p2.name} (${variantLabel(v)})`);
                   }
@@ -301,7 +372,7 @@ const Caixa = () => {
                   setQuantity(next);
                   const p = config.products.find(pr => pr.id === selectedProductId);
                   if (p) {
-                    const price = p.discountPrice > 0 ? p.discountPrice : p.originalPrice;
+                    const price = unitPrice(p, selectedVariantId || undefined);
                     setValue((price * next).toFixed(2).replace('.', ','));
                   }
                 }}
@@ -320,7 +391,7 @@ const Caixa = () => {
                     : productStock(p);
                   const next = Math.min(maxStock, quantity + 1);
                   setQuantity(next);
-                  const price = p.discountPrice > 0 ? p.discountPrice : p.originalPrice;
+                  const price = unitPrice(p, selectedVariantId || undefined);
                   setValue((price * next).toFixed(2).replace('.', ','));
                 }}
                 className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center hover:bg-accent transition-colors"
@@ -415,10 +486,12 @@ const Caixa = () => {
                       </p>
                       <p className="text-xs text-muted-foreground">{tr('ext.cx_running')} {formatCurrency(t.balance)}</p>
                     </div>
-                    <button onClick={() => handleRemove(t.id)} aria-label={tr('ext.cx_confirm_rm')}
-                      className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-destructive transition-colors">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    {!t.originalSaleId && (
+                      <button onClick={() => handleRemove(t.id)} aria-label={tr('ext.cx_confirm_rm')}
+                        className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-destructive transition-colors">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
                 </Card>
               ))}
@@ -426,6 +499,13 @@ const Caixa = () => {
           );
         })()}
       </div>
+
+      <RemoveTransactionDialog
+        sale={removing}
+        busy={removeBusy}
+        onClose={() => setRemoving(null)}
+        onConfirm={confirmRemove}
+      />
     </div>
   );
 };

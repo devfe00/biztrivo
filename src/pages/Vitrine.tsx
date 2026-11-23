@@ -2,7 +2,7 @@ import { useStore, Product } from '@/contexts/StoreContext';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import ProductVariantsEditor from '@/components/ProductVariantsEditor';
-import { productStock, validateVariants, lowStockItems, variantLabel, type ProductVariant } from '@/lib/inventory';
+import { productStock, validateVariants, lowStockItems, variantLabel, priceRange, unitPrice, type ProductVariant } from '@/lib/inventory';
 import { useInventoryT } from '@/lib/inventory-i18n';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -347,16 +347,22 @@ const [salePending, setSalePending] = useState(false);
                 <div className="p-4">
                   <h3 className="font-semibold text-sm">{p.name}</h3>
                   {p.description && <p className="text-xs text-muted-foreground mt-1">{p.description}</p>}
-                  {!config.vitrineOnlyMode && (
-                    <div className="flex items-center gap-2 mt-2">
-                      {p.discountPrice > 0 && p.originalPrice > p.discountPrice && (
-                        <span className="text-xs text-muted-foreground line-through">R$ {p.originalPrice.toFixed(2).replace('.', ',')}</span>
-                      )}
-                      <span className="text-sm font-bold text-secondary">
-                        R$ {(p.discountPrice > 0 ? p.discountPrice : p.originalPrice).toFixed(2).replace('.', ',')}
-                      </span>
-                    </div>
-                  )}
+                  {!config.vitrineOnlyMode && (() => {
+                    const range = priceRange(p);
+                    const hasVariantPrices = !!p.variants?.some(v => v.price !== undefined);
+                    const fmt = (n: number) => n.toFixed(2).replace('.', ',');
+                    return (
+                      <div className="flex items-center gap-2 mt-2">
+                        {!hasVariantPrices && p.discountPrice > 0 && p.originalPrice > p.discountPrice && (
+                          <span className="text-xs text-muted-foreground line-through">R$ {fmt(p.originalPrice)}</span>
+                        )}
+                        <span className="text-sm font-bold text-secondary">
+                          {range.min !== range.max && <span className="text-xs font-normal text-muted-foreground">{it('priceFrom')} </span>}
+                          R$ {fmt(range.min)}
+                        </span>
+                      </div>
+                    );
+                  })()}
                   {!config.vitrineOnlyMode && (
                     <p className="text-xs text-muted-foreground mt-1">{t('ext.vt_stock', { n: p.stock ?? 0 })}</p>
                   )}
@@ -391,7 +397,7 @@ className="text-xs text-muted-foreground hover:text-secondary flex items-center 
     )}
     <div className="flex items-center gap-2">
       <Input aria-label={it('quantity')} type="number" min={1} step={1} max={p.variants?.length ? p.variants.find(v => v.id === saleVariantId)?.stock ?? 0 : p.stock} value={saleQty} onChange={e => setSaleQty(e.target.value)} className="w-20" />
-      <span className="text-xs font-semibold text-secondary">R$ {((p.discountPrice > 0 ? p.discountPrice : p.originalPrice) * (Number(saleQty) || 0)).toFixed(2).replace('.', ',')}</span>
+      <span className="text-xs font-semibold text-secondary">R$ {(unitPrice(p, saleVariantId || undefined) * (Number(saleQty) || 0)).toFixed(2).replace('.', ',')}</span>
     </div>
     <div className="flex flex-wrap gap-2">
       <Button size="sm" variant="secondary" disabled={salePending || (!!p.variants?.length && !saleVariantId)} onClick={async () => {

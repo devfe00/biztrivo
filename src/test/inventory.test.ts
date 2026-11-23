@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { deductStock, lowStockItems, productStock, validateVariants } from '@/lib/inventory';
+import { deductStock, restoreStock, lowStockItems, productStock, validateVariants, unitPrice, priceRange } from '@/lib/inventory';
 
 const variants = [
   { id: 'p-red', size: 'P', color: 'Vermelho', stock: 2 },
@@ -40,4 +40,46 @@ describe('Variant inventory', () => {
     for (const stock of [-1, 1.5, NaN]) expect(() => validateVariants([{ ...variants[0], stock }])).toThrow();
     expect(() => validateVariants([{ id: 'x', size: '', color: '', stock: 0 }])).toThrow();
   });
-});
+    it('restores only the selected variant without mutating the input', () => {
+    const result = restoreStock({ stock: 10, variants }, 2, 'p-red');
+    expect(result.variants?.map(v => v.stock)).toEqual([4, 8]);
+    expect(result.stock).toBe(12);
+    expect(variants[0].stock).toBe(2);
+  });
+  it('restores simple product stock', () => {
+    expect(restoreStock({ stock: 3 }, 2).stock).toBe(5);
+  });
+  it('rejects restore for a variant that no longer exists', () => {
+    expect(() => restoreStock({ stock: 10, variants }, 1, 'gone')).toThrow();
+    expect(() => restoreStock({ stock: 10, variants }, 1)).toThrow();
+  });
+  it('rejects nonpositive or fractional restore quantities', () => {
+    for (const quantity of [0, -1, 1.5, NaN]) expect(() => restoreStock({ stock: 10 }, quantity)).toThrow();
+  });
+  it('deduct then restore returns to the original stock', () => {
+    const sold = deductStock({ stock: 10, variants }, 2, 'p-red');
+    expect(restoreStock(sold, 2, 'p-red').variants?.map(v => v.stock)).toEqual([2, 8]);
+  });
+
+});  it('uses the variant price when set and falls back to the product price', () => {
+    const priced = {
+      originalPrice: 150,
+      discountPrice: 0,
+      variants: [
+        { id: 'a', size: 'P', color: '', stock: 1 },
+        { id: 'b', size: 'M', color: '', stock: 1, price: 200 },
+      ],
+    };
+    expect(unitPrice(priced, 'a')).toBe(150);
+    expect(unitPrice(priced, 'b')).toBe(200);
+    expect(unitPrice(priced)).toBe(150);
+    expect(priceRange(priced)).toEqual({ min: 150, max: 200 });
+  });
+  it('keeps a valid variant price and rejects invalid ones', () => {
+    expect(validateVariants([{ ...variants[0], price: 200 }])[0].price).toBe(200);
+    expect(validateVariants(variants)[0]).not.toHaveProperty('price');
+    expect(validateVariants([{ ...variants[0], price: undefined }])[0]).not.toHaveProperty('price');
+    for (const price of [0, -1, NaN, Infinity]) {
+      expect(() => validateVariants([{ ...variants[0], price }])).toThrow();
+    }
+  });
