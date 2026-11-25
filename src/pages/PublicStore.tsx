@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { MessageCircle, ShoppingBag, AlertCircle, Search, Phone, X, Loader2, Eye, Sun, Moon } from 'lucide-react';
 import { FUNCTIONS, callFunction } from '@/integrations/firebase/firebase';
@@ -17,6 +17,7 @@ interface StoreProduct {
   description: string;
   stock: number;
   variants?: ProductVariant[];
+  category?: string;
 }
 
 interface StoreData {
@@ -55,8 +56,19 @@ const PublicStore = () => {
   const [store, setStore] = useState<StoreData | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [showWhatsAppButton, setShowWhatsAppButton] = useState(true);
   const [buyingProductId, setBuyingProductId] = useState<string | null>(null);
+
+  const categories = useMemo(() => {
+    if (!store?.products) return [];
+    const set = new Set<string>();
+    store.products.forEach(p => {
+      const cat = p.category?.trim();
+      if (cat) set.add(cat);
+    });
+    return Array.from(set).sort();
+  }, [store?.products]);
 
 const [viewingProduct, setViewingProduct] = useState<StoreProduct | null>(null);
 
@@ -184,10 +196,14 @@ const handleBuy = useCallback((productId: string, productName: string, price: nu
     window.open(`https://wa.me/55${phone}?text=${message}`, '_blank');
   };
 
-  const filteredProducts = store?.products.filter((product) =>
-    product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    product.description?.toLowerCase().includes(searchQuery.toLowerCase()),
-  ) || [];
+  const filteredProducts = store?.products.filter((product) => {
+    const matchesSearch =
+      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.description?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory =
+      selectedCategory === 'all' || (product.category?.trim() || '') === selectedCategory;
+    return matchesSearch && matchesCategory;
+  }) || [];
 
   if (loading) {
     return (
@@ -240,6 +256,39 @@ const handleBuy = useCallback((productId: string, productName: string, price: nu
               </button>
             )}
           </div>
+
+          {categories.length > 0 && (
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 mt-3 scrollbar-none">
+              <button
+                type="button"
+                onClick={() => setSelectedCategory('all')}
+                className="px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shadow-sm"
+                style={{
+                  backgroundColor: selectedCategory === 'all' ? (pc ?? '#3b82f6') : theme.toggleBg,
+                  color: selectedCategory === 'all' ? '#fff' : theme.toggleColor,
+                }}
+              >
+                Todos
+              </button>
+              {categories.map((cat) => {
+                const isActive = selectedCategory === cat;
+                return (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setSelectedCategory(cat)}
+                    className="px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shadow-sm"
+                    style={{
+                      backgroundColor: isActive ? (pc ?? '#3b82f6') : theme.toggleBg,
+                      color: isActive ? '#fff' : theme.toggleColor,
+                    }}
+                  >
+                    {cat}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
       </header>
 

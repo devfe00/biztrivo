@@ -63,6 +63,7 @@ export interface Product {
   stock: number;
   variants?: ProductVariant[];
   lowStockThreshold?: number;
+  category?: string;
 }
 
 export interface Transaction {
@@ -206,6 +207,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
           stock: p.stock ?? 0,
           variants: validateVariants(p.variants),
           lowStockThreshold: p.lowStockThreshold ?? 3,
+          category: p.category ? String(p.category) : '',
         };
       });
 
@@ -373,6 +375,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
         stock: inventoryStock,
         variants,
         lowStockThreshold: threshold,
+        category: sanitizeText(product.category ?? ''),
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
@@ -389,6 +392,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
           stock: inventoryStock,
           variants,
           lowStockThreshold: threshold,
+          category: product.category ?? '',
         }, ...prev.products],
       }));
     } finally {
@@ -433,6 +437,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
         stock: inventoryStock,
         variants,
         lowStockThreshold: threshold,
+        category: sanitizeText(product.category ?? ''),
         updatedAt: serverTimestamp(),
       });
       setConfig(prev => ({

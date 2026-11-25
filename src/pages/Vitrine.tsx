@@ -100,11 +100,20 @@ const [salePending, setSalePending] = useState(false);
   }, [slug]);
 
   const [name, setName] = useState('');
+  const [category, setCategory] = useState('');
   const [photo, setPhoto] = useState('');
   const [originalPrice, setOriginalPrice] = useState('');
   const [discountPrice, setDiscountPrice] = useState('');
   const [description, setDescription] = useState('');
   const [stock, setStock] = useState('');
+
+  const existingCategories = useMemo(() => {
+    const set = new Set<string>();
+    config.products.forEach(p => {
+      if (p.category?.trim()) set.add(p.category.trim());
+    });
+    return Array.from(set).sort();
+  }, [config.products]);
 
   const [variants, setVariants] = useState<ProductVariant[]>([]);
   const [lowStockThreshold, setLowStockThreshold] = useState(3);
@@ -208,10 +217,11 @@ const [salePending, setSalePending] = useState(false);
   ? Math.max(0.01, parseFloat(discountPrice.replace(',', '.')) || 0)
   : 0,
       description: sanitizeText(description),
+      category: sanitizeText(category),
       stock: productStock({ stock: Math.max(0, Number(stock) || 0), variants }),
       variants, lowStockThreshold,
     });
-    setName(''); setPhoto(''); setOriginalPrice(''); setDiscountPrice(''); setDescription(''); setStock(''); setVariants([]); setLowStockThreshold(3);
+    setName(''); setCategory(''); setPhoto(''); setOriginalPrice(''); setDiscountPrice(''); setDescription(''); setStock(''); setVariants([]); setLowStockThreshold(3);
     setShowForm(false);
     toast.success(t('ext.vt_toast_added'));
   } catch (err) {
@@ -264,6 +274,7 @@ const [salePending, setSalePending] = useState(false);
       ...editingProduct,
       name: sanitizeText(editingProduct.name),
       description: sanitizeText(editingProduct.description),
+      category: sanitizeText(editingProduct.category ?? ''),
       stock: productStock(editingProduct),
       originalPrice: Math.max(0, editingProduct.originalPrice),
     });
@@ -421,6 +432,21 @@ const [salePending, setSalePending] = useState(false);
             <div>
               <Label>{t('ext.vt_form_desc')}</Label>
               <Textarea value={description} onChange={e => setDescription(e.target.value)} className="mt-1" placeholder={t('ext.vt_form_desc_ph')} rows={2} />
+            </div>
+            <div>
+              <Label>Categoria (opcional)</Label>
+              <Input
+                list="vitrine-categories"
+                value={category}
+                onChange={e => setCategory(e.target.value)}
+                className="mt-1"
+                placeholder="Ex: Tênis, Bermudas, Sobremesas, Acessórios..."
+              />
+              <datalist id="vitrine-categories">
+                {existingCategories.map(cat => (
+                  <option key={cat} value={cat} />
+                ))}
+              </datalist>
             </div>
             {!config.vitrineOnlyMode && <ProductVariantsEditor variants={variants} onChange={setVariants} threshold={lowStockThreshold} onThresholdChange={setLowStockThreshold} />}
             <div className="flex gap-3">
@@ -796,7 +822,23 @@ className="text-xs text-muted-foreground hover:text-secondary flex items-center 
                 <Label>{t('ext.vt_form_desc')}</Label>
                 <Textarea value={editingProduct.description} onChange={e => setEditingProduct({ ...editingProduct, description: e.target.value })} className="mt-1" rows={2} />
               </div>
-              {!config.vitrineOnlyMode && <ProductVariantsEditor variants={editingProduct.variants ?? []} onChange={list => setEditingProduct({ ...editingProduct, variants: list, stock: productStock({ stock: editingProduct.stock, variants: list }) })} threshold={editingProduct.lowStockThreshold ?? 3} onThresholdChange={threshold => setEditingProduct({ ...editingProduct, lowStockThreshold: threshold })} />}
+              <div>
+                <Label>Categoria (opcional)</Label>
+                <Input
+                  list="vitrine-edit-categories"
+                  value={editingProduct.category ?? ''}
+                  onChange={e => setEditingProduct({ ...editingProduct, category: e.target.value })}
+                  className="mt-1"
+                  placeholder="Ex: Tênis, Bermudas, Sobremesas, Acessórios..."
+                />
+                <datalist id="vitrine-edit-categories">
+                  {existingCategories.map(cat => (
+                    <option key={cat} value={cat} />
+                  ))}
+                </datalist>
+              </div>
+              {!config.vitrineOnlyMode && <ProductVariantsEditor
+ variants={editingProduct.variants ?? []} onChange={list => setEditingProduct({ ...editingProduct, variants: list, stock: productStock({ stock: editingProduct.stock, variants: list }) })} threshold={editingProduct.lowStockThreshold ?? 3} onThresholdChange={threshold => setEditingProduct({ ...editingProduct, lowStockThreshold: threshold })} />}
               <div className="flex gap-3 pt-2">
                 <button onClick={handleEditSave} className="px-6 py-2.5 rounded-lg gradient-primary text-primary-foreground font-medium text-sm shadow-glow hover:opacity-90 transition-opacity">{t('ext.vt_edit_save')}</button>
                 <button onClick={() => setEditingProduct(null)} className="px-6 py-2.5 rounded-lg bg-muted text-muted-foreground font-medium text-sm hover:bg-accent transition-colors">{t('ext.vt_cancel')}</button>
