@@ -453,7 +453,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
     try {
       const productRef = doc(db, 'products', productId);
       const transactionRef = doc(collection(db, 'transactions'));
-      const saleTime = Date.parse(date ?? new Date().toISOString());
+      const saleTime = Date.parse(saleDate ?? new Date().toISOString());
       if (!Number.isFinite(saleTime) || saleTime > Date.now() + 24 * 60 * 60 * 1000) throw new Error('Invalid date');
       const result = await runTransaction(db, async tx => {
         const snapshot = await tx.get(productRef);
