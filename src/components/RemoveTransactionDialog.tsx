@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { Transaction } from '@/contexts/StoreContext';
-import { useLang } from '@/lib/useLang';
+import { useCaixaT } from '@/lib/caixa-i18n';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -9,80 +9,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Trash2, Undo2 } from 'lucide-react';
 
-export type RemovalReason = 'devolucao' | 'cancelamento' | 'erro' | 'outro';
+export type RemovalReason = 'devolucao' | 'remover';
 
 export interface RemovalChoice {
   reason: RemovalReason;
   restock: boolean;
   quantity: number;
 }
-
-const TEXT = {
-  pt: {
-    title: 'Remover venda',
-    reason: 'Motivo',
-    devolucao: 'Devolução (cliente devolveu o produto)',
-    cancelamento: 'Cancelamento da venda',
-    erro: 'Erro de lançamento',
-    outro: 'Outro',
-    quantity: 'Quantidade devolvida',
-    restock: 'Devolver ao estoque',
-    hintRefund: 'A venda continua no caixa e uma saída de devolução é criada.',
-    hintRemove: 'O lançamento será apagado do caixa.',
-    hasReturns: 'Esta venda já tem devolução registrada. Só é possível registrar nova devolução.',
-    confirmRefund: 'Registrar devolução',
-    confirmRemove: 'Remover venda',
-    back: 'Voltar',
-  },
-  en: {
-    title: 'Remove sale',
-    reason: 'Reason',
-    devolucao: 'Return (customer returned the product)',
-    cancelamento: 'Sale cancelled',
-    erro: 'Entry mistake',
-    outro: 'Other',
-    quantity: 'Returned quantity',
-    restock: 'Return to stock',
-    hintRefund: 'The sale stays in the ledger and a refund expense is created.',
-    hintRemove: 'The entry will be deleted from the ledger.',
-    hasReturns: 'This sale already has a return. You can only record another return.',
-    confirmRefund: 'Record return',
-    confirmRemove: 'Remove sale',
-    back: 'Back',
-  },
-  es: {
-    title: 'Eliminar venta',
-    reason: 'Motivo',
-    devolucao: 'Devolución (el cliente devolvió el producto)',
-    cancelamento: 'Cancelación de la venta',
-    erro: 'Error de registro',
-    outro: 'Otro',
-    quantity: 'Cantidad devuelta',
-    restock: 'Devolver al inventario',
-    hintRefund: 'La venta sigue en la caja y se crea una salida por devolución.',
-    hintRemove: 'El movimiento se eliminará de la caja.',
-    hasReturns: 'Esta venta ya tiene una devolución. Solo puedes registrar otra devolución.',
-    confirmRefund: 'Registrar devolución',
-    confirmRemove: 'Eliminar venta',
-    back: 'Volver',
-  },
-  fr: {
-    title: 'Supprimer la vente',
-    reason: 'Motif',
-    devolucao: 'Retour (le client a rendu le produit)',
-    cancelamento: 'Annulation de la vente',
-    erro: 'Erreur de saisie',
-    outro: 'Autre',
-    quantity: 'Quantité retournée',
-    restock: 'Remettre en stock',
-    hintRefund: 'La vente reste en caisse et une sortie de remboursement est créée.',
-    hintRemove: 'L’écriture sera supprimée de la caisse.',
-    hasReturns: 'Cette vente a déjà un retour. Vous ne pouvez enregistrer qu’un autre retour.',
-    confirmRefund: 'Enregistrer le retour',
-    confirmRemove: 'Supprimer la vente',
-    back: 'Retour',
-  },
-};
 
 interface Props {
   sale: Transaction | null;
@@ -92,21 +25,20 @@ interface Props {
 }
 
 export default function RemoveTransactionDialog({ sale, busy, onClose, onConfirm }: Props) {
-  const { lang } = useLang();
-  const tx = TEXT[lang as keyof typeof TEXT] ?? TEXT.en;
+  const tc = useCaixaT();
 
   const total = sale?.quantity ?? 0;
   const returned = sale?.returnedQuantity ?? 0;
   const remaining = Math.max(0, total - returned);
   const hasReturns = returned > 0;
 
-  const [reason, setReason] = useState<RemovalReason>('erro');
+  const [reason, setReason] = useState<RemovalReason>('remover');
   const [restock, setRestock] = useState(true);
   const [quantity, setQuantity] = useState('1');
 
   useEffect(() => {
     if (!sale) return;
-    setReason(hasReturns ? 'devolucao' : 'erro');
+    setReason(hasReturns ? 'devolucao' : 'remover');
     setRestock(true);
     setQuantity(String(Math.max(1, remaining)));
   }, [sale?.id, hasReturns, remaining]);
@@ -120,7 +52,7 @@ export default function RemoveTransactionDialog({ sale, busy, onClose, onConfirm
     <Dialog open={!!sale} onOpenChange={open => { if (!open && !busy) onClose(); }}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>{tx.title}</DialogTitle>
+          <DialogTitle>{tc('removeTitle')}</DialogTitle>
         </DialogHeader>
 
         {sale && (
@@ -128,21 +60,19 @@ export default function RemoveTransactionDialog({ sale, busy, onClose, onConfirm
             <p className="text-sm text-muted-foreground break-words">{sale.description}</p>
 
             <div>
-              <Label>{tx.reason}</Label>
+              <Label>{tc('removeReason')}</Label>
               <Select value={reason} onValueChange={v => setReason(v as RemovalReason)} disabled={busy}>
                 <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="devolucao" disabled={remaining <= 0}>{tx.devolucao}</SelectItem>
-                  <SelectItem value="cancelamento" disabled={hasReturns}>{tx.cancelamento}</SelectItem>
-                  <SelectItem value="erro" disabled={hasReturns}>{tx.erro}</SelectItem>
-                  <SelectItem value="outro" disabled={hasReturns}>{tx.outro}</SelectItem>
+                  <SelectItem value="remover" disabled={hasReturns}>{tc('removeEntry')}</SelectItem>
+                  <SelectItem value="devolucao" disabled={remaining <= 0}>{tc('removeReturn')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             {isRefund && (
               <div>
-                <Label htmlFor="refund-qty">{tx.quantity}</Label>
+                <Label htmlFor="refund-qty">{tc('returnQuantity')}</Label>
                 <Input
                   id="refund-qty"
                   type="number"
@@ -160,16 +90,16 @@ export default function RemoveTransactionDialog({ sale, busy, onClose, onConfirm
             {sale.productId && (
               <div className="flex items-center gap-2">
                 <Checkbox id="restock" checked={restock} onCheckedChange={v => setRestock(v === true)} disabled={busy} />
-                <Label htmlFor="restock" className="text-sm cursor-pointer">{tx.restock}</Label>
+                <Label htmlFor="restock" className="text-sm cursor-pointer">{tc('returnToStock')}</Label>
               </div>
             )}
 
             <p className="text-xs text-muted-foreground">
-              {hasReturns && !isRefund ? tx.hasReturns : isRefund ? tx.hintRefund : tx.hintRemove}
+              {hasReturns && !isRefund ? tc('hasReturnsHint') : isRefund ? tc('hintRefund') : tc('hintRemove')}
             </p>
 
             <div className="flex justify-end gap-2 pt-2">
-              <Button variant="ghost" onClick={onClose} disabled={busy}>{tx.back}</Button>
+              <Button variant="ghost" onClick={onClose} disabled={busy}>{tc('back')}</Button>
               <Button
                 disabled={!canConfirm}
                 onClick={() => onConfirm({
@@ -179,7 +109,7 @@ export default function RemoveTransactionDialog({ sale, busy, onClose, onConfirm
                 })}
               >
                 {isRefund ? <Undo2 className="w-4 h-4 mr-2" /> : <Trash2 className="w-4 h-4 mr-2" />}
-                {isRefund ? tx.confirmRefund : tx.confirmRemove}
+                {isRefund ? tc('confirmRefund') : tc('confirmRemove')}
               </Button>
             </div>
           </div>

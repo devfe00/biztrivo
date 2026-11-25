@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useStore, Transaction } from '@/contexts/StoreContext';
 import { useNotifications } from '@/hooks/useNotifications';
 import { Card } from '@/components/ui/card';
@@ -6,12 +6,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { TrendingUp, TrendingDown, Trash2, Search, Wallet, Package, ChevronDown, ChevronUp } from 'lucide-react';
+import { TrendingUp, TrendingDown, Trash2, Search, Wallet, Package, ChevronDown, ChevronUp, Plus, ShoppingCart, X } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import { toast } from 'sonner';
 import { useLang } from '@/lib/useLang';
 import { productStock, variantLabel, unitPrice } from '@/lib/inventory';
 import RemoveTransactionDialog, { type RemovalChoice } from '@/components/RemoveTransactionDialog';
+import ProductPicker from '@/components/ProductPicker';
+import { useAuth } from '@/contexts/AuthContext';
+import { useCaixaT } from '@/lib/caixa-i18n';
+import { type CartItem, caixaDraftKey, parseCaixaDraft } from '@/lib/caixa-draft';
+import { groupBySale } from '@/lib/sale-group';
 import { useBusinessRecords } from '@/hooks/useBusinessRecords';
 
 const CATEGORY_KEYS = ['Venda', 'Reposição', 'Embalagem', 'Frete', 'Pessoal', 'Funcionário', 'Outros'] as const;
@@ -27,7 +32,9 @@ const CAT_LABEL_KEY: Record<string, string> = {
 
 const Caixa = () => {
   const tr = useT();
-  const { config, addTransaction, removeTransaction, cancelSale, undoCancelSale, registerProductSale, refreshData } = useStore();
+  const { config, addTransaction, removeTransaction, cancelSale, undoCancelSale, registerProductSales, refreshData, isLoading } = useStore();
+  const tc = useCaixaT();
+  const { user } = useAuth();
   const businessApi = useBusinessRecords({ subscribe: false });
   const { notifySale, notifyPersonalExpense } = useNotifications();
   const [value, setValue] = useState('');
@@ -41,6 +48,62 @@ const Caixa = () => {
   const [quantity, setQuantity] = useState(1);
   const [removing, setRemoving] = useState<Transaction | null>(null);
   const [removeBusy, setRemoveBusy] = useState(false);
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+  const cartTotal = cart.reduce((sum, item) => sum + item.value, 0);
+
+  const draftKey = user ? caixaDraftKey(user.uid) : null;
+  const [draftLoaded, setDraftLoaded] = useState(false);
+
+  useEffect(() => {
+    setDraftLoaded(false);
+    if (!draftKey) return;
+    try {
+      const stored = localStorage.getItem(draftKey);
+      const draft = stored ? parseCaixaDraft(JSON.parse(stored)) : null;
+      if (draft) {
+        setCart(draft.cart);
+        setValue(draft.value);
+        setDescription(draft.description);
+        setCategory(draft.category);
+        setSelectedProductId(draft.selectedProductId);
+        setSelectedVariantId(draft.selectedVariantId);
+        setQuantity(draft.quantity);
+        setIsPersonal(draft.isPersonal);
+        if (draft.cart.length > 0) toast.info(tc('draftRestored'));
+      }
+    } catch {
+      // rascunho corrompido: começa vazio
+    }
+    setDraftLoaded(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draftKey]);
+
+  useEffect(() => {
+    if (!draftKey || !draftLoaded) return;
+    try {
+      if (cart.length === 0 && !value && !description && !selectedProductId) {
+        localStorage.removeItem(draftKey);
+      } else {
+        localStorage.setItem(draftKey, JSON.stringify({
+          version: 1, cart, value, description, category, selectedProductId, selectedVariantId, quantity, isPersonal,
+        }));
+      }
+    } catch {
+      // armazenamento indisponível ou cheio: o rascunho só não é persistido
+    }
+  }, [draftKey, draftLoaded, cart, value, description, category, selectedProductId, selectedVariantId, quantity, isPersonal]);
+
+  useEffect(() => {
+    if (!draftLoaded || isLoading || config.products.length === 0) return;
+    const exists = (id: string) => config.products.some(p => p.id === id);
+    setCart(prev => (prev.every(item => exists(item.productId)) ? prev : prev.filter(item => exists(item.productId))));
+    if (selectedProductId && !exists(selectedProductId)) {
+      setSelectedProductId('');
+      setSelectedVariantId('');
+      setQuantity(1);
+    }
+  }, [draftLoaded, isLoading, config.products, selectedProductId]);
 
   const { lang } = useLang();
   const [period, setPeriod] = useState('today');
@@ -88,6 +151,11 @@ const Caixa = () => {
   };
 
   const handleAdd = async (type: 'entrada' | 'saida') => {
+    if (type === 'entrada' && (selectedProductId || (cart.length > 0 && !value.trim()))) {
+      await registerSale();
+      return;
+    }
+
     const numValue = parseFloat(value.replace(',', '.'));
 
     if (!numValue || numValue <= 0) {
@@ -96,34 +164,6 @@ const Caixa = () => {
     }
 
     const resolvedDescription = description.trim() || category;
-
-    if (type === 'entrada' && selectedProductId) {
-      const product = config.products.find(p => p.id === selectedProductId);
-      if (!product) { toast.error(tr('ext.cx_err_product')); return; }
-
-      const available = product.variants?.length
-        ? product.variants.find(v => v.id === selectedVariantId)?.stock ?? 0
-        : productStock(product);
-
-      if (!Number.isSafeInteger(quantity) || quantity <= 0 || quantity > available) {
-        toast.error(tr('ext.cx_err_stock'));
-        return;
-      }
-
-      try {
-        await registerProductSale(selectedProductId, quantity, selectedVariantId || undefined, numValue);
-        toast.success(tr('ext.cx_ok_product_sale'));
-        notifySale(numValue);
-        setValue('');
-        setDescription('');
-        setIsPersonal(false);
-        resetProductSelection();
-      } catch (err) {
-        console.error('Erro ao registrar venda com produto:', err);
-        toast.error(tr('ext.cx_err_save'));
-      }
-      return;
-    }
 
     try {
       await addTransaction({
@@ -168,18 +208,10 @@ const Caixa = () => {
     });
   };
 
-    const tl = (pt: string, en: string, es: string, fr: string) =>
-    lang === 'pt' ? pt : lang === 'es' ? es : lang === 'fr' ? fr : en;
-
   const confirmRemove = async (choice: RemovalChoice) => {
     if (!removing) return;
     if (!navigator.onLine) {
-      toast.error(tl(
-        'Sem conexão. Remover ou devolver uma venda exige internet.',
-        'No connection. Removing or returning a sale requires internet.',
-        'Sin conexión. Eliminar o devolver una venta requiere internet.',
-        'Pas de connexion. Supprimer ou retourner une vente nécessite internet.',
-      ));
+      toast.error(tc('offlineBlock'));
       return;
     }
     setRemoveBusy(true);
@@ -187,45 +219,106 @@ const Caixa = () => {
       if (choice.reason === 'devolucao') {
         await businessApi.refund(removing.id, choice.quantity, choice.restock, 'Caixa');
         await refreshData();
-        toast.success(tl('Devolução registrada', 'Return recorded', 'Devolución registrada', 'Retour enregistré'));
+        toast.success(tc('saleRefunded'));
         setRemoving(null);
         return;
       }
       const { removed, restocked } = await cancelSale(removing.id, { restock: choice.restock });
       setRemoving(null);
-      toast(tl('Venda removida', 'Sale removed', 'Venta eliminada', 'Vente supprimée'), {
+      toast(tc('saleRemoved'), {
         description: removed.description,
         duration: 8000,
         action: {
-          label: tl('Desfazer', 'Undo', 'Deshacer', 'Annuler'),
+          label: tc('undo'),
           onClick: async () => {
             try {
               await undoCancelSale(removed, restocked);
             } catch {
-              toast.error(tl(
-                'Não foi possível desfazer. Confira o estoque.',
-                'Could not undo. Check stock.',
-                'No se pudo deshacer. Revisa el inventario.',
-                'Impossible d’annuler. Vérifiez le stock.',
-              ));
+              toast.error(tc('undoFail'));
             }
           },
         },
       });
       if (choice.restock && !restocked) {
-        toast.warning(tl(
-          'Venda removida, mas o estoque não pôde ser devolvido (produto ou variação não existe mais).',
-          'Sale removed, but stock could not be restored (product or variant no longer exists).',
-          'Venta eliminada, pero no se pudo devolver el inventario (el producto o la variante ya no existe).',
-          'Vente supprimée, mais le stock n’a pas pu être remis (produit ou variante inexistant).',
-        ));
+        toast.warning(tc('restockFail'));
       }
     } catch (err) {
       toast.error(err instanceof Error && err.message === 'HAS_RETURNS'
-        ? tl('Esta venda já tem devolução registrada.', 'This sale already has a return.', 'Esta venta ya tiene una devolución.', 'Cette vente a déjà un retour.')
+        ? tc('hasReturnsToast')
         : tr('ext.cx_err_save'));
     } finally {
       setRemoveBusy(false);
+    }
+  };
+
+    const stageCurrentItem = (): CartItem | null => {
+    const numValue = parseFloat(value.replace(',', '.'));
+    if (!numValue || numValue <= 0) { toast.error(tr('ext.cx_err_value')); return null; }
+    const product = config.products.find(p => p.id === selectedProductId);
+    if (!product) { toast.error(tr('ext.cx_err_product')); return null; }
+    const variant = product.variants?.find(v => v.id === selectedVariantId);
+    if (product.variants?.length && !variant) { toast.error(tr('ext.cx_variant_ph')); return null; }
+
+    const inCart = cart
+      .filter(item => item.productId === product.id && (item.variantId ?? '') === (variant?.id ?? ''))
+      .reduce((sum, item) => sum + item.quantity, 0);
+    const available = (variant ? variant.stock : productStock(product)) - inCart;
+    if (!Number.isSafeInteger(quantity) || quantity <= 0 || quantity > available) {
+      toast.error(tr('ext.cx_err_stock'));
+      return null;
+    }
+
+    return {
+      key: crypto.randomUUID(),
+      productId: product.id,
+      variantId: variant?.id,
+      quantity,
+      value: numValue,
+      label: `${product.name}${variant ? ` (${variantLabel(variant)})` : ''}`,
+    };
+  };
+
+  const addToCart = () => {
+    const item = stageCurrentItem();
+    if (!item) return;
+    setCart(prev => [...prev, item]);
+    setValue('');
+    setDescription('');
+    resetProductSelection();
+  };
+
+  const registerSale = async () => {
+    if (submitting) return;
+    if (!navigator.onLine) {
+      toast.error(tc('cartOffline'));
+      return;
+    }
+    let lines = cart;
+    if (selectedProductId) {
+      const staged = stageCurrentItem();
+      if (!staged) return;
+      lines = [...cart, staged];
+    }
+    setSubmitting(true);
+    try {
+      await registerProductSales(lines.map(line => ({
+        productId: line.productId,
+        variantId: line.variantId,
+        quantity: line.quantity,
+        totalValue: line.value,
+      })));
+      toast.success(tr('ext.cx_ok_product_sale'));
+      notifySale(lines.reduce((sum, line) => sum + line.value, 0));
+      setCart([]);
+      setValue('');
+      setDescription('');
+      setIsPersonal(false);
+      resetProductSelection();
+    } catch (err) {
+      console.error('Erro ao registrar venda com produtos:', err);
+      toast.error(tr('ext.cx_err_save'));
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -275,19 +368,20 @@ const Caixa = () => {
               <Package className="w-3.5 h-3.5" />
               {tr('ext.cx_link_product')}
             </Label>
-            <Select
-              value={selectedProductId || 'none'}
+            <ProductPicker
+              products={config.products}
+              value={selectedProductId}
               disabled={config.products.length === 0}
-              onValueChange={val => {
-                const id = val === 'none' ? '' : val;
+              placeholder={config.products.length === 0 ? tr('ext.cx_link_no_products') : tr('ext.cx_link_none')}
+              inStockLabel={tr('ext.cx_in_stock')}
+              onChange={id => {
                 setSelectedProductId(id);
                 setSelectedVariantId('');
                 setQuantity(1);
                 if (id) {
                   const p = config.products.find(pr => pr.id === id);
                   if (p) {
-                    const price = unitPrice(p);
-                    setValue(price.toFixed(2).replace('.', ','));
+                    setValue(unitPrice(p).toFixed(2).replace('.', ','));
                     setDescription(p.name);
                     setCategory('Venda');
                   }
@@ -296,30 +390,7 @@ const Caixa = () => {
                   setDescription('');
                 }
               }}
-            >
-              <SelectTrigger className="mt-1">
-                <SelectValue
-                  placeholder={
-                    config.products.length === 0
-                      ? tr('ext.cx_link_no_products')
-                      : tr('ext.cx_link_none')
-                  }
-                />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">{tr('ext.cx_link_none')}</SelectItem>
-                {config.products
-                  .filter(p => productStock(p) > 0)
-                  .map(p => (
-                    <SelectItem key={p.id} value={p.id}>
-                      <span className="flex items-center gap-2">
-                        <Package className="w-3.5 h-3.5" />
-                        {p.name} · {productStock(p)} {tr('ext.cx_in_stock')}
-                      </span>
-                    </SelectItem>
-                  ))}
-              </SelectContent>
-            </Select>
+            />
           </div>
         </div>
 
@@ -402,14 +473,55 @@ const Caixa = () => {
           </div>
         )}
 
+        {selectedProductId && (
+          <button
+            type="button"
+            onClick={addToCart}
+            disabled={submitting}
+            className="w-full py-2.5 rounded-lg border border-border text-sm font-medium flex items-center justify-center gap-2 hover:bg-muted transition-colors disabled:opacity-50"
+          >
+            <Plus className="w-4 h-4" />
+            {tc('cartAdd')}
+          </button>
+        )}
+
+        {cart.length > 0 && (
+          <div className="rounded-xl border border-border p-3 space-y-2">
+            <p className="text-sm font-semibold flex items-center gap-1.5">
+              <ShoppingCart className="w-4 h-4" />
+              {tc('cartTitle')} ({cart.length})
+            </p>
+            {cart.map(item => (
+              <div key={item.key} className="flex items-center justify-between gap-2 text-sm">
+                <span className="min-w-0 break-words">{item.quantity}x {item.label}</span>
+                <span className="flex items-center gap-2 shrink-0">
+                  <span className="font-semibold">{formatCurrency(item.value)}</span>
+                  <button
+                    type="button"
+                    aria-label={tc('cartRemove')}
+                    onClick={() => setCart(prev => prev.filter(c => c.key !== item.key))}
+                    className="text-muted-foreground hover:text-destructive"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </span>
+              </div>
+            ))}
+            <div className="flex justify-between border-t border-border pt-2 text-sm font-bold">
+              <span>{tc('cartTotal')}</span>
+              <span>{formatCurrency(cartTotal)}</span>
+            </div>
+          </div>
+        )}
+
         <div className="flex items-center gap-3">
           <Switch checked={isPersonal} onCheckedChange={setIsPersonal} disabled={!!selectedProductId} />
           <Label className="text-sm cursor-pointer">{tr('ext.cx_personal')} <span className="text-muted-foreground">{tr('ext.cx_personal_hint')}</span></Label>
         </div>
 
         <div className="flex gap-4 pt-2">
-          <button onClick={() => handleAdd('entrada')}
-            className="flex-1 py-4 rounded-xl bg-secondary text-secondary-foreground font-bold text-lg flex items-center justify-center gap-2 hover:opacity-90 transition-opacity shadow-glow-green">
+          <button onClick={() => handleAdd('entrada')} disabled={submitting}
+            className="flex-1 py-4 rounded-xl bg-secondary text-secondary-foreground font-bold text-lg flex items-center justify-center gap-2 hover:opacity-90 transition-opacity shadow-glow-green disabled:opacity-50">
             <TrendingUp className="w-6 h-6" /> {tr('ext.cx_btn_in')}
           </button>
           <button onClick={() => { resetProductSelection(); handleAdd('saida'); }}
@@ -452,6 +564,38 @@ const Caixa = () => {
             return matchSearch && matchCategory;
           });
 
+          const entryBody = (t: (typeof filtered)[number]) => (
+            <>
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${t.type === 'entrada' ? 'bg-secondary/10' : 'bg-destructive/10'}`}>
+                  {t.type === 'entrada' ? <TrendingUp className="w-5 h-5 text-secondary" /> : <TrendingDown className="w-5 h-5 text-destructive" />}
+                </div>
+                <div>
+                  <p className="font-medium text-sm">{t.description}</p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-xs text-muted-foreground">{CAT_LABEL_KEY[t.category] ? tr(CAT_LABEL_KEY[t.category]) : t.category}</span>
+                    {period !== 'today' && <span className="text-xs text-muted-foreground">{new Date(t.date).toLocaleDateString(lang === 'pt' ? 'pt-BR' : lang)}</span>}
+                    {t.isPersonal && <span className="text-xs px-2 py-0.5 rounded-full bg-warning/10 text-warning font-medium">{tr('ext.cx_personal_tag')}</span>}
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="text-right">
+                  <p className={`font-bold text-sm ${t.type === 'entrada' ? 'text-secondary' : 'text-destructive'}`}>
+                    {t.type === 'entrada' ? '+' : '-'} {formatCurrency(t.value)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">{tr('ext.cx_running')} {formatCurrency(t.balance)}</p>
+                </div>
+                {!t.originalSaleId && (
+                  <button onClick={() => handleRemove(t.id)} aria-label={tr('ext.cx_confirm_rm')}
+                    className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-destructive transition-colors">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            </>
+          );
+
           return filtered.length === 0 ? (
             <Card className="p-10 border-none shadow-md text-center">
               <Wallet className="w-12 h-12 mx-auto mb-3 text-primary/30" />
@@ -464,37 +608,38 @@ const Caixa = () => {
             </Card>
           ) : (
             <div className="space-y-2">
-              {filtered.map(t => (
-                <Card key={t.id} className={`p-4 border-none shadow-sm flex items-center justify-between ${t.isPersonal ? 'border-l-4 border-l-warning bg-warning/5' : ''}`}>
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${t.type === 'entrada' ? 'bg-secondary/10' : 'bg-destructive/10'}`}>
-                      {t.type === 'entrada' ? <TrendingUp className="w-5 h-5 text-secondary" /> : <TrendingDown className="w-5 h-5 text-destructive" />}
-                    </div>
-                    <div>
-                      <p className="font-medium text-sm">{t.description}</p>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-xs text-muted-foreground">{CAT_LABEL_KEY[t.category] ? tr(CAT_LABEL_KEY[t.category]) : t.category}</span>
-                        {period !== 'today' && <span className="text-xs text-muted-foreground">{new Date(t.date).toLocaleDateString(lang === 'pt' ? 'pt-BR' : lang)}</span>}
-                        {t.isPersonal && <span className="text-xs px-2 py-0.5 rounded-full bg-warning/10 text-warning font-medium">{tr('ext.cx_personal_tag')}</span>}
+              {groupBySale(filtered).map(group => {
+                if (group.items.length === 1) {
+                  const t = group.items[0];
+                  return (
+                    <Card key={t.id} className={`p-4 border-none shadow-sm flex items-center justify-between ${t.isPersonal ? 'border-l-4 border-l-warning bg-warning/5' : ''}`}>
+                      {entryBody(t)}
+                    </Card>
+                  );
+                }
+                const groupTotal = group.items.reduce((sum, t) => sum + (t.type === 'entrada' ? t.value : -t.value), 0);
+                return (
+                  <Card key={group.key} className="border-none shadow-sm overflow-hidden">
+                    <div className="px-4 py-3 flex items-center justify-between bg-muted/40">
+                      <div className="flex items-center gap-2">
+                        <ShoppingCart className="w-4 h-4 text-secondary" />
+                        <span className="font-semibold text-sm">{tc('saleOfItems', { n: group.items.length })}</span>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-sm text-secondary">+ {formatCurrency(groupTotal)}</p>
+                        <p className="text-xs text-muted-foreground">{tr('ext.cx_running')} {formatCurrency(group.items[0].balance)}</p>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <p className={`font-bold text-sm ${t.type === 'entrada' ? 'text-secondary' : 'text-destructive'}`}>
-                        {t.type === 'entrada' ? '+' : '-'} {formatCurrency(t.value)}
-                      </p>
-                      <p className="text-xs text-muted-foreground">{tr('ext.cx_running')} {formatCurrency(t.balance)}</p>
+                    <div className="divide-y divide-border">
+                      {group.items.map(t => (
+                        <div key={t.id} className="px-4 py-3 flex items-center justify-between">
+                          {entryBody(t)}
+                        </div>
+                      ))}
                     </div>
-                    {!t.originalSaleId && (
-                      <button onClick={() => handleRemove(t.id)} aria-label={tr('ext.cx_confirm_rm')}
-                        className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-destructive transition-colors">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                </Card>
-              ))}
+                  </Card>
+                );
+              })}
             </div>
           );
         })()}

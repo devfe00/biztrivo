@@ -95,3 +95,7 @@ export function priceRange(product: PricedProduct): { min: number; max: number }
     : [productPrice(product)];
   return { min: Math.min(...prices), max: Math.max(...prices) };
 }
+
+export function normalizeSearch(text: string): string {
+  return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+}

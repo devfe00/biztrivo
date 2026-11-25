@@ -2,14 +2,14 @@ import { useStore, Product } from '@/contexts/StoreContext';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import ProductVariantsEditor from '@/components/ProductVariantsEditor';
-import { productStock, validateVariants, lowStockItems, variantLabel, priceRange, unitPrice, type ProductVariant } from '@/lib/inventory';
+import { productStock, validateVariants, lowStockItems, variantLabel, priceRange, unitPrice, normalizeSearch, type ProductVariant } from '@/lib/inventory';
 import { useInventoryT } from '@/lib/inventory-i18n';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, Trash2, ExternalLink, Copy, Check, Image as ImageIcon, AlertCircle, Download, Rocket, Share2, Pencil, Instagram, FileText, CheckCircle2, Camera, ShoppingCart } from 'lucide-react';
+import { Plus, Trash2, ExternalLink, Copy, Check, Image as ImageIcon, AlertCircle, Download, Rocket, Share2, Pencil, Instagram, FileText, CheckCircle2, Camera, ShoppingCart, Search } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { QRCodeCanvas } from 'qrcode.react';
@@ -61,6 +61,11 @@ const [salePending, setSalePending] = useState(false);
 
   const [variants, setVariants] = useState<ProductVariant[]>([]);
   const [lowStockThreshold, setLowStockThreshold] = useState(3);
+  const [productSearch, setProductSearch] = useState('');
+  const searchQuery = normalizeSearch(productSearch);
+  const visibleProducts = searchQuery
+    ? config.products.filter(p => normalizeSearch(p.name).includes(searchQuery))
+    : config.products;
   const alerts = config.vitrineOnlyMode ? [] : config.products.flatMap(product =>
     lowStockItems(product).map(item => ({ ...item, product }))
   );
@@ -316,6 +321,24 @@ const [salePending, setSalePending] = useState(false);
             ))}
           </section>
         )}
+        {config.products.length > 0 && (
+          <div className="mb-4 space-y-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+              <Input
+                value={productSearch}
+                onChange={e => setProductSearch(e.target.value)}
+                placeholder={it('searchProduct')}
+                inputMode="search"
+                autoComplete="off"
+                className="pl-9"
+              />
+            </div>
+            {searchQuery && visibleProducts.length === 0 && (
+              <p className="text-sm text-muted-foreground">{it('noProduct')}</p>
+            )}
+          </div>
+        )}
         {config.products.length === 0 ? (
           <Card className="p-10 border-none shadow-md text-center">
             <Rocket className="w-12 h-12 mx-auto mb-3 text-primary/30" />
@@ -327,7 +350,7 @@ const [salePending, setSalePending] = useState(false);
           </Card>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {config.products.map(p => (
+            {visibleProducts.map(p => (
               <Card key={p.id} className="border-none shadow-md overflow-hidden relative">
 {p.stock === 0 && !config.vitrineOnlyMode && (
   <div className="absolute top-2 right-2 z-10 px-2 py-1 rounded-md bg-destructive text-destructive-foreground text-xs font-semibold flex items-center gap-1">

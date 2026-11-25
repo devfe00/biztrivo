@@ -7,7 +7,7 @@ const dictionaries = {
     choose: 'Selecione a variação', unavailable: 'Esgotado', low: 'Estoque baixo', restock: 'Repor estoque', remaining: 'Restam {{n}}',
     sale: 'Registrar venda', quantity: 'Quantidade', confirm: 'Confirmar venda', cancel: 'Cancelar', saleSuccess: 'Venda registrada e estoque atualizado.',
     saleError: 'Não foi possível registrar. Confira o estoque e tente novamente.', saleInvalid: 'Selecione uma variação disponível e uma quantidade dentro do estoque.',
-    alert: 'Itens para repor', thresholdInvalid: 'Informe um limite de estoque inteiro e não negativo.', selling: 'Registrando…',     price: 'Preço', priceHint: 'Opcional. Vazio usa o preço do produto.', priceFrom: 'a partir de',
+    alert: 'Itens para repor', thresholdInvalid: 'Informe um limite de estoque inteiro e não negativo.', selling: 'Registrando…',     price: 'Preço', priceHint: 'Opcional. Vazio usa o preço do produto.', priceFrom: 'a partir de',     searchProduct: 'Buscar produto…', noProduct: 'Nenhum produto encontrado', clearProduct: 'Remover produto',
   },
   en: {
     variants: 'Sizes and colors', size: 'Size', color: 'Color', stock: 'Stock', add: 'Add variant', remove: 'Remove variant',
@@ -15,7 +15,7 @@ const dictionaries = {
     choose: 'Select a variant', unavailable: 'Sold out', low: 'Low stock', restock: 'Restock', remaining: '{{n}} left',
     sale: 'Record sale', quantity: 'Quantity', confirm: 'Confirm sale', cancel: 'Cancel', saleSuccess: 'Sale recorded and stock updated.',
     saleError: 'Could not record the sale. Check stock and try again.', saleInvalid: 'Select an available variant and a quantity within stock.',
-    alert: 'Items to restock', thresholdInvalid: 'Enter a nonnegative whole-number stock threshold.', selling: 'Recording…',     price: 'Price', priceHint: 'Optional. Empty uses the product price.', priceFrom: 'from',
+    alert: 'Items to restock', thresholdInvalid: 'Enter a nonnegative whole-number stock threshold.', selling: 'Recording…',     price: 'Price', priceHint: 'Optional. Empty uses the product price.', priceFrom: 'from',     searchProduct: 'Search product…', noProduct: 'No products found', clearProduct: 'Clear product',
   },
   es: {
     variants: 'Tallas y colores', size: 'Talla', color: 'Color', stock: 'Existencias', add: 'Añadir variante', remove: 'Eliminar variante',
@@ -23,7 +23,7 @@ const dictionaries = {
     choose: 'Selecciona una variante', unavailable: 'Agotado', low: 'Pocas existencias', restock: 'Reponer', remaining: 'Quedan {{n}}',
     sale: 'Registrar venta', quantity: 'Cantidad', confirm: 'Confirmar venta', cancel: 'Cancelar', saleSuccess: 'Venta registrada y existencias actualizadas.',
     saleError: 'No se pudo registrar. Revisa las existencias e inténtalo de nuevo.', saleInvalid: 'Selecciona una variante disponible y una cantidad dentro de las existencias.',
-    alert: 'Artículos para reponer', thresholdInvalid: 'Indica un límite entero y no negativo.', selling: 'Registrando…',     price: 'Precio', priceHint: 'Opcional. Vacío usa el precio del producto.', priceFrom: 'desde',
+    alert: 'Artículos para reponer', thresholdInvalid: 'Indica un límite entero y no negativo.', selling: 'Registrando…',     price: 'Precio', priceHint: 'Opcional. Vacío usa el precio del producto.', priceFrom: 'desde',     searchProduct: 'Buscar producto…', noProduct: 'Ningún producto encontrado', clearProduct: 'Quitar producto',
   },
   fr: {
     variants: 'Tailles et couleurs', size: 'Taille', color: 'Couleur', stock: 'Stock', add: 'Ajouter une variante', remove: 'Supprimer la variante',
@@ -31,7 +31,7 @@ const dictionaries = {
     choose: 'Choisissez une variante', unavailable: 'Épuisé', low: 'Stock faible', restock: 'Réapprovisionner', remaining: 'Il reste {{n}}',
     sale: 'Enregistrer la vente', quantity: 'Quantité', confirm: 'Confirmer la vente', cancel: 'Annuler', saleSuccess: 'Vente enregistrée et stock mis à jour.',
     saleError: 'Impossible d’enregistrer. Vérifiez le stock et réessayez.', saleInvalid: 'Choisissez une variante disponible et une quantité dans la limite du stock.',
-    alert: 'Articles à réapprovisionner', thresholdInvalid: 'Saisissez un seuil entier et positif ou nul.', selling: 'Enregistrement…',     price: 'Prix', priceHint: 'Facultatif. Vide = prix du produit.', priceFrom: 'à partir de',
+    alert: 'Articles à réapprovisionner', thresholdInvalid: 'Saisissez un seuil entier et positif ou nul.', selling: 'Enregistrement…',     price: 'Prix', priceHint: 'Facultatif. Vide = prix du produit.', priceFrom: 'à partir de',     searchProduct: 'Rechercher un produit…', noProduct: 'Aucun produit trouvé', clearProduct: 'Retirer le produit',
   },
 };
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { deductStock, restoreStock, lowStockItems, productStock, validateVariants, unitPrice, priceRange } from '@/lib/inventory';
+import { deductStock, restoreStock, lowStockItems, productStock, validateVariants, unitPrice, priceRange, normalizeSearch } from '@/lib/inventory';
 
 const variants = [
   { id: 'p-red', size: 'P', color: 'Vermelho', stock: 2 },
@@ -82,4 +82,10 @@ describe('Variant inventory', () => {
     for (const price of [0, -1, NaN, Infinity]) {
       expect(() => validateVariants([{ ...variants[0], price }])).toThrow();
     }
+
+      it('normalizes search text ignoring case and accents', () => {
+    expect(normalizeSearch('  Boné Preto ')).toBe('bone preto');
+    expect(normalizeSearch('Bermúda')).toBe('bermuda');
+  });
+  
   });

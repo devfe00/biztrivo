@@ -78,6 +78,14 @@ export interface Transaction {
   variantId?: string;
   quantity?: number;
   returnedQuantity?: number;
+  saleGroupId?: string;
+}
+
+export interface ProductSaleItem {
+  productId: string;
+  quantity: number;
+  variantId?: string;
+  totalValue?: number;
 }
 
 export interface StoreConfig {
@@ -118,7 +126,8 @@ interface StoreContextType {
   addProduct: (product: Omit<Product, 'id'>) => Promise<void>;
   removeProduct: (id: string) => Promise<void>;
   updateProduct: (product: Product) => Promise<void>;
-  registerProductSale: (productId: string, quantity: number, variantId?: string, totalValue?: number, saleDate?: string) => Promise<void>;
+  registerProductSale: (productId: string, quantity: number, variantId?: string, totalValue?: number, date?: string) => Promise<void>;
+  registerProductSales: (items: ProductSaleItem[]) => Promise<void>;
   addTransaction: (transaction: Omit<Transaction, 'id'>) => Promise<void>;
   removeTransaction: (id: string) => Promise<Transaction | undefined>;
   cancelSale: (id: string, options: { restock: boolean }) => Promise<{ removed: Transaction; restocked: boolean }>;
@@ -215,6 +224,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
           variantId: typeof t.variantId === 'string' ? t.variantId : undefined,
           quantity: Number.isSafeInteger(t.quantity) && t.quantity > 0 ? t.quantity : undefined,
           returnedQuantity: Number.isSafeInteger(t.returnedQuantity) && t.returnedQuantity > 0 ? t.returnedQuantity : undefined,
+          saleGroupId: typeof t.saleGroupId === 'string' ? t.saleGroupId : undefined,
         };
       });
 
@@ -443,6 +453,8 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
     try {
       const productRef = doc(db, 'products', productId);
       const transactionRef = doc(collection(db, 'transactions'));
+      const saleTime = Date.parse(date ?? new Date().toISOString());
+      if (!Number.isFinite(saleTime) || saleTime > Date.now() + 24 * 60 * 60 * 1000) throw new Error('Invalid date');
       const result = await runTransaction(db, async tx => {
         const snapshot = await tx.get(productRef);
         if (!snapshot.exists()) throw new Error('Product not found');
@@ -474,6 +486,79 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
         ...prev,
         products: prev.products.map(p => p.id === productId ? { ...p, ...result.inventory } : p),
         transactions: [result.entry, ...prev.transactions],
+      }));
+    } finally {
+      pendingOps.current.delete(opKey);
+    }
+  };
+
+  const registerProductSales = async (items: ProductSaleItem[]) => {
+    if (!user) throw new Error('Sign in required');
+    if (items.length === 0 || items.length > 50) throw new Error('Invalid items');
+    const productIds = Array.from(new Set(items.map(item => item.productId)));
+    const opKey = `sales-${[...productIds].sort().join('|')}`;
+    if (pendingOps.current.has(opKey)) throw new Error('Sale already pending');
+    pendingOps.current.add(opKey);
+    try {
+      const transactionRefs = items.map(() => doc(collection(db, 'transactions')));
+      const date = new Date().toISOString();
+      const saleGroupId = items.length > 1 ? crypto.randomUUID() : undefined;
+      const result = await runTransaction(db, async tx => {
+        const snapshots = await Promise.all(productIds.map(id => tx.get(doc(db, 'products', id))));
+        const products = new Map<string, { name: string; originalPrice: number; discountPrice: number; inventory: InventoryProduct }>();
+        snapshots.forEach((snapshot, index) => {
+          if (!snapshot.exists()) throw new Error('Product not found');
+          const data = snapshot.data();
+          if (data.userId !== user.uid) throw new Error('Forbidden');
+          products.set(productIds[index], {
+            name: data.name,
+            originalPrice: Number(data.originalPrice) || 0,
+            discountPrice: Number(data.discountPrice) || 0,
+            inventory: { stock: data.stock, variants: data.variants },
+          });
+        });
+
+        const entries = items.map((item, index) => {
+          const product = products.get(item.productId)!;
+          product.inventory = deductStock(product.inventory, item.quantity, item.variantId);
+          const price = unitPrice(
+            { originalPrice: product.originalPrice, discountPrice: product.discountPrice, variants: product.inventory.variants },
+            item.variantId,
+          );
+          const value = item.totalValue !== undefined
+            ? Math.round(item.totalValue * 100) / 100
+            : Math.round(price * item.quantity * 100) / 100;
+          if (!Number.isFinite(value) || value <= 0) throw new Error('Invalid price');
+          const selected = product.inventory.variants?.find(v => v.id === item.variantId);
+          const label = selected ? ` (${variantLabel(selected)})` : '';
+          const entry: Transaction = {
+            id: transactionRefs[index].id, type: 'entrada', value,
+            description: sanitizeText(`${product.name}${label}${item.quantity > 1 ? ` (${item.quantity}x)` : ''}`),
+            category: 'Venda', isPersonal: false, date,
+            productId: item.productId, variantId: item.variantId, quantity: item.quantity,
+            ...(saleGroupId ? { saleGroupId } : {}),
+          };
+          return entry;
+        });
+
+        products.forEach((product, id) => {
+          tx.update(doc(db, 'products', id), {
+            stock: product.inventory.stock,
+            variants: product.inventory.variants ?? [],
+            updatedAt: serverTimestamp(),
+          });
+        });
+        entries.forEach((entry, index) => {
+          const { id: _id, ...fields } = entry;
+          tx.set(transactionRefs[index], { ...fields, userId: user.uid, variantId: entry.variantId ?? null, createdAt: serverTimestamp() });
+        });
+        return { products, entries };
+      });
+
+      setConfig(prev => ({
+        ...prev,
+        products: prev.products.map(p => result.products.has(p.id) ? { ...p, ...result.products.get(p.id)!.inventory } : p),
+        transactions: [...[...result.entries].reverse(), ...prev.transactions],
       }));
     } finally {
       pendingOps.current.delete(opKey);
@@ -588,6 +673,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
           isPersonal: data.isPersonal ?? false,
           date: data.date?.toDate ? data.date.toDate().toISOString() : data.date,
           originalSaleId: typeof data.originalSaleId === 'string' ? data.originalSaleId : undefined,
+          saleGroupId: typeof data.saleGroupId === 'string' ? data.saleGroupId : undefined,
           productId,
           variantId,
           quantity: validQuantity ? quantity : undefined,
@@ -630,6 +716,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
         isPersonal: removed.isPersonal,
         date: removed.date,
         ...(removed.originalSaleId ? { originalSaleId: removed.originalSaleId } : {}),
+        ...(removed.saleGroupId ? { saleGroupId: removed.saleGroupId } : {}),
         ...(linked ? { productId: removed.productId, variantId: removed.variantId ?? null, quantity: removed.quantity } : {}),
         createdAt: serverTimestamp(),
       });
@@ -647,7 +734,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
   return (
     <StoreContext.Provider value={{
       config, updateConfig, addProduct, removeProduct, updateProduct, registerProductSale,
-      addTransaction, removeTransaction, cancelSale, undoCancelSale, isLoading, refreshData: fetchData,
+      addTransaction, removeTransaction, cancelSale, undoCancelSale, registerProductSales, isLoading, refreshData: fetchData,
     }}>
       {children}
     </StoreContext.Provider>
