@@ -6,8 +6,24 @@ import Vitrine from '@/pages/Vitrine';
 const state = vi.hoisted(() => ({
   addProduct: vi.fn(),
   registerProductSale: vi.fn(),
+  getCurrentSubscription: vi.fn(),
+  igModalOpened: vi.fn(),
 }));
 
+vi.mock('@/integrations/firebase/firebase', () => ({
+  db: {},
+  auth: {},
+  storage: {},
+  FUNCTIONS: {},
+  callFunction: vi.fn(),
+}));
+vi.mock('@/contexts/AuthContext', () => ({
+  useAuth: () => ({ user: { uid: 'vitrine-test', email: 'loja@example.com' } }),
+}));
+vi.mock('@/lib/billing', async () => {
+  const actual = await vi.importActual<typeof import('@/lib/billing')>('@/lib/billing');
+  return { ...actual, getCurrentSubscription: state.getCurrentSubscription };
+});
 vi.mock('@/contexts/StoreContext', () => ({
   useStore: () => ({
     config: { slug: 'test', storeName: 'Loja', whatsapp: '', logo: '', primaryColor: '#3b82f6', vitrineActive: true, vitrineOnlyMode: false,
@@ -18,7 +34,10 @@ vi.mock('@/contexts/StoreContext', () => ({
     updateProduct: vi.fn(), updateConfig: vi.fn(), removeProduct: vi.fn(),
   }),
 }));
-vi.mock('@/components/InstagramPostGenerator', () => ({ default: () => null }));
+vi.mock('@/components/InstagramPostGenerator', () => ({
+  default: ({ open, product }: { open: boolean; product: { name: string } }) =>
+    open ? <div role="dialog" aria-label="ig-generator">Gerador {product.name}</div> : null,
+}));
 vi.mock('@/components/InvoiceComparator', () => ({ default: () => null }));
 vi.mock('qrcode.react', () => ({ QRCodeCanvas: () => <canvas /> }));
 
@@ -27,6 +46,7 @@ beforeEach(() => {
   localStorage.clear();
   localStorage.setItem('biztrivo:lang', 'pt');
   vi.clearAllMocks();
+  state.getCurrentSubscription.mockResolvedValue({ plan: 'pro', status: 'active', currentPeriodEnd: null });
 });
 
 describe('Inventory management flow', () => {
@@ -48,5 +68,24 @@ describe('Inventory management flow', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Registrar venda' }));
     expect(screen.getByRole('button', { name: 'Confirmar venda' })).toBeDisabled();
     expect(state.registerProductSale).not.toHaveBeenCalled();
+  });
+
+  it('blocks PostAI on Vitrine for trial and free users with UpgradeModal instead of opening the generator', async () => {
+    for (const plan of ['trial', 'free'] as const) {
+      cleanup();
+      state.getCurrentSubscription.mockResolvedValue({ plan, status: 'active', currentPeriodEnd: null });
+      render(<I18nProvider><Vitrine /></I18nProvider>);
+      fireEvent.click(screen.getByRole('button', { name: 'Post IA' }));
+      await screen.findByRole('link', { name: /Assinar a Biztrivo/i });
+      expect(screen.queryByRole('dialog', { name: 'ig-generator' })).toBeNull();
+    }
+  });
+
+  it('opens InstagramPostGenerator on Vitrine for active Pro subscribers', async () => {
+    state.getCurrentSubscription.mockResolvedValue({ plan: 'pro', status: 'active', currentPeriodEnd: null });
+    render(<I18nProvider><Vitrine /></I18nProvider>);
+    fireEvent.click(screen.getByRole('button', { name: 'Post IA' }));
+    await screen.findByRole('dialog', { name: 'ig-generator' });
+    expect(screen.queryByRole('link', { name: /Assinar a Biztrivo/i })).toBeNull();
   });
 });

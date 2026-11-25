@@ -35,6 +35,12 @@ export const hasActiveSubscription = (sub?: {
   return false;
 };
 
+export const hasProSubscription = (sub?: {
+  status?: string | null;
+  plan?: string | null;
+  currentPeriodEnd?: { toDate?: () => Date } | string | null;
+} | null) => sub?.plan === 'pro' && hasActiveSubscription(sub);
+
 export const getCurrentSubscription = async (userId: string) => {
   const snap = await getDoc(doc(db, 'subscriptions', userId));
   if (!snap.exists()) return null;

@@ -8,22 +8,15 @@ import { WifiOff, Wifi, Upload, Trash2, CheckCircle2, Plus } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext';
 import { useStore } from '@/contexts/StoreContext';
 import { productStock, unitPrice, variantLabel } from '@/lib/inventory';
+import {
+  type OfflineSale,
+  pendingOfflineQuantity,
+  readOfflineQueue,
+  writeOfflineQueue,
+} from '@/lib/offline-queue';
 import { toast } from 'sonner';
 import { useT } from '@/lib/i18n';
 
-interface OfflineSale {
-  id: string;
-  product: string;
-  value: number;
-  payment: string;
-  date: string;
-  productId?: string;
-  variantId?: string;
-  quantity?: number;
-  error?: 'stock_error' | 'product_error' | 'sync_error';
-}
-
-const queueKey = (uid: string) => `biztrivo:offline_queue:${uid}`;
 const paymentKeys: Record<string, string> = {
   Dinheiro: 'payment_cash', PIX: 'payment_pix', 'Cartão Débito': 'payment_debit',
   'Cartão Crédito': 'payment_credit', Outro: 'payment_other',
@@ -67,11 +60,9 @@ const Offline = () => {
   useEffect(() => {
     let loaded: OfflineSale[] = [];
     if (user) {
-      try {
-        const raw = localStorage.getItem(queueKey(user.uid));
-        const parsed: unknown = raw ? JSON.parse(raw) : [];
-        if (Array.isArray(parsed)) loaded = parsed;
-      } catch { toast.error(t('offline.storage_error')); }
+      const { items, ok } = readOfflineQueue(user.uid);
+      if (!ok) toast.error(t('offline.storage_error'));
+      loaded = items;
     }
     queueRef.current = loaded;
     setQueue(loaded);
@@ -80,8 +71,7 @@ const Offline = () => {
 
   const persist = useCallback((next: OfflineSale[], uid: string) => {
     // Write before displaying success; a full/blocked browser store must not lose the queue.
-    try { localStorage.setItem(queueKey(uid), JSON.stringify(next)); }
-    catch { toast.error(t('offline.storage_error')); return false; }
+    if (!writeOfflineQueue(uid, next)) { toast.error(t('offline.storage_error')); return false; }
     if (uidRef.current === uid) {
       queueRef.current = next;
       setQueue(next);
@@ -110,8 +100,7 @@ const Offline = () => {
       toast.error(t('offline.select_variant')); return;
     }
     if (productId) {
-      const pending = queueRef.current.filter(s => s.productId === productId && s.variantId === (variantId || undefined))
-        .reduce((sum, s) => sum + (s.quantity ?? 1), 0);
+      const pending = pendingOfflineQuantity(queueRef.current, productId, variantId || undefined);
       if (availableStock === undefined || count + pending > availableStock) {
         toast.error(t('offline.stock_error')); return;
       }

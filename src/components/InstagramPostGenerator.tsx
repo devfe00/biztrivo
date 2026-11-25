@@ -13,6 +13,7 @@ interface Props {
   whatsapp: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onUpgradeRequired?: () => void;
 }
 
 type Tone = 'promocional' | 'elegante' | 'divertido';
@@ -22,7 +23,7 @@ const toneKeyMap: Record<Tone, string> = { promocional: 'promotional', elegante:
 const RATE_KEY = 'ig_post_last_gen';
 const RATE_LIMIT_MS = 60_000; // 1min entre gerações
 
-export default function InstagramPostGenerator({ product, storeName, whatsapp, open, onOpenChange }: Props) {
+export default function InstagramPostGenerator({ product, storeName, whatsapp, open, onOpenChange, onUpgradeRequired }: Props) {
   const t = useT();
   const [loading, setLoading] = useState(false);
   const [tone, setTone] = useState<Tone>('promocional');
@@ -56,9 +57,14 @@ export default function InstagramPostGenerator({ product, storeName, whatsapp, o
       setResult(data);
       localStorage.setItem(RATE_KEY, String(Date.now()));
       toast.success(t('instagram_post.generate_success'));
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
-      toast.error(e?.message || t('instagram_post.generate_error_generic'));
+      const err = e as { status?: number; message?: string };
+      if (err?.status === 403 && onUpgradeRequired) {
+        onUpgradeRequired();
+        return;
+      }
+      toast.error(err?.message || t('instagram_post.generate_error_generic'));
     } finally {
       setLoading(false);
     }

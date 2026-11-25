@@ -13,22 +13,65 @@ import { Plus, Trash2, ExternalLink, Copy, Check, Image as ImageIcon, AlertCircl
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { QRCodeCanvas } from 'qrcode.react';
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { sanitizeText } from '@/lib/sanitize';
 import { validateImageFile } from '@/lib/fileValidation';
 import InstagramPostGenerator from '@/components/InstagramPostGenerator';
 import InvoiceComparator from '@/components/InvoiceComparator';
+import UpgradeModal from '@/components/UpgradeModal';
+import { useAuth } from '@/contexts/AuthContext';
+import { getCurrentSubscription, hasProSubscription } from '@/lib/billing';
 import { useT } from '@/lib/i18n';
+import { useLang } from '@/lib/useLang';
+
+const POST_AI_UPGRADE_REASON: Record<'pt' | 'en' | 'es' | 'fr', string> = {
+  pt: 'O Gerador de Post com IA está disponível apenas para assinantes Biztrivo.',
+  en: 'The AI Post Generator is available only for Biztrivo subscribers.',
+  es: 'El Generador de Posts con IA está disponible solo para suscriptores de Biztrivo.',
+  fr: 'Le Générateur de Posts IA est réservé aux abonnés Biztrivo.',
+};
 
 
 
 const Vitrine = () => {
   const t = useT();
+  const { lang } = useLang();
   const it = useInventoryT();
+  const { user } = useAuth();
   const { config, updateConfig, addProduct, removeProduct, updateProduct, registerProductSale } = useStore();
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [igProduct, setIgProduct] = useState<Product | null>(null);
+  const [isPro, setIsPro] = useState<boolean | null>(null);
+  const [showPostUpgrade, setShowPostUpgrade] = useState(false);
   const [invoiceOpen, setInvoiceOpen] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    if (!user) { setIsPro(false); return; }
+    setIsPro(null);
+    getCurrentSubscription(user.uid)
+      .then(sub => { if (active) setIsPro(hasProSubscription(sub)); })
+      .catch(() => { /* backend enforces authorization if check fails */ });
+    return () => { active = false; };
+  }, [user]);
+
+  const handleOpenPostAI = async (product: Product) => {
+    let allowed = isPro;
+    if (allowed === null && user) {
+      try {
+        const sub = await getCurrentSubscription(user.uid);
+        allowed = hasProSubscription(sub);
+        setIsPro(allowed);
+      } catch {
+        allowed = true;
+      }
+    }
+    if (!allowed) {
+      setShowPostUpgrade(true);
+      return;
+    }
+    setIgProduct(product);
+  };
 
 const [showForm, setShowForm] = useState(false);
 const [copied, setCopied] = useState(false);
@@ -393,7 +436,7 @@ const [salePending, setSalePending] = useState(false);
   <button onClick={() => setEditingProduct({ ...p })} className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1 transition-colors">
     <Pencil className="w-3 h-3" /> {t('ext.vt_edit')}
   </button>
-  <button onClick={() => setIgProduct(p)} className="text-xs text-muted-foreground hover:text-pink-500 flex items-center gap-1 transition-colors">
+  <button onClick={() => void handleOpenPostAI(p)} className="text-xs text-muted-foreground hover:text-pink-500 flex items-center gap-1 transition-colors">
     <Instagram className="w-3 h-3" /> {t('ext.vt_ig_post')}
   </button>
 {!config.vitrineOnlyMode && p.stock > 0 && (
@@ -453,8 +496,15 @@ className="text-xs text-muted-foreground hover:text-secondary flex items-center 
           whatsapp={config.whatsapp}
           open={!!igProduct}
           onOpenChange={(o) => !o && setIgProduct(null)}
+          onUpgradeRequired={() => { setIgProduct(null); setShowPostUpgrade(true); }}
         />
       )}
+
+      <UpgradeModal
+        open={showPostUpgrade}
+        onClose={() => setShowPostUpgrade(false)}
+        reason={POST_AI_UPGRADE_REASON[lang]}
+      />
 
       <InvoiceComparator
         products={config.products}

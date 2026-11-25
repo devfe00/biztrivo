@@ -1,12 +1,15 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useStore, Transaction } from '@/contexts/StoreContext';
 import { useNotifications } from '@/hooks/useNotifications';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { TrendingUp, TrendingDown, Trash2, Search, Wallet, Package, ChevronDown, ChevronUp, Plus, ShoppingCart, X } from 'lucide-react';
+import { TrendingUp, TrendingDown, Trash2, Search, Wallet, Package, ChevronDown, ChevronUp, Plus, ShoppingCart, X, WifiOff } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import { toast } from 'sonner';
 import { useLang } from '@/lib/useLang';
@@ -18,6 +21,11 @@ import { useCaixaT } from '@/lib/caixa-i18n';
 import { type CartItem, caixaDraftKey, parseCaixaDraft } from '@/lib/caixa-draft';
 import { groupBySale } from '@/lib/sale-group';
 import { useBusinessRecords } from '@/hooks/useBusinessRecords';
+import { appendOfflineSales, isOfflineError, pendingOfflineQuantity, readOfflineQueue, type OfflineSale } from '@/lib/offline-queue';
+
+type PendingOfflineSale =
+  | { kind: 'products'; lines: CartItem[] }
+  | { kind: 'manual'; value: number; description: string };
 
 const CATEGORY_KEYS = ['Venda', 'Reposição', 'Embalagem', 'Frete', 'Pessoal', 'Funcionário', 'Outros'] as const;
 const CAT_LABEL_KEY: Record<string, string> = {
@@ -32,6 +40,7 @@ const CAT_LABEL_KEY: Record<string, string> = {
 
 const Caixa = () => {
   const tr = useT();
+  const navigate = useNavigate();
   const { config, addTransaction, removeTransaction, cancelSale, undoCancelSale, registerProductSales, refreshData, isLoading } = useStore();
   const tc = useCaixaT();
   const { user } = useAuth();
@@ -50,6 +59,7 @@ const Caixa = () => {
   const [removeBusy, setRemoveBusy] = useState(false);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [pendingOffline, setPendingOffline] = useState<PendingOfflineSale | null>(null);
   const cartTotal = cart.reduce((sum, item) => sum + item.value, 0);
 
   const draftKey = user ? caixaDraftKey(user.uid) : null;
@@ -165,6 +175,11 @@ const Caixa = () => {
 
     const resolvedDescription = description.trim() || category;
 
+    if (type === 'entrada' && category === 'Venda' && !navigator.onLine) {
+      setPendingOffline({ kind: 'manual', value: numValue, description: resolvedDescription });
+      return;
+    }
+
     try {
       await addTransaction({
         type,
@@ -185,7 +200,11 @@ const Caixa = () => {
       resetProductSelection();
     } catch (err) {
       console.error('Erro ao registrar lançamento:', err);
-      toast.error(tr('ext.cx_err_save'));
+      if (type === 'entrada' && category === 'Venda' && isOfflineError(err)) {
+        setPendingOffline({ kind: 'manual', value: numValue, description: resolvedDescription });
+      } else {
+        toast.error(tr('ext.cx_err_save'));
+      }
     }
   };
 
@@ -289,15 +308,16 @@ const Caixa = () => {
 
   const registerSale = async () => {
     if (submitting) return;
-    if (!navigator.onLine) {
-      toast.error(tc('cartOffline'));
-      return;
-    }
     let lines = cart;
     if (selectedProductId) {
       const staged = stageCurrentItem();
       if (!staged) return;
       lines = [...cart, staged];
+    }
+    if (lines.length === 0) return;
+    if (!navigator.onLine) {
+      setPendingOffline({ kind: 'products', lines });
+      return;
     }
     setSubmitting(true);
     try {
@@ -316,11 +336,83 @@ const Caixa = () => {
       resetProductSelection();
     } catch (err) {
       console.error('Erro ao registrar venda com produtos:', err);
-      toast.error(tr('ext.cx_err_save'));
+      if (isOfflineError(err)) {
+        setPendingOffline({ kind: 'products', lines });
+      } else {
+        toast.error(tr('ext.cx_err_save'));
+      }
     } finally {
       setSubmitting(false);
     }
   };
+
+  const confirmSendOffline = () => {
+    if (!user || !pendingOffline) return;
+    const now = new Date().toISOString();
+    let sales: OfflineSale[];
+    if (pendingOffline.kind === 'products') {
+      const { items: existing, ok } = readOfflineQueue(user.uid);
+      if (!ok) {
+        toast.error(tr('offline.storage_error'));
+        return;
+      }
+      const requested = new Map<string, { productId: string; variantId?: string; qty: number }>();
+      for (const line of pendingOffline.lines) {
+        const mapKey = `${line.productId}::${line.variantId ?? ''}`;
+        const prev = requested.get(mapKey);
+        requested.set(mapKey, { productId: line.productId, variantId: line.variantId, qty: (prev?.qty ?? 0) + line.quantity });
+      }
+      for (const req of requested.values()) {
+        const prod = config.products.find(p => p.id === req.productId);
+        const variant = req.variantId ? prod?.variants?.find(v => v.id === req.variantId) : undefined;
+        const available = prod ? (prod.variants?.length ? (variant?.stock ?? 0) : productStock(prod)) : 0;
+        if (req.qty + pendingOfflineQuantity(existing, req.productId, req.variantId) > available) {
+          toast.error(tc('offlineStockExceeded'));
+          setPendingOffline(null);
+          return;
+        }
+      }
+      sales = pendingOffline.lines.map(line => ({
+        id: crypto.randomUUID(),
+        product: line.label,
+        value: Math.round(line.value * 100) / 100,
+        payment: 'Outro',
+        date: now,
+        productId: line.productId,
+        ...(line.variantId ? { variantId: line.variantId } : {}),
+        quantity: line.quantity,
+      }));
+    } else {
+      sales = [{
+        id: crypto.randomUUID(),
+        product: pendingOffline.description,
+        value: Math.round(pendingOffline.value * 100) / 100,
+        payment: 'Outro',
+        date: now,
+        quantity: 1,
+      }];
+    }
+
+    if (!appendOfflineSales(user.uid, sales)) {
+      toast.error(tr('offline.storage_error'));
+      return;
+    }
+    setCart([]);
+    setValue('');
+    setDescription('');
+    setIsPersonal(false);
+    resetProductSelection();
+    setPendingOffline(null);
+    toast.success(tc('offlineQueued'), {
+      action: { label: tc('offlineViewQueue'), onClick: () => navigate('/offline') },
+    });
+  };
+
+  const pendingOfflineTotal = pendingOffline
+    ? pendingOffline.kind === 'products'
+      ? pendingOffline.lines.reduce((sum, line) => sum + line.value, 0)
+      : pendingOffline.value
+    : 0;
 
   return (
     <div className="space-y-8">
@@ -651,6 +743,45 @@ const Caixa = () => {
         onClose={() => setRemoving(null)}
         onConfirm={confirmRemove}
       />
+
+      <Dialog open={!!pendingOffline} onOpenChange={open => !open && setPendingOffline(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <WifiOff className="w-5 h-5 text-warning" />
+              {tc('offlineSaleTitle')}
+            </DialogTitle>
+            <DialogDescription>
+              {tc('offlineSaleDesc', { total: formatCurrency(pendingOfflineTotal) })}
+            </DialogDescription>
+          </DialogHeader>
+          {pendingOffline && (
+            <div className="rounded-lg bg-muted/50 p-3 space-y-1.5 text-sm max-h-48 overflow-y-auto">
+              {pendingOffline.kind === 'products' ? (
+                pendingOffline.lines.map(line => (
+                  <div key={line.key} className="flex items-center justify-between gap-2">
+                    <span className="min-w-0 break-words">{line.quantity}x {line.label}</span>
+                    <span className="font-semibold shrink-0">{formatCurrency(line.value)}</span>
+                  </div>
+                ))
+              ) : (
+                <div className="flex items-center justify-between gap-2">
+                  <span className="min-w-0 break-words">{pendingOffline.description}</span>
+                  <span className="font-semibold shrink-0">{formatCurrency(pendingOffline.value)}</span>
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button type="button" variant="outline" onClick={() => setPendingOffline(null)}>
+              {tc('offlineKeepHere')}
+            </Button>
+            <Button type="button" onClick={confirmSendOffline}>
+              {tc('offlineSendQueue')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
