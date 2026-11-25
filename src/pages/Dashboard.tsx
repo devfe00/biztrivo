@@ -1,6 +1,10 @@
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { db } from '@/integrations/firebase/firebase';
 import { useStore } from '@/contexts/StoreContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card } from '@/components/ui/card';
-import { TrendingUp, TrendingDown, Store, ExternalLink, Wallet, ShoppingBag, AlertTriangle, Trophy, Target, ShoppingCart, Check } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { TrendingUp, TrendingDown, Store, ExternalLink, Wallet, ShoppingBag, AlertTriangle, Trophy, Target, ShoppingCart, Check, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useMemo, useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
@@ -8,9 +12,19 @@ import { Input } from '@/components/ui/input';
 import CashflowForecast from '@/components/CashflowForecast';
 import { useT } from '@/lib/i18n';
 
+const QUICK_SALES_PER_PAGE = 8;
+const QUICK_SALES_TTL = 48 * 60 * 60 * 1000; // 48h
+
+// seen: quando o produto apareceu pela 1ª vez no card | dismissed: quando foi dispensado na lixeira
+type QuickSalesState = {
+  seen: Record<string, number>;
+  dismissed: Record<string, number>;
+};
+
 const Dashboard = () => {
   const t = useT();
   const { config, updateConfig, addTransaction } = useStore();
+  const { user } = useAuth();
 
   const [dailyGoal, setDailyGoal] = useState(config.dailyGoal);
   const [isEditingGoal, setIsEditingGoal] = useState(false);
@@ -18,11 +32,78 @@ const Dashboard = () => {
   const [goalReached, setGoalReached] = useState(false);
   const [confirmedSaleId, setConfirmedSaleId] = useState<string | null>(null);
 
+  const quickRef = useMemo(
+    () => (user ? doc(db, 'users', user.uid, 'quickSales', 'state') : null),
+    [user?.uid]
+  );
+  const [quickState, setQuickState] = useState<QuickSalesState>({ seen: {}, dismissed: {} });
+  const [quickReady, setQuickReady] = useState(false);
+  const [quickPage, setQuickPage] = useState(1);
+
   useEffect(() => {
     setDailyGoal(config.dailyGoal);
   }, [config.dailyGoal]);
 
-  // Use LOCAL date (not UTC) so transactions added late at night in BR (UTC-3)
+  //sincronizado entre dispositivos
+  useEffect(() => {
+    let active = true;
+    setQuickReady(false);
+    if (!quickRef) return;
+    getDoc(quickRef)
+      .then(snap => {
+        if (!active) return;
+        const data = snap.exists() ? snap.data() : null;
+        setQuickState({ seen: data?.seen ?? {}, dismissed: data?.dismissed ?? {} });
+        setQuickReady(true);
+      })
+      // Sem estado confiável não mostramos o card (evita resetar o relógio de 48h por engano)
+      .catch(err => console.error('quickSales load error:', err));
+    return () => { active = false; };
+  }, [quickRef]);
+
+  // registra (uma única vez) quando cada produto apareceu pela primeira vez
+  useEffect(() => {
+    if (!quickReady || !quickRef) return;
+    const missing = config.products.filter(p => quickState.seen[p.id] === undefined);
+    if (missing.length === 0) return;
+    const nowMs = Date.now();
+    const newSeen: Record<string, number> = {};
+    missing.forEach(p => { newSeen[p.id] = nowMs; });
+    setQuickState(prev => ({ ...prev, seen: { ...newSeen, ...prev.seen } }));
+    setDoc(quickRef, { seen: newSeen }, { merge: true })
+      .catch(err => console.error('quickSales seen error:', err));
+  }, [quickReady, quickRef, config.products, quickState.seen]);
+
+  const quickSaleProducts = useMemo(() => {
+    if (!quickReady) return [];
+    const nowMs = Date.now();
+    return config.products.filter(p => {
+      if (p.stock === 0) return false;
+      if (quickState.dismissed[p.id]) return false;
+      const seenAt = quickState.seen[p.id];
+      return seenAt === undefined || nowMs - seenAt < QUICK_SALES_TTL;
+    });
+  }, [config.products, quickState, quickReady]);
+
+  const quickTotalPages = Math.max(1, Math.ceil(quickSaleProducts.length / QUICK_SALES_PER_PAGE));
+  const pagedQuickSales = useMemo(() => {
+    const start = (quickPage - 1) * QUICK_SALES_PER_PAGE;
+    return quickSaleProducts.slice(start, start + QUICK_SALES_PER_PAGE);
+  }, [quickSaleProducts, quickPage]);
+
+  useEffect(() => {
+    if (quickPage > quickTotalPages) setQuickPage(quickTotalPages);
+  }, [quickPage, quickTotalPages]);
+
+  const dismissQuickSale = (id: string) => {
+    if (!quickRef) return;
+    const ts = Date.now();
+    setQuickState(prev => ({ ...prev, dismissed: { ...prev.dismissed, [id]: ts } }));
+    setDoc(quickRef, { dismissed: { [id]: ts } }, { merge: true })
+      .catch(err => console.error('quickSales dismiss error:', err));
+  };
+
+  //LOCAL date (not UTC) so transactions added late at night in BR (UTC-3)
   // are not bucketed into "tomorrow" and disappear from the dashboard.
   const now = new Date();
   const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
@@ -209,58 +290,97 @@ const Dashboard = () => {
         </Card>
       </div>
 
-      {config.products.length > 0 && !config.vitrineOnlyMode && (
+      {quickSaleProducts.length > 0 && !config.vitrineOnlyMode && (
         <Card className="p-6 border-none shadow-md">
           <div className="flex items-center gap-3 mb-1">
             <ShoppingCart className="w-5 h-5 text-primary" />
             <h2 className="text-lg font-semibold font-heading">Confirmar venda recebida</h2>
           </div>
-          <p className="text-sm text-muted-foreground mb-4">
+          <p className="text-sm text-muted-foreground mb-2">
             Recebeu o pagamento pelo WhatsApp ou PIX? Toque no produto para lançar no Caixa.
           </p>
+          <p className="text-xs text-muted-foreground mb-4">
+            Produtos não confirmados ou descartados somem desta lista após 48 horas.
+          </p>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
-            {config.products.filter(p => p.stock !== 0).map(p => {
+            {pagedQuickSales.map(p => {
               const price = p.discountPrice > 0 ? p.discountPrice : p.originalPrice;
               const isConfirmed = confirmedSaleId === p.id;
               return (
-                <button
-                  key={p.id}
-                  disabled={isConfirmed}
-                  onClick={async () => {
-                    await addTransaction({
-                      type: 'entrada',
-                      value: price,
-                      description: p.name,
-                      category: 'Venda',
-                      isPersonal: false,
-                      date: new Date().toISOString(),
-                    });
-                    setConfirmedSaleId(p.id);
-                    setTimeout(() => setConfirmedSaleId(null), 2000);
-                  }}
-                  className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all text-left ${
-                    isConfirmed
-                      ? 'border-secondary bg-secondary/10'
-                      : 'border-border hover:border-primary/40 hover:bg-muted/50'
-                  }`}
-                >
-                  {p.photo
-                    ? <img src={p.photo} alt={p.name} className="w-10 h-10 object-cover rounded-lg" />
-                    : <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center"><ShoppingBag className="w-5 h-5 text-muted-foreground/40" /></div>
-                  }
-                  <div className="w-full">
-                    <p className="text-xs font-medium line-clamp-2 leading-tight">{p.name}</p>
-                    <p className="text-xs font-bold text-secondary mt-0.5">
-                      {isConfirmed
-                        ? <span className="flex items-center gap-1 text-secondary"><Check className="w-3 h-3" /> Lançado!</span>
-                        : `R$ ${price.toFixed(2).replace('.', ',')}`
-                      }
-                    </p>
-                  </div>
-                </button>
+                <div key={p.id} className="relative">
+                  <button
+                    disabled={isConfirmed}
+                    onClick={async () => {
+                      await addTransaction({
+                        type: 'entrada',
+                        value: price,
+                        description: p.name,
+                        category: 'Venda',
+                        isPersonal: false,
+                        date: new Date().toISOString(),
+                      });
+                      setConfirmedSaleId(p.id);
+                      setTimeout(() => setConfirmedSaleId(null), 2000);
+                    }}
+                    className={`w-full h-full flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all text-left ${
+                      isConfirmed
+                        ? 'border-secondary bg-secondary/10'
+                        : 'border-border hover:border-primary/40 hover:bg-muted/50'
+                    }`}
+                  >
+                    {p.photo
+                      ? <img src={p.photo} alt={p.name} className="w-10 h-10 object-cover rounded-lg" />
+                      : <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center"><ShoppingBag className="w-5 h-5 text-muted-foreground/40" /></div>
+                    }
+                    <div className="w-full">
+                      <p className="text-xs font-medium line-clamp-2 leading-tight">{p.name}</p>
+                      <p className="text-xs font-bold text-secondary mt-0.5">
+                        {isConfirmed
+                          ? <span className="flex items-center gap-1 text-secondary"><Check className="w-3 h-3" /> Lançado!</span>
+                          : `R$ ${price.toFixed(2).replace('.', ',')}`
+                        }
+                      </p>
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => dismissQuickSale(p.id)}
+                    title="Não vendi — tirar desta lista (o produto continua na Vitrine)"
+                    aria-label={`Tirar ${p.name} da lista de confirmação`}
+                    className="absolute top-1.5 right-1.5 p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               );
             })}
           </div>
+
+          {quickTotalPages > 1 && (
+            <div className="mt-4 flex items-center justify-between gap-2 pt-3 border-t border-border/50">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={quickPage <= 1}
+                onClick={() => setQuickPage(p => Math.max(1, p - 1))}
+                className="h-8 gap-1"
+              >
+                <ChevronLeft className="w-4 h-4" /> Anterior
+              </Button>
+              <span className="text-xs font-medium">
+                Página {quickPage} de {quickTotalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={quickPage >= quickTotalPages}
+                onClick={() => setQuickPage(p => Math.min(quickTotalPages, p + 1))}
+                className="h-8 gap-1"
+              >
+                Próxima <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
         </Card>
       )}
       <CashflowForecast />

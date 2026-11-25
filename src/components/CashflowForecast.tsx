@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
-import { Sparkles, RefreshCw, TrendingUp, AlertTriangle } from 'lucide-react';
+import { Sparkles, RefreshCw, TrendingUp, AlertTriangle, Lock } from 'lucide-react';
 import { FUNCTIONS, callFunction } from '@/integrations/firebase/firebase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useT, useI18n } from '@/lib/i18n';
+import { getCurrentSubscription, hasProSubscription } from '@/lib/billing';
 import UpgradeModal from '@/components/UpgradeModal';
 
 interface Forecast {
@@ -16,6 +17,8 @@ interface Forecast {
 }
 
 const SIX_HOURS = 6 * 60 * 60 * 1000;
+const PRO_ONLY_MESSAGE = 'A Previsão de Caixa com Inteligência Artificial é exclusiva para assinantes Biztrivo.';
+const TRIAL_LIMIT_MESSAGE = 'Você atingiu o limite de previsões de caixa do período de teste.';
 
 const CashflowForecast = () => {
   const t = useT();
@@ -28,6 +31,18 @@ const CashflowForecast = () => {
   const [insufficient, setInsufficient] = useState<string | null>(null);
   const [trialUsage, setTrialUsage] = useState<{ used: number; remaining: number; limit: number } | null>(null);
   const [showUpgrade, setShowUpgrade] = useState(false);
+  const [upgradeReason, setUpgradeReason] = useState(PRO_ONLY_MESSAGE);
+  const [isPro, setIsPro] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    if (!user) { setIsPro(false); return; }
+    setIsPro(null);
+    getCurrentSubscription(user.uid)
+      .then(sub => { if (active) setIsPro(hasProSubscription(sub)); })
+      .catch(() => { /* se falhar, o backend continua validando */ });
+    return () => { active = false; };
+  }, [user]);
 
   useEffect(() => {
     if (!cacheKey) return;
@@ -40,6 +55,25 @@ const CashflowForecast = () => {
   const canRefresh = () => {
     if (!forecast) return true;
     return Date.now() - new Date(forecast.generated_at).getTime() > SIX_HOURS;
+  };
+
+  const handleForecastClick = async () => {
+    let allowed = isPro;
+    if (allowed === null && user) {
+      try {
+        const sub = await getCurrentSubscription(user.uid);
+        allowed = hasProSubscription(sub);
+        setIsPro(allowed);
+      } catch {
+        allowed = true; 
+      }
+    }
+    if (!allowed) {
+      setUpgradeReason(PRO_ONLY_MESSAGE);
+      setShowUpgrade(true);
+      return;
+    }
+    fetchForecast();
   };
 
   const fetchForecast = async () => {
@@ -64,6 +98,7 @@ const CashflowForecast = () => {
       }
     } catch (e: any) {
       if ((e as any)?.status === 403 && (e as any)?.code === 'UPGRADE_REQUIRED') {
+        setUpgradeReason(PRO_ONLY_MESSAGE);
         setShowUpgrade(true);
       } else {
         setError(e?.message || t('cashflow_forecast.generic_error'));
@@ -89,13 +124,21 @@ const CashflowForecast = () => {
           <h2 className="text-lg font-semibold font-heading">{t('cashflow_forecast.ai_title')}</h2>
         </div>
         <button
-          onClick={fetchForecast}
-          disabled={loading || (forecast !== null && !canRefresh())}
+          onClick={handleForecastClick}
+          disabled={loading || (isPro !== false && forecast !== null && !canRefresh())}
           className="text-xs flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-40 transition"
-          title={!canRefresh() ? t('cashflow_forecast.refresh_tooltip') : t('cashflow_forecast.generate_tooltip')}
+          title={
+            isPro === false
+              ? 'Recurso exclusivo para assinantes Biztrivo'
+              : !canRefresh() ? t('cashflow_forecast.refresh_tooltip') : t('cashflow_forecast.generate_tooltip')
+          }
         >
-          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+          {isPro === false
+            ? <Lock className="w-3.5 h-3.5" />
+            : <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+          }
           {forecast ? t('cashflow_forecast.refresh_button') : t('cashflow_forecast.generate_button')}
+          {isPro === false && <span className="ml-1 px-1.5 py-0.5 rounded bg-primary-foreground/20 text-[9px] font-bold">PRO</span>}
         </button>
       </div>
 
@@ -150,7 +193,7 @@ const CashflowForecast = () => {
 <UpgradeModal
       open={showUpgrade}
       onClose={() => setShowUpgrade(false)}
-      reason="Você atingiu o limite de previsões de caixa do período de teste."
+      reason={upgradeReason}
     />
   </>
 );

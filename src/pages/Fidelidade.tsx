@@ -57,7 +57,7 @@ const Fidelidade = () => {
           Clientes sem comprar há pelo menos
           <Input type="number" min={7} max={365} value={days} onChange={e => setDays(Math.max(1, Number(e.target.value) || 30))} className="w-20 h-8" /> dias
         </div>
-        {dormant.length === 0 ? <p className="text-sm text-muted-foreground">Nenhum cliente parado. 👏</p> : (
+        {dormant.length === 0 ? <p className="text-sm text-muted-foreground">Nenhum cliente parado.</p> : (
           <div className="space-y-2">
             {dormant.map(({ c, d }) => (
               <div key={c.id} className="flex items-center justify-between gap-3 p-3 rounded-lg bg-warning/5">
