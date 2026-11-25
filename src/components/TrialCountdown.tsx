@@ -6,7 +6,11 @@ import { db } from '@/integrations/firebase/firebase';
 const TrialCountdown = () => {
   const { user } = useAuth();
   const [endsAt, setEndsAt] = useState<Date | null>(null);
-  const [timeLeft, setTimeLeft] = useState('');
+  const [timeState, setTimeState] = useState<{
+    text: string;
+    subText: string;
+    isUrgent: boolean;
+  }>({ text: '', subText: '', isUrgent: false });
 
   useEffect(() => {
     if (!user) return;
@@ -28,22 +32,41 @@ const TrialCountdown = () => {
     if (!endsAt) return;
     const tick = () => {
       const diff = endsAt.getTime() - Date.now();
-      if (diff <= 0) { setTimeLeft('Período encerrado'); return; }
+      if (diff <= 0) {
+        setTimeState({
+          text: 'Período encerrado',
+          subText: 'Período encerrado',
+          isUrgent: true,
+        });
+        return;
+      }
       const d = Math.floor(diff / 86400000);
       const h = Math.floor((diff % 86400000) / 3600000);
       const m = Math.floor((diff % 3600000) / 60000);
-      setTimeLeft(d > 0 ? `${d}d ${h}h ${m}m` : `${h}h ${m}m`);
+      const s = Math.floor((diff % 60000) / 1000);
+
+      const hh = String(h).padStart(2, '0');
+      const mm = String(m).padStart(2, '0');
+      const ss = String(s).padStart(2, '0');
+
+      const countdown = d > 0 ? `${d}d ${hh}h ${mm}m ${ss}s` : `${hh}h ${mm}m ${ss}s`;
+      const subtitle = d > 0 ? `Expira em ${d} ${d === 1 ? 'dia' : 'dias'}` : 'Expira em menos de 24h';
+
+      setTimeState({
+        text: countdown,
+        subText: subtitle,
+        isUrgent: d <= 7,
+      });
     };
+
     tick();
-    const id = setInterval(tick, 60000);
+    const id = setInterval(tick, 1000); 
     return () => clearInterval(id);
   }, [endsAt]);
 
-  if (!endsAt) return null;
+  if (!endsAt || !timeState.text) return null;
 
-  const diff = endsAt.getTime() - Date.now();
-  const totalDays = Math.ceil(diff / 86400000);
-  const isUrgent = totalDays <= 7;
+  const isUrgent = timeState.isUrgent;
 
   const handleUpgrade = () => {
     const email = user?.email ?? '';
@@ -63,7 +86,7 @@ const TrialCountdown = () => {
         <div className="flex flex-col">
           <span className="text-xs font-medium text-foreground">Acesso gratuito</span>
           <span className="text-[11px] text-muted-foreground">
-            {diff <= 0 ? 'Período encerrado' : `Expira em ${totalDays > 1 ? `${totalDays} dias` : 'menos de 1 dia'}`}
+            {timeState.subText}
           </span>
         </div>
       </div>
@@ -73,7 +96,7 @@ const TrialCountdown = () => {
           font-mono text-sm font-bold tabular-nums px-3 py-1 rounded-lg
           ${isUrgent ? 'text-amber-500 bg-amber-500/10' : 'text-primary bg-primary/10'}
         `}>
-          {timeLeft}
+          {timeState.text}
         </div>
         <button
           onClick={handleUpgrade}

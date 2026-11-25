@@ -9,11 +9,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, Trash2, ExternalLink, Copy, Check, Image as ImageIcon, AlertCircle, Download, Rocket, Share2, Pencil, Instagram, FileText, CheckCircle2, Camera, ShoppingCart, Search } from 'lucide-react';
+import { Plus, Trash2, ExternalLink, Copy, Check, Image as ImageIcon, AlertCircle, Download, Rocket, Share2, Pencil, Instagram, FileText, CheckCircle2, Camera, ShoppingCart, Search, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { QRCodeCanvas } from 'qrcode.react';
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { sanitizeText } from '@/lib/sanitize';
 import { validateImageFile } from '@/lib/fileValidation';
 import InstagramPostGenerator from '@/components/InstagramPostGenerator';
@@ -44,6 +44,10 @@ const Vitrine = () => {
   const [isPro, setIsPro] = useState<boolean | null>(null);
   const [showPostUpgrade, setShowPostUpgrade] = useState(false);
   const [invoiceOpen, setInvoiceOpen] = useState(false);
+const [showAlertsOpen, setShowAlertsOpen] = useState(false);
+const productsHeaderRef = useRef<HTMLDivElement>(null);
+
+
 
   useEffect(() => {
     let active = true;
@@ -105,10 +109,83 @@ const [salePending, setSalePending] = useState(false);
   const [variants, setVariants] = useState<ProductVariant[]>([]);
   const [lowStockThreshold, setLowStockThreshold] = useState(3);
   const [productSearch, setProductSearch] = useState('');
+  const [stockFilter, setStockFilter] = useState<'all' | 'in_stock' | 'low_stock' | 'out_of_stock' | 'promo'>('all');
+  const [selectedVariantFilter, setSelectedVariantFilter] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<'name' | 'stock_asc' | 'price_desc' | 'price_asc'>('name');
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 12;
+
   const searchQuery = normalizeSearch(productSearch);
-  const visibleProducts = searchQuery
-    ? config.products.filter(p => normalizeSearch(p.name).includes(searchQuery))
-    : config.products;
+
+  // Variações únicas existentes nos produtos da loja (tamanhos ou cores)
+  const availableVariants = useMemo(() => {
+    const set = new Set<string>();
+    config.products.forEach(p => {
+      p.variants?.forEach(v => {
+        if (v.size) set.add(v.size);
+        if (v.color) set.add(v.color);
+      });
+    });
+    return Array.from(set).sort();
+  }, [config.products]);
+
+  // Contagens para os botões de filtro
+  const counts = useMemo(() => {
+    let inStock = 0;
+    let lowStock = 0;
+    let outOfStock = 0;
+    let promo = 0;
+
+    config.products.forEach(p => {
+      const stock = productStock(p);
+      if (stock === 0) outOfStock++;
+      else inStock++;
+
+      if (lowStockItems(p).length > 0) lowStock++;
+      if (p.discountPrice > 0 && p.originalPrice > p.discountPrice) promo++;
+    });
+
+    return { all: config.products.length, inStock, lowStock, outOfStock, promo };
+  }, [config.products]);
+
+  // Lista filtrada e ordenada
+  const filteredProducts = useMemo(() => {
+    return config.products.filter(p => {
+      // 1. Busca por texto
+      if (searchQuery && !normalizeSearch(p.name).includes(searchQuery)) return false;
+
+      // 2. Filtro de estoque / promoção
+      const stock = productStock(p);
+      if (stockFilter === 'in_stock' && stock === 0) return false;
+      if (stockFilter === 'out_of_stock' && stock > 0) return false;
+      if (stockFilter === 'low_stock' && lowStockItems(p).length === 0) return false;
+      if (stockFilter === 'promo' && !(p.discountPrice > 0 && p.originalPrice > p.discountPrice)) return false;
+
+      // 3. Filtro por variação (tamanho/cor)
+      if (selectedVariantFilter !== 'all') {
+        const hasVariant = p.variants?.some(v => v.size === selectedVariantFilter || v.color === selectedVariantFilter);
+        if (!hasVariant) return false;
+      }
+
+      return true;
+    }).sort((a, b) => {
+      if (sortBy === 'stock_asc') return productStock(a) - productStock(b);
+      if (sortBy === 'price_desc') return priceRange(b).min - priceRange(a).min;
+      if (sortBy === 'price_asc') return priceRange(a).min - priceRange(b).min;
+      return a.name.localeCompare(b.name);
+    });
+  }, [config.products, searchQuery, stockFilter, selectedVariantFilter, sortBy]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [productSearch, stockFilter, selectedVariantFilter, sortBy]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / ITEMS_PER_PAGE));
+  const paginatedProducts = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredProducts.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredProducts, currentPage]);
+
   const alerts = config.vitrineOnlyMode ? [] : config.products.flatMap(product =>
     lowStockItems(product).map(item => ({ ...item, product }))
   );
@@ -298,7 +375,7 @@ const [salePending, setSalePending] = useState(false);
       </Card>
 
       <div>
-        <div className="flex items-center justify-between mb-4">
+        <div ref={productsHeaderRef} className="flex items-center justify-between mb-4 scroll-mt-6">
           <h2 className="text-lg font-semibold font-heading">{t('ext.vt_products_count', { n: config.products.length })}</h2>
           <div className="flex items-center gap-2">
             <button onClick={() => setInvoiceOpen(true)} className="px-4 py-2 rounded-lg bg-muted text-sm font-medium flex items-center gap-2 hover:bg-accent transition-colors">
@@ -354,31 +431,156 @@ const [salePending, setSalePending] = useState(false);
         )}
 
         {alerts.length > 0 && (
-          <section className="mb-4 border-l-4 border-warning bg-warning/5 p-4 space-y-2">
-            <h3 className="font-semibold text-sm flex items-center gap-2"><AlertCircle className="w-4 h-4 text-warning" />{it('alert')} ({alerts.length})</h3>
-            {alerts.map(({ product, label, stock: remaining }) => (
-              <div key={`${product.id}-${label}`} className="flex flex-wrap items-center justify-between gap-2 text-sm">
-                <span className="min-w-0 break-words">{product.name}{label && ` · ${label}`} <span className={remaining === 0 ? 'text-destructive' : 'text-warning'}>{remaining === 0 ? it('unavailable') : it('remaining', { n: remaining })}</span></span>
-                <Button variant="ghost" size="sm" onClick={() => setEditingProduct({ ...product })}><Pencil />{it('restock')}</Button>
+          <section className="mb-4 border-l-4 border-warning bg-warning/5 p-3 rounded-r-lg">
+            <button
+              type="button"
+              onClick={() => setShowAlertsOpen(prev => !prev)}
+              className="w-full flex items-center justify-between text-left font-semibold text-sm hover:opacity-80 transition-opacity"
+            >
+              <span className="flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-warning shrink-0" />
+                {it('alert')} ({alerts.length})
+              </span>
+              <span className="text-xs text-muted-foreground flex items-center gap-1 font-normal">
+                {showAlertsOpen ? 'Ocultar' : 'Ver lista'}
+                {showAlertsOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </span>
+            </button>
+
+            {showAlertsOpen && (
+              <div className="mt-3 max-h-64 overflow-y-auto space-y-2 pr-2 divide-y divide-border/40">
+                {alerts.map(({ product, label, stock: remaining }) => (
+                  <div key={`${product.id}-${label}`} className="pt-2 flex flex-wrap items-center justify-between gap-2 text-sm">
+                    <span className="min-w-0 break-words">
+                      {product.name}{label && ` · ${label}`}{' '}
+                      <span className={remaining === 0 ? 'text-destructive font-medium' : 'text-warning font-medium'}>
+                        {remaining === 0 ? it('unavailable') : it('remaining', { n: remaining })}
+                      </span>
+                    </span>
+                    <Button variant="ghost" size="sm" onClick={() => setEditingProduct({ ...product })}>
+                      <Pencil className="w-3.5 h-3.5 mr-1" />
+                      {it('restock')}
+                    </Button>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
           </section>
         )}
         {config.products.length > 0 && (
-          <div className="mb-4 space-y-2">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-              <Input
-                value={productSearch}
-                onChange={e => setProductSearch(e.target.value)}
-                placeholder={it('searchProduct')}
-                inputMode="search"
-                autoComplete="off"
-                className="pl-9"
-              />
+          <div className="mb-5 space-y-3">
+            {/* Linha 1: Busca e ordenação */}
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                <Input
+                  value={productSearch}
+                  onChange={e => setProductSearch(e.target.value)}
+                  placeholder={it('searchProduct')}
+                  inputMode="search"
+                  autoComplete="off"
+                  className="pl-9"
+                />
+              </div>
+
+              {availableVariants.length > 0 && (
+                <Select value={selectedVariantFilter} onValueChange={setSelectedVariantFilter}>
+                  <SelectTrigger className="w-full sm:w-44">
+                    <SelectValue placeholder="Variação" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas variações</SelectItem>
+                    {availableVariants.map(v => (
+                      <SelectItem key={v} value={v}>{v}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+
+              <Select value={sortBy} onValueChange={(val: any) => setSortBy(val)}>
+                <SelectTrigger className="w-full sm:w-44">
+                  <SelectValue placeholder="Ordenar por" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="name">Nome (A-Z)</SelectItem>
+                  <SelectItem value="stock_asc">Menor estoque</SelectItem>
+                  <SelectItem value="price_desc">Maior preço</SelectItem>
+                  <SelectItem value="price_asc">Menor preço</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            {searchQuery && visibleProducts.length === 0 && (
-              <p className="text-sm text-muted-foreground">{it('noProduct')}</p>
+
+            {/* Linha 2: Pílulas de filtro de estoque */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+              <button
+                type="button"
+                onClick={() => setStockFilter('all')}
+                className={`px-3 py-1.5 rounded-full font-medium whitespace-nowrap transition-colors ${
+                  stockFilter === 'all'
+                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    : 'bg-muted/70 text-muted-foreground hover:bg-muted'
+                }`}
+              >
+                Todos ({counts.all})
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setStockFilter('in_stock')}
+                className={`px-3 py-1.5 rounded-full font-medium whitespace-nowrap transition-colors ${
+                  stockFilter === 'in_stock'
+                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    : 'bg-muted/70 text-muted-foreground hover:bg-muted'
+                }`}
+              >
+                Com estoque ({counts.inStock})
+              </button>
+
+              {counts.lowStock > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setStockFilter('low_stock')}
+                  className={`px-3 py-1.5 rounded-full font-medium whitespace-nowrap transition-colors ${
+                    stockFilter === 'low_stock'
+                      ? 'bg-warning text-warning-foreground shadow-sm'
+                      : 'bg-muted/70 text-muted-foreground hover:bg-muted'
+                  }`}
+                >
+                  Estoque baixo ({counts.lowStock})
+                </button>
+              )}
+
+              {counts.outOfStock > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setStockFilter('out_of_stock')}
+                  className={`px-3 py-1.5 rounded-full font-medium whitespace-nowrap transition-colors ${
+                    stockFilter === 'out_of_stock'
+                      ? 'bg-destructive text-destructive-foreground shadow-sm'
+                      : 'bg-muted/70 text-muted-foreground hover:bg-muted'
+                  }`}
+                >
+                  Esgotados ({counts.outOfStock})
+                </button>
+              )}
+
+              {counts.promo > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setStockFilter('promo')}
+                  className={`px-3 py-1.5 rounded-full font-medium whitespace-nowrap transition-colors ${
+                    stockFilter === 'promo'
+                      ? 'bg-secondary text-secondary-foreground shadow-sm'
+                      : 'bg-muted/70 text-muted-foreground hover:bg-muted'
+                  }`}
+                >
+                  Promoção ({counts.promo})
+                </button>
+              )}
+            </div>
+
+            {filteredProducts.length === 0 && (
+              <p className="text-sm text-muted-foreground pt-2">{it('noProduct')}</p>
             )}
           </div>
         )}
@@ -393,7 +595,7 @@ const [salePending, setSalePending] = useState(false);
           </Card>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {visibleProducts.map(p => (
+            {paginatedProducts.map(p => (
               <Card key={p.id} className="border-none shadow-md overflow-hidden relative">
 {p.stock === 0 && !config.vitrineOnlyMode && (
   <div className="absolute top-2 right-2 z-10 px-2 py-1 rounded-md bg-destructive text-destructive-foreground text-xs font-semibold flex items-center gap-1">
@@ -487,9 +689,50 @@ className="text-xs text-muted-foreground hover:text-secondary flex items-center 
             ))}
           </div>
         )}
+
+        {totalPages > 1 && (
+          <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-border/50 text-sm">
+            <span className="text-xs text-muted-foreground">
+              Mostrando {((currentPage - 1) * ITEMS_PER_PAGE) + 1} a {Math.min(currentPage * ITEMS_PER_PAGE, filteredProducts.length)} de {filteredProducts.length} produtos
+            </span>
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage <= 1}
+                onClick={() => {
+                  setCurrentPage(p => Math.max(1, p - 1));
+                  productsHeaderRef.current?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="h-8 gap-1"
+              >
+                <ChevronLeft className="w-4 h-4" /> Anterior
+              </Button>
+
+              <span className="text-xs font-medium px-2">
+                {currentPage} de {totalPages}
+              </span>
+
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage >= totalPages}
+                onClick={() => {
+                  setCurrentPage(p => Math.min(totalPages, p + 1));
+                  productsHeaderRef.current?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="h-8 gap-1"
+              >
+                Próxima <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       {igProduct && (
+
         <InstagramPostGenerator
           product={igProduct}
           storeName={config.storeName}
