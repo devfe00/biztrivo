@@ -89,6 +89,14 @@ export interface ProductSaleItem {
   totalValue?: number;
 }
 
+export interface TransactionChanges {
+  value?: number;
+  description?: string;
+  category?: string;
+  isPersonal?: boolean;
+  date?: string;
+}
+
 export interface StoreConfig {
   storeName: string;
   logo: string;
@@ -128,8 +136,9 @@ interface StoreContextType {
   removeProduct: (id: string) => Promise<void>;
   updateProduct: (product: Product) => Promise<void>;
   registerProductSale: (productId: string, quantity: number, variantId?: string, totalValue?: number, date?: string) => Promise<void>;
-  registerProductSales: (items: ProductSaleItem[]) => Promise<void>;
+  registerProductSales: (items: ProductSaleItem[], saleDate?: string) => Promise<void>;
   addTransaction: (transaction: Omit<Transaction, 'id'>) => Promise<void>;
+  updateTransaction: (id: string, changes: TransactionChanges) => Promise<void>;
   removeTransaction: (id: string) => Promise<Transaction | undefined>;
   cancelSale: (id: string, options: { restock: boolean }) => Promise<{ removed: Transaction; restocked: boolean }>;
   undoCancelSale: (removed: Transaction, restocked: boolean) => Promise<void>;
@@ -497,16 +506,20 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const registerProductSales = async (items: ProductSaleItem[]) => {
+  const registerProductSales = async (items: ProductSaleItem[], saleDate?: string) => {
     if (!user) throw new Error('Sign in required');
     if (items.length === 0 || items.length > 50) throw new Error('Invalid items');
+    if (saleDate !== undefined) {
+      const saleTime = Date.parse(saleDate);
+      if (!Number.isFinite(saleTime) || saleTime > Date.now() + 24 * 60 * 60 * 1000) throw new Error('Invalid date');
+    }
     const productIds = Array.from(new Set(items.map(item => item.productId)));
     const opKey = `sales-${[...productIds].sort().join('|')}`;
     if (pendingOps.current.has(opKey)) throw new Error('Sale already pending');
     pendingOps.current.add(opKey);
     try {
       const transactionRefs = items.map(() => doc(collection(db, 'transactions')));
-      const date = new Date().toISOString();
+      const date = saleDate ?? new Date().toISOString();
       const saleGroupId = items.length > 1 ? crypto.randomUUID() : undefined;
       const result = await runTransaction(db, async tx => {
         const snapshots = await Promise.all(productIds.map(id => tx.get(doc(db, 'products', id))));
@@ -603,6 +616,40 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
           isPersonal: transaction.isPersonal,
           date: transaction.date,
         }, ...prev.transactions],
+      }));
+    } finally {
+      pendingOps.current.delete(opKey);
+    }
+  };
+
+  const updateTransaction = async (id: string, changes: TransactionChanges) => {
+    if (!user) throw new Error('Sign in required');
+    const current = config.transactions.find(t => t.id === id);
+    if (!current) throw new Error('Transaction not found');
+    if (current.originalSaleId) throw new Error('NOT_EDITABLE');
+
+    const linked = !!current.productId; // venda de produto: categoria e flag pessoal ficam travadas
+    const next = {
+      value: Math.round((changes.value ?? current.value) * 100) / 100,
+      description: sanitizeText(changes.description ?? current.description),
+      category: linked ? current.category : sanitizeText(changes.category ?? current.category),
+      isPersonal: current.type === 'saida' && !linked ? (changes.isPersonal ?? current.isPersonal) : current.isPersonal,
+      date: changes.date ?? current.date,
+    };
+    if (!Number.isFinite(next.value) || next.value <= 0) throw new Error('Valor da transação deve ser maior que zero.');
+    if (!next.description.trim()) throw new Error('Descrição obrigatória');
+    if ((current.returnedQuantity ?? 0) > 0 && next.value !== current.value) throw new Error('HAS_RETURNS');
+    const when = Date.parse(next.date);
+    if (!Number.isFinite(when) || when > Date.now() + 24 * 60 * 60 * 1000) throw new Error('Invalid date');
+
+    const opKey = `upd-tx-${id}`;
+    if (pendingOps.current.has(opKey)) return;
+    pendingOps.current.add(opKey);
+    try {
+      await updateDoc(doc(db, 'transactions', id), { ...next, updatedAt: serverTimestamp() });
+      setConfig(prev => ({
+        ...prev,
+        transactions: prev.transactions.map(t => (t.id === id ? { ...t, ...next } : t)),
       }));
     } finally {
       pendingOps.current.delete(opKey);
@@ -739,7 +786,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
   return (
     <StoreContext.Provider value={{
       config, updateConfig, addProduct, removeProduct, updateProduct, registerProductSale,
-      addTransaction, removeTransaction, cancelSale, undoCancelSale, registerProductSales, isLoading, refreshData: fetchData,
+      addTransaction, updateTransaction, removeTransaction, cancelSale, undoCancelSale, registerProductSales, isLoading, refreshData: fetchData,
     }}>
       {children}
     </StoreContext.Provider>

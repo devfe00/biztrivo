@@ -11,6 +11,7 @@ import { useStore } from '@/contexts/StoreContext';
 import { generatePix, inferPixKeyType, pixText, type PixInput, type PixKeyType } from '@/lib/pix';
 import { usePixT } from '@/lib/pix-i18n';
 import { brl } from '@/lib/fiscal';
+import { sanitizeMoney, sanitizePixKey, pixKeyInputMode } from '@/lib/inputMask';
 
 export default function Pagamentos() {
   const t = usePixT();
@@ -26,7 +27,10 @@ export default function Pagamentos() {
 
   function update(field: keyof PixInput, value: string) {
     if (field === 'key' || field === 'keyType' || field === 'name') editedReceiver.current = true;
-    setForm(prev => ({ ...prev, [field]: value }));
+    setForm(prev => ({
+      ...prev,
+      [field]: field === 'key' ? sanitizePixKey(prev.keyType, value) : field === 'amount' ? sanitizeMoney(value) : value,
+    }));
     setErrors({});
   }
   function submit(event: React.FormEvent) {
@@ -79,7 +83,7 @@ export default function Pagamentos() {
           {fields.map(({ field, label, error, max }) => (
             <div key={field} className="space-y-2 min-w-0">
               <Label htmlFor={`pix-${field}`}>{t(label)}</Label>
-              <Input id={`pix-${field}`} value={form[field]} maxLength={max} inputMode={field === 'amount' ? 'decimal' : 'text'} autoComplete="off" onChange={event => update(field, event.target.value)} aria-invalid={!!errors[field]} aria-describedby={errors[field] ? `pix-${field}-error` : undefined} />
+              <Input id={`pix-${field}`} value={form[field]} maxLength={max} inputMode={field === 'amount' ? 'decimal' : field === 'key' ? pixKeyInputMode(form.keyType) : 'text'} autoComplete="off" onChange={event => update(field, event.target.value)} aria-invalid={!!errors[field]} aria-describedby={errors[field] ? `pix-${field}-error` : undefined} />
               {errors[field] && <p id={`pix-${field}-error`} role="alert" className="text-xs text-destructive">{t(error)}</p>}
             </div>
           ))}

@@ -36,6 +36,9 @@ export const FUNCTIONS = {
   sellerMercadoPagoCallback:  'https://southamerica-east1-biztrivo-491617.cloudfunctions.net/sellerMercadoPagoCallback',
   createSellerCharge:         'https://southamerica-east1-biztrivo-491617.cloudfunctions.net/createSellerCharge',
   mercadopagoWebhook:         'https://southamerica-east1-biztrivo-491617.cloudfunctions.net/mercadopagoWebhook',
+  exportMyData:               'https://southamerica-east1-biztrivo-491617.cloudfunctions.net/exportMyData',
+  deleteMyAccount:            'https://southamerica-east1-biztrivo-491617.cloudfunctions.net/deleteMyAccount',
+  revokeSessions:             'https://southamerica-east1-biztrivo-491617.cloudfunctions.net/revokeSessions',
 };
 
 // Helper para chamar functions autenticadas

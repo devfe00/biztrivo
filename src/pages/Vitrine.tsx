@@ -22,7 +22,13 @@ import UpgradeModal from '@/components/UpgradeModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { getCurrentSubscription, hasProSubscription } from '@/lib/billing';
 import { useT } from '@/lib/i18n';
+import { sanitizeMoney, sanitizeInt, digitsOnly, blockInvalidNumberKeys } from '@/lib/inputMask';
 import { useLang } from '@/lib/useLang';
+
+const COLOR_PRESETS = [
+  '#3B82F6', '#8B5CF6', '#EC4899', '#EF4444', '#F97316',
+  '#EAB308', '#22C55E', '#14B8A6', '#06B6D4', '#64748B',
+];
 
 const POST_AI_UPGRADE_REASON: Record<'pt' | 'en' | 'es' | 'fr', string> = {
   pt: 'O Gerador de Post com IA está disponível apenas para assinantes Biztrivo.',
@@ -122,7 +128,7 @@ const [salePending, setSalePending] = useState(false);
   const [selectedVariantFilter, setSelectedVariantFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'name' | 'stock_asc' | 'price_desc' | 'price_asc'>('name');
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 12;
+  const ITEMS_PER_PAGE = 6;
 
   const searchQuery = normalizeSearch(productSearch);
 
@@ -313,7 +319,7 @@ const [salePending, setSalePending] = useState(false);
           </div>
           <div>
             <Label>{t('ext.vt_whatsapp')}</Label>
-            <Input value={config.whatsapp} onChange={e => updateConfig({ whatsapp: e.target.value })} className="mt-1" placeholder={t('ext.vt_whatsapp_ph')} />
+            <Input type="tel" inputMode="tel" maxLength={15} value={config.whatsapp} onChange={e => updateConfig({ whatsapp: digitsOnly(e.target.value, 15) })} className="mt-1" placeholder={t('ext.vt_whatsapp_ph')} />
           </div>
         </div>
         <div className="flex flex-wrap gap-6">
@@ -326,7 +332,40 @@ const [salePending, setSalePending] = useState(false);
           </div>
           <div>
             <Label>{t('ext.vt_color')}</Label>
-            <input type="color" value={config.primaryColor} onChange={e => updateConfig({ primaryColor: e.target.value })} className="mt-2 w-20 h-20 rounded-xl cursor-pointer border-0" />
+            <div className="mt-2 flex flex-col gap-3">
+              <div className="flex items-center gap-3">
+                <label
+                  className="relative w-12 h-12 rounded-full ring-2 ring-border ring-offset-2 ring-offset-background shadow-md cursor-pointer overflow-hidden transition-transform hover:scale-105"
+                  style={{ backgroundColor: config.primaryColor }}
+                  title="Escolher cor personalizada"
+                >
+                  <input
+                    type="color"
+                    value={config.primaryColor}
+                    onChange={e => updateConfig({ primaryColor: e.target.value })}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  />
+                </label>
+                <span className="text-sm font-mono uppercase text-muted-foreground">{config.primaryColor}</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {COLOR_PRESETS.map(c => {
+                  const selected = config.primaryColor.toLowerCase() === c.toLowerCase();
+                  return (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => updateConfig({ primaryColor: c })}
+                      aria-label={`Usar cor ${c}`}
+                      className={`w-7 h-7 rounded-full transition-all hover:scale-110 ${
+                        selected ? 'ring-2 ring-foreground ring-offset-2 ring-offset-background' : 'ring-1 ring-border'
+                      }`}
+                      style={{ backgroundColor: c }}
+                    />
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -417,16 +456,15 @@ const [salePending, setSalePending] = useState(false);
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <Label>{t('ext.vt_form_price')}</Label>
-                  <Input value={originalPrice} onChange={e => setOriginalPrice(e.target.value)} className="mt-1" placeholder="49,90" />
+                  <Input inputMode="decimal" value={originalPrice} onChange={e => setOriginalPrice(sanitizeMoney(e.target.value))} className="mt-1" placeholder="49,90" />
                 </div>
                 <div>
                   <Label>{t('ext.vt_form_disc')}</Label>
-                  <Input value={discountPrice} onChange={e => setDiscountPrice(e.target.value)} className="mt-1" placeholder="39,90" />
+                  <Input inputMode="decimal" value={discountPrice} onChange={e => setDiscountPrice(sanitizeMoney(e.target.value))} className="mt-1" placeholder="39,90" />
                 </div>
                 <div>
                   <Label>{t('ext.vt_form_stock')}</Label>
-                  <Input type="number" disabled={variants.length > 0} value={variants.length ? productStock({ stock: 0, variants }) : stock} onChange={e => setStock(e.target.value)} className="mt-1" placeholder="10" min="0" />
-                </div>
+                  <Input type="text" inputMode="numeric" disabled={variants.length > 0} value={variants.length ? productStock({ stock: 0, variants }) : stock} onChange={e => setStock(sanitizeInt(e.target.value))} className="mt-1" placeholder="10" />                </div>
               </div>
             )}
             <div>
@@ -690,7 +728,7 @@ className="text-xs text-muted-foreground hover:text-secondary flex items-center 
       </Select>
     )}
     <div className="flex items-center gap-2">
-      <Input aria-label={it('quantity')} type="number" min={1} step={1} max={p.variants?.length ? p.variants.find(v => v.id === saleVariantId)?.stock ?? 0 : p.stock} value={saleQty} onChange={e => setSaleQty(e.target.value)} className="w-20" />
+      <Input aria-label={it('quantity')} type="text" inputMode="numeric" value={saleQty} onChange={e => setSaleQty(sanitizeInt(e.target.value, 6))} className="w-20" />
       <span className="text-xs font-semibold text-secondary">R$ {(unitPrice(p, saleVariantId || undefined) * (Number(saleQty) || 0)).toFixed(2).replace('.', ',')}</span>
     </div>
     <div className="flex flex-wrap gap-2">
@@ -806,15 +844,15 @@ className="text-xs text-muted-foreground hover:text-secondary flex items-center 
                 <div className="grid grid-cols-3 gap-3">
                   <div>
                     <Label>{t('ext.vt_form_price')}</Label>
-                    <Input type="number" step="0.01" min="0" value={editingProduct.originalPrice} onChange={e => setEditingProduct({ ...editingProduct, originalPrice: Math.max(0, parseFloat(e.target.value) || 0) })} className="mt-1" />
+                    <Input type="number" step="0.01" min="0" onKeyDown={blockInvalidNumberKeys} value={editingProduct.originalPrice} onChange={e => setEditingProduct({ ...editingProduct, originalPrice: Math.max(0, parseFloat(e.target.value) || 0) })} className="mt-1" />
                   </div>
                   <div>
                     <Label>{t('ext.vt_edit_price_disc')}</Label>
-                    <Input type="number" step="0.01" min="0.01" value={editingProduct.discountPrice} onChange={e => setEditingProduct({ ...editingProduct, discountPrice: parseFloat(e.target.value) || 0 })} className="mt-1" />
+                    <Input type="number" step="0.01" min="0.01" onKeyDown={blockInvalidNumberKeys} value={editingProduct.discountPrice} onChange={e => setEditingProduct({ ...editingProduct, discountPrice: parseFloat(e.target.value) || 0 })} className="mt-1" />
                   </div>
                   <div>
                     <Label>{t('ext.vt_edit_stock_short')}</Label>
-                    <Input type="number" min="0" disabled={!!editingProduct.variants?.length} value={productStock(editingProduct)} onChange={e => setEditingProduct({ ...editingProduct, stock: parseInt(e.target.value) || 0 })} className="mt-1" />
+                    <Input type="number" min="0" onKeyDown={blockInvalidNumberKeys} disabled={!!editingProduct.variants?.length} value={productStock(editingProduct)} onChange={e => setEditingProduct({ ...editingProduct, stock: parseInt(e.target.value) || 0 })} className="mt-1" />
                   </div>
                 </div>
               )}

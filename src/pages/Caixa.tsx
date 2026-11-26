@@ -9,10 +9,11 @@ import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { TrendingUp, TrendingDown, Trash2, Search, Wallet, Package, ChevronDown, ChevronUp, Plus, ShoppingCart, X, WifiOff } from 'lucide-react';
+import { TrendingUp, TrendingDown, Trash2, Pencil, Search, Wallet, Package, ChevronDown, ChevronUp, Plus, ShoppingCart, X, WifiOff } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import { toast } from 'sonner';
 import { useLang } from '@/lib/useLang';
+import { sanitizeMoney } from '@/lib/inputMask';
 import { productStock, variantLabel, unitPrice } from '@/lib/inventory';
 import RemoveTransactionDialog, { type RemovalChoice } from '@/components/RemoveTransactionDialog';
 import ProductPicker from '@/components/ProductPicker';
@@ -41,7 +42,7 @@ const CAT_LABEL_KEY: Record<string, string> = {
 const Caixa = () => {
   const tr = useT();
   const navigate = useNavigate();
-  const { config, addTransaction, removeTransaction, cancelSale, undoCancelSale, registerProductSales, refreshData, isLoading } = useStore();
+  const { config, addTransaction, updateTransaction, removeTransaction, cancelSale, undoCancelSale, registerProductSales, refreshData, isLoading } = useStore();
   const tc = useCaixaT();
   const { user } = useAuth();
   const businessApi = useBusinessRecords({ subscribe: false });
@@ -60,6 +61,14 @@ const Caixa = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [pendingOffline, setPendingOffline] = useState<PendingOfflineSale | null>(null);
+  const [entryDate, setEntryDate] = useState(''); 
+  const [editing, setEditing] = useState<Transaction | null>(null);
+  const [editValue, setEditValue] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [editCategory, setEditCategory] = useState('Venda');
+  const [editDay, setEditDay] = useState('');
+  const [editPersonal, setEditPersonal] = useState(false);
+  const [editBusy, setEditBusy] = useState(false);
   const cartTotal = cart.reduce((sum, item) => sum + item.value, 0);
 
   const draftKey = user ? caixaDraftKey(user.uid) : null;
@@ -116,6 +125,7 @@ const Caixa = () => {
   }, [draftLoaded, isLoading, config.products, selectedProductId]);
 
   const { lang } = useLang();
+  const txt = (pt: string, en: string, es: string, fr: string) => (lang === 'pt' ? pt : lang === 'es' ? es : lang === 'fr' ? fr : en);
   const [period, setPeriod] = useState('today');
   const localKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   const todayStr = localKey(new Date());
@@ -128,6 +138,12 @@ const Caixa = () => {
       return { key, label };
     });
   }, [lang]);
+
+  const isToday = !entryDate || entryDate >= todayStr;
+  //mantém o horário atual; outro dia vai ao meio-dia local (evita virar "dia anterior/seguinte" por fuso)
+  const dayToISO = (day: string) => (day >= todayStr ? new Date().toISOString() : new Date(`${day}T12:00:00`).toISOString());
+  const entryDateISO = () => dayToISO(entryDate || todayStr);
+  const minEntryDate = `${months[months.length - 1].key}-01`;
 
   const todayTransactions = useMemo(() =>
     config.transactions
@@ -175,6 +191,11 @@ const Caixa = () => {
 
     const resolvedDescription = description.trim() || category;
 
+    if (!isToday && !navigator.onLine) {
+      toast.error(txt('Sem internet: lançamentos em outra data precisam de conexão.', 'Offline: entries on another date need a connection.', 'Sin internet: los movimientos en otra fecha requieren conexión.', 'Hors ligne : les écritures à une autre date nécessitent une connexion.'));
+      return;
+    }
+
     if (type === 'entrada' && category === 'Venda' && !navigator.onLine) {
       setPendingOffline({ kind: 'manual', value: numValue, description: resolvedDescription });
       return;
@@ -187,7 +208,7 @@ const Caixa = () => {
         description: resolvedDescription,
         category,
         isPersonal: type === 'saida' && isPersonal,
-        date: new Date().toISOString(),
+        date: entryDateISO(),
       });
 
       toast.success(tr('ext.cx_ok_save'));
@@ -200,7 +221,7 @@ const Caixa = () => {
       resetProductSelection();
     } catch (err) {
       console.error('Erro ao registrar lançamento:', err);
-      if (type === 'entrada' && category === 'Venda' && isOfflineError(err)) {
+      if (type === 'entrada' && category === 'Venda' && isToday && isOfflineError(err)) {
         setPendingOffline({ kind: 'manual', value: numValue, description: resolvedDescription });
       } else {
         toast.error(tr('ext.cx_err_save'));
@@ -225,6 +246,42 @@ const Caixa = () => {
         onClick: () => { addTransaction(data); },
       },
     });
+  };
+
+  const openEdit = (t: Transaction) => {
+    setEditing(t);
+    setEditValue(t.value.toFixed(2).replace('.', ','));
+    setEditDescription(t.description);
+    setEditCategory(t.category);
+    setEditDay(localKey(new Date(t.date)));
+    setEditPersonal(t.isPersonal);
+  };
+
+  const saveEdit = async () => {
+    if (!editing) return;
+    const numValue = parseFloat(editValue.replace(',', '.'));
+    if (!numValue || numValue <= 0) { toast.error(tr('ext.cx_err_value')); return; }
+    if (!editDescription.trim()) { toast.error(tr('ext.cx_err_save')); return; }
+    if (!navigator.onLine) { toast.error(tc('offlineBlock')); return; }
+    const sameDay = editDay === localKey(new Date(editing.date));
+    setEditBusy(true);
+    try {
+      await updateTransaction(editing.id, {
+        value: numValue,
+        description: editDescription.trim(),
+        category: editCategory,
+        isPersonal: editPersonal,
+        date: sameDay ? editing.date : dayToISO(editDay),
+      });
+      toast.success(txt('Lançamento atualizado', 'Entry updated', 'Movimiento actualizado', 'Écriture mise à jour'));
+      setEditing(null);
+    } catch (err) {
+      toast.error(err instanceof Error && err.message === 'HAS_RETURNS'
+        ? txt('Esta venda tem devolução: o valor não pode ser alterado.', 'This sale has a return: the amount cannot be changed.', 'Esta venta tiene devolución: no se puede cambiar el importe.', 'Cette vente a un retour : le montant ne peut pas être modifié.')
+        : tr('ext.cx_err_save'));
+    } finally {
+      setEditBusy(false);
+    }
   };
 
   const confirmRemove = async (choice: RemovalChoice) => {
@@ -316,6 +373,10 @@ const Caixa = () => {
     }
     if (lines.length === 0) return;
     if (!navigator.onLine) {
+      if (!isToday) {
+        toast.error(txt('Sem internet: lançamentos em outra data precisam de conexão.', 'Offline: entries on another date need a connection.', 'Sin internet: los movimientos en otra fecha requieren conexión.', 'Hors ligne : les écritures à une autre date nécessitent une connexion.'));
+        return;
+      }
       setPendingOffline({ kind: 'products', lines });
       return;
     }
@@ -326,7 +387,7 @@ const Caixa = () => {
         variantId: line.variantId,
         quantity: line.quantity,
         totalValue: line.value,
-      })));
+      })), isToday ? undefined : entryDateISO());
       toast.success(tr('ext.cx_ok_product_sale'));
       notifySale(lines.reduce((sum, line) => sum + line.value, 0));
       setCart([]);
@@ -336,7 +397,7 @@ const Caixa = () => {
       resetProductSelection();
     } catch (err) {
       console.error('Erro ao registrar venda com produtos:', err);
-      if (isOfflineError(err)) {
+      if (isToday && isOfflineError(err)) {
         setPendingOffline({ kind: 'products', lines });
       } else {
         toast.error(tr('ext.cx_err_save'));
@@ -439,12 +500,11 @@ const Caixa = () => {
         </Card>
       </div>
 
-      {/* Input Form */}
       <Card className="p-6 border-none shadow-md space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <Label htmlFor="value">{tr('ext.cx_value')}</Label>
-            <Input id="value" type="text" placeholder="0,00" value={value} onChange={e => setValue(e.target.value)} className="mt-1 text-lg font-semibold" />
+            <Input id="value" type="text" inputMode="decimal" placeholder="0,00" value={value} onChange={e => setValue(sanitizeMoney(e.target.value))} className="mt-1 text-lg font-semibold" />
           </div>
           <div>
             <Label htmlFor="category">{tr('ext.cx_category')}</Label>
@@ -489,6 +549,31 @@ const Caixa = () => {
         <div>
           <Label htmlFor="desc">{tr('ext.cx_desc')}</Label>
           <Input id="desc" placeholder={tr('ext.cx_desc_ph')} value={description} onChange={e => setDescription(e.target.value)} className="mt-1" />
+        </div>
+
+        <div>
+          <Label htmlFor="entry-date">{txt('Data do lançamento', 'Entry date', 'Fecha del movimiento', 'Date de l’écriture')}</Label>
+          <div className="mt-1 flex flex-wrap items-center gap-3">
+            <Input
+              id="entry-date"
+              type="date"
+              value={entryDate || todayStr}
+              min={minEntryDate}
+              max={todayStr}
+              onChange={e => setEntryDate(!e.target.value || e.target.value >= todayStr ? '' : e.target.value)}
+              className="w-auto"
+            />
+            {!isToday && (
+              <>
+                <span className="text-xs font-medium text-warning">
+                  {txt('Lançando em', 'Posting on', 'Registrando en', 'Saisie au')} {new Date(`${entryDate}T12:00:00`).toLocaleDateString(lang === 'pt' ? 'pt-BR' : lang)}
+                </span>
+                <button type="button" onClick={() => setEntryDate('')} className="text-xs underline text-muted-foreground hover:text-foreground">
+                  {txt('Voltar para hoje', 'Back to today', 'Volver a hoy', 'Revenir à aujourd’hui')}
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
         {selectedProductId && (() => {
@@ -679,10 +764,16 @@ const Caixa = () => {
                   <p className="text-xs text-muted-foreground">{tr('ext.cx_running')} {formatCurrency(t.balance)}</p>
                 </div>
                 {!t.originalSaleId && (
-                  <button onClick={() => handleRemove(t.id)} aria-label={tr('ext.cx_confirm_rm')}
-                    className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-destructive transition-colors">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  <>
+                    <button onClick={() => openEdit(t)} aria-label={txt('Editar', 'Edit', 'Editar', 'Modifier')}
+                      className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-primary transition-colors">
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => handleRemove(t.id)} aria-label={tr('ext.cx_confirm_rm')}
+                      className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-destructive transition-colors">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </>
                 )}
               </div>
             </>
@@ -743,6 +834,69 @@ const Caixa = () => {
         onClose={() => setRemoving(null)}
         onConfirm={confirmRemove}
       />
+
+      <Dialog open={!!editing} onOpenChange={open => !open && !editBusy && setEditing(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{txt('Editar lançamento', 'Edit entry', 'Editar movimiento', 'Modifier l’écriture')}</DialogTitle>
+          </DialogHeader>
+          {editing && (() => {
+            const linked = !!editing.productId;
+            const hasReturns = (editing.returnedQuantity ?? 0) > 0;
+            return (
+              <div className="space-y-4">
+                {linked && (
+                  <p className="text-xs text-muted-foreground">
+                    {txt('Venda de produto: categoria e quantidade ficam travadas (afetam o estoque).', 'Product sale: category and quantity are locked (they affect stock).', 'Venta de producto: categoría y cantidad bloqueadas (afectan el inventario).', 'Vente de produit : catégorie et quantité verrouillées (impact sur le stock).')}
+                  </p>
+                )}
+                <div>
+                  <Label htmlFor="edit-value">{tr('ext.cx_value')}</Label>
+                  <Input id="edit-value" inputMode="decimal" value={editValue} disabled={hasReturns} onChange={e => setEditValue(sanitizeMoney(e.target.value))} className="mt-1" />
+                  {hasReturns && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {txt('Esta venda tem devolução: o valor não pode ser alterado.', 'This sale has a return: the amount cannot be changed.', 'Esta venta tiene devolución: no se puede cambiar el importe.', 'Cette vente a un retour : le montant ne peut pas être modifié.')}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <Label htmlFor="edit-desc">{tr('ext.cx_desc')}</Label>
+                  <Input id="edit-desc" value={editDescription} maxLength={200} onChange={e => setEditDescription(e.target.value)} className="mt-1" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>{tr('ext.cx_category')}</Label>
+                    <Select value={editCategory} onValueChange={setEditCategory} disabled={linked}>
+                      <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {CATEGORY_KEYS.map(c => <SelectItem key={c} value={c}>{tr(CAT_LABEL_KEY[c])}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-date">{txt('Data', 'Date', 'Fecha', 'Date')}</Label>
+                    <Input id="edit-date" type="date" value={editDay} max={todayStr} onChange={e => e.target.value && setEditDay(e.target.value)} className="mt-1" />
+                  </div>
+                </div>
+                {editing.type === 'saida' && !linked && (
+                  <div className="flex items-center gap-3">
+                    <Switch checked={editPersonal} onCheckedChange={setEditPersonal} />
+                    <Label className="text-sm">{tr('ext.cx_personal')}</Label>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button type="button" variant="outline" disabled={editBusy} onClick={() => setEditing(null)}>
+              {txt('Cancelar', 'Cancel', 'Cancelar', 'Annuler')}
+            </Button>
+            <Button type="button" disabled={editBusy} onClick={saveEdit}>
+              {txt('Salvar', 'Save', 'Guardar', 'Enregistrer')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={!!pendingOffline} onOpenChange={open => !open && setPendingOffline(null)}>
         <DialogContent className="max-w-md">

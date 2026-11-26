@@ -1,9 +1,10 @@
 import { Input } from '@/components/ui/input';
+import { applyMask, MASK_INPUT_MODE, type InputMask } from '@/lib/inputMask';
 import { useFiscalT } from '@/lib/fiscal-i18n';
 import { BRAZIL_STATES } from '@/lib/fiscal';
 
-export function FiscalInput({label,value,onChange,type='text',maxLength=160,optional=false}: {label:string;value:string;onChange:(v:string)=>void;type?:string;maxLength?:number;optional?:boolean}) {
-  return <label className="grid gap-1.5 min-w-0 text-sm"><span className="font-medium">{label}</span><Input aria-label={label} value={value} onChange={e=>onChange(e.target.value)} type={type} maxLength={maxLength} required={!optional} min={type==='number'?0.01:undefined} step={type==='number'?'0.01':undefined}/></label>;
+export function FiscalInput({label,value,onChange,type='text',maxLength=160,optional=false,mask}: {label:string;value:string;onChange:(v:string)=>void;type?:string;maxLength?:number;optional?:boolean;mask?:InputMask}) {
+  return <label className="grid gap-1.5 min-w-0 text-sm"><span className="font-medium">{label}</span><Input aria-label={label} value={value} onChange={e=>onChange(mask?applyMask(mask,e.target.value):e.target.value)} type={mask?'text':type} inputMode={mask?MASK_INPUT_MODE[mask]:undefined} maxLength={maxLength} required={!optional} min={!mask&&type==='number'?0.01:undefined} step={!mask&&type==='number'?'0.01':undefined}/></label>;
 }
 export function StateField({value,onChange}: {value:string;onChange:(v:string)=>void}) {
   const t=useFiscalT(); return <label className="grid gap-1.5 text-sm"><span className="font-medium">{t('state')}</span><select aria-label={t('state')} className="h-10 rounded-md border border-input bg-background px-3" value={value} onChange={e=>onChange(e.target.value)}>{BRAZIL_STATES.map(s=><option key={s}>{s}</option>)}</select></label>;

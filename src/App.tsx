@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { StoreProvider } from "@/contexts/StoreContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import BrazilOnlyRoute from "@/components/BrazilOnlyRoute";
 import AppLayout from "@/components/AppLayout";
 import Dashboard from "@/pages/Dashboard";
 import Caixa from "@/pages/Caixa";
@@ -71,16 +72,15 @@ const App = () => (
               <Route path="/cobrancas" element={<ProtectedRoute><AppLayout><Cobrancas /></AppLayout></ProtectedRoute>} />
               <Route path="/devolucoes" element={<ProtectedRoute><AppLayout><Devolucoes /></AppLayout></ProtectedRoute>} />
               <Route path="/alugueis" element={<ProtectedRoute><AppLayout><Alugueis /></AppLayout></ProtectedRoute>} />
-              <Route path="/notas-fiscais" element={<ProtectedRoute><AppLayout><NotasFiscais /></AppLayout></ProtectedRoute>} />
-              <Route path="/das-mei" element={<ProtectedRoute><AppLayout><DasMei /></AppLayout></ProtectedRoute>} />
-              <Route path="/pagamentos" element={<ProtectedRoute><AppLayout><Pagamentos /></AppLayout></ProtectedRoute>} />
-              <Route path="/cartao" element={<CartaoFidelidade />} />
+<Route path="/notas-fiscais" element={<ProtectedRoute><AppLayout><BrazilOnlyRoute><NotasFiscais /></BrazilOnlyRoute></AppLayout></ProtectedRoute>} />
+<Route path="/das-mei" element={<ProtectedRoute><AppLayout><BrazilOnlyRoute><DasMei /></BrazilOnlyRoute></AppLayout></ProtectedRoute>} />
+<Route path="/pagamentos" element={<ProtectedRoute><AppLayout><BrazilOnlyRoute><Pagamentos /></BrazilOnlyRoute></AppLayout></ProtectedRoute>} />
+ <Route path="/cartao" element={<CartaoFidelidade />} />
               <Route path="/posts-ia" element={<ProtectedRoute><AppLayout><PostsIA /></AppLayout></ProtectedRoute>} />
               <Route path="/offline" element={<ProtectedRoute><AppLayout><Offline /></AppLayout></ProtectedRoute>} />
               <Route path="/calculadora" element={<ProtectedRoute><AppLayout><Calculadora /></AppLayout></ProtectedRoute>} />
               <Route path="/relatorios" element={<ProtectedRoute><AppLayout><Relatorios /></AppLayout></ProtectedRoute>} />
-              <Route path="/mei" element={<ProtectedRoute><AppLayout><MEI /></AppLayout></ProtectedRoute>} />
-              <Route path="/contador" element={<ProtectedRoute><AppLayout><Contador /></AppLayout></ProtectedRoute>} />
+              <Route path="/mei" element={<ProtectedRoute><AppLayout><BrazilOnlyRoute><MEI /></BrazilOnlyRoute></AppLayout></ProtectedRoute>} />              <Route path="/contador" element={<ProtectedRoute><AppLayout><Contador /></AppLayout></ProtectedRoute>} />
               <Route path="/academy" element={<ProtectedRoute><AppLayout><Academy /></AppLayout></ProtectedRoute>} />
               <Route path="/configuracoes" element={<ProtectedRoute><AppLayout><Configuracoes /></AppLayout></ProtectedRoute>} />
               <Route path="/auth/callback" element={<AuthCallback />} />

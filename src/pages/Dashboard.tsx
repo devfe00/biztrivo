@@ -10,6 +10,7 @@ import { useMemo, useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { Input } from '@/components/ui/input';
 import CashflowForecast from '@/components/CashflowForecast';
+import { sanitizeMoney } from '@/lib/inputMask';
 import { useT } from '@/lib/i18n';
 
 const QUICK_SALES_PER_PAGE = 8;
@@ -216,7 +217,7 @@ const Dashboard = () => {
             <div className="absolute inset-0 bg-background/95 backdrop-blur-sm flex items-center justify-center p-4">
               <div className="space-y-3 w-full">
                 <p className="text-sm font-medium text-center">{t('dashboard.goal_modal_title')}</p>
-                <Input type="text" placeholder={t('dashboard.goal_placeholder')} value={goalInput} onChange={e => setGoalInput(e.target.value)} className="text-center" autoFocus />
+                <Input type="text" inputMode="decimal" placeholder={t('dashboard.goal_placeholder')} value={goalInput} onChange={e => setGoalInput(sanitizeMoney(e.target.value))} className="text-center" autoFocus />
                 <div className="flex gap-2">
                   <button onClick={handleSaveGoal} className="flex-1 py-2 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium">{t('dashboard.goal_save')}</button>
                   <button onClick={() => { setIsEditingGoal(false); setGoalInput(''); }} className="flex-1 py-2 rounded-lg bg-muted text-sm font-medium">{t('ext.db_cancel')}</button>

@@ -20,10 +20,10 @@ export default function NotasFiscais() {
     try {
       let value='';
       if(mode==='services') {
-        const d=serviceDraftSchema.parse({...fields,amount:Number(fields.amount)});
+        const d=serviceDraftSchema.parse({...fields,amount:Number(fields.amount.replace(',','.'))});
         value=[t('serviceNotice'),'',`${t('issuer')}: ${d.issuerCnpj}`,`${t('customer')}: ${d.customer}`,`${t('taxId')}: ${d.taxId}`,`${t('date')}: ${d.date}`,`${t('city')}: ${d.city} / ${d.state}`,`${t('code')}: ${d.serviceCode}`,`${t('description')}: ${d.description}`,`${t('amount')}: ${brl(d.amount)}`].join('\n');
       } else {
-        const d=goodsDraftSchema.parse({...fields,items:items.map(i=>({...i,quantity:Number(i.quantity),unitPrice:Number(i.unitPrice)}))});
+        const d=goodsDraftSchema.parse({...fields,items:items.map(i=>({...i,quantity:Number(i.quantity),unitPrice:Number(i.unitPrice.replace(',','.'))}))});
         value=[t('goodsNotice'),'',`${t('issuer')}: ${d.issuerCnpj}`,`${t('state')}: ${d.state}`,`${t('customer')}: ${d.customer}`,`${t('taxId')}: ${d.taxId}`,`${t('address')}: ${d.address}`,`${t('city')}: ${d.city}`,`${t('postal')}: ${d.postalCode}`,...d.items.map(i=>`${i.description} | ${i.quantity} × ${brl(i.unitPrice)}${i.ncm?` | NCM: ${i.ncm}`:''}`),`${t('total')}: ${brl(goodsTotal(d.items as {description:string;quantity:number;unitPrice:number;ncm:string}[]))}`].join('\n');
       }
       setError(false);setPreview(value);
@@ -40,18 +40,18 @@ export default function NotasFiscais() {
     </Tabs>
     <form className="space-y-4" onSubmit={e=>{e.preventDefault();void prepare();}}>
       <div className="grid sm:grid-cols-2 gap-4">
-        <FiscalInput label={t('issuer')} value={fields.issuerCnpj} onChange={v=>field('issuerCnpj',v)} maxLength={18}/>
+        <FiscalInput label={t('issuer')} value={fields.issuerCnpj} onChange={v=>field('issuerCnpj',v)} maxLength={18} mask="taxid"/>
         <StateField value={fields.state} onChange={v=>field('state',v)}/>
         <FiscalInput label={t('customer')} value={fields.customer} onChange={v=>field('customer',v)}/>
-        <FiscalInput label={t('taxId')} value={fields.taxId} onChange={v=>field('taxId',v)} maxLength={18}/>
+        <FiscalInput label={t('taxId')} value={fields.taxId} onChange={v=>field('taxId',v)} maxLength={18} mask="taxid"/>
         <FiscalInput label={t('city')} value={fields.city} onChange={v=>field('city',v)}/>
-        {mode==='services'?<><FiscalInput label={t('date')} value={fields.date} onChange={v=>field('date',v)} type="date"/><FiscalInput label={t('description')} value={fields.description} onChange={v=>field('description',v)}/><FiscalInput label={t('code')} value={fields.serviceCode} onChange={v=>field('serviceCode',v)} maxLength={6}/><FiscalInput label={t('amount')} value={fields.amount} onChange={v=>field('amount',v)} type="number"/></>:<><FiscalInput label={t('address')} value={fields.address} onChange={v=>field('address',v)}/><FiscalInput label={t('postal')} value={fields.postalCode} onChange={v=>field('postalCode',v)} maxLength={8}/></>}
+        {mode==='services'?<><FiscalInput label={t('date')} value={fields.date} onChange={v=>field('date',v)} type="date"/><FiscalInput label={t('description')} value={fields.description} onChange={v=>field('description',v)}/><FiscalInput label={t('code')} value={fields.serviceCode} onChange={v=>field('serviceCode',v)} maxLength={6} mask="digits"/><FiscalInput label={t('amount')} value={fields.amount} onChange={v=>field('amount',v)} mask="money"/></>:<><FiscalInput label={t('address')} value={fields.address} onChange={v=>field('address',v)}/><FiscalInput label={t('postal')} value={fields.postalCode} onChange={v=>field('postalCode',v)} maxLength={8} mask="digits"/></>}
       </div>
       {mode==='goods'&&<section className="space-y-4 border-y border-border py-4">{items.map((item,index)=><div key={item.id} className="grid sm:grid-cols-2 gap-3">
         <FiscalInput label={`${t('item')} ${index+1}`} value={item.description} onChange={v=>changeItem(item.id,'description',v)}/>
-        <FiscalInput label={`${t('quantity')} ${index+1}`} type="number" value={item.quantity} onChange={v=>changeItem(item.id,'quantity',v)}/>
-        <FiscalInput label={`${t('price')} ${index+1}`} type="number" value={item.unitPrice} onChange={v=>changeItem(item.id,'unitPrice',v)}/>
-        <FiscalInput label={`${t('ncm')} ${index+1}`} value={item.ncm} onChange={v=>changeItem(item.id,'ncm',v)} maxLength={8} optional/>
+        <FiscalInput label={`${t('quantity')} ${index+1}`} mask="digits" maxLength={7} value={item.quantity} onChange={v=>changeItem(item.id,'quantity',v)}/>
+        <FiscalInput label={`${t('price')} ${index+1}`} mask="money" value={item.unitPrice} onChange={v=>changeItem(item.id,'unitPrice',v)}/>
+        <FiscalInput label={`${t('ncm')} ${index+1}`} value={item.ncm} onChange={v=>changeItem(item.id,'ncm',v)} maxLength={8} mask="digits" optional/>
         <Button aria-label={`${t('remove')} ${index+1}`} title={t('remove')} size="icon" type="button" variant="ghost" disabled={items.length===1} onClick={()=>{setItems(old=>old.filter(i=>i.id!==item.id));setPreview('');}}><Trash2/></Button>
       </div>)}<Button type="button" variant="outline" disabled={items.length>=100} onClick={()=>{setItems(old=>[...old,newItem()]);setPreview('');}}><Plus/>{t('add')}</Button></section>}
       {error&&<p role="alert" className="text-sm text-destructive">{t('invalid')}</p>}

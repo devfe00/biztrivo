@@ -1,12 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Lock, LogOut, Camera, Save, Eye, EyeOff, AlertCircle, CheckCircle, ArrowLeft, CheckCircle2, CreditCard, Globe, Tag } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useStore } from '@/contexts/StoreContext';
 import { auth, db, FUNCTIONS, callFunction } from '@/integrations/firebase/firebase';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
-import { updatePassword } from 'firebase/auth';
+import { User, Lock, LogOut, Camera, Save, Eye, EyeOff, AlertCircle, CheckCircle, ArrowLeft, CheckCircle2, CreditCard, Globe, Tag, Check, X, Download, Trash2, ShieldCheck } from 'lucide-react';
+import { updatePassword, reauthenticateWithCredential, reauthenticateWithPopup, EmailAuthProvider, GoogleAuthProvider } from 'firebase/auth';
 import { useT, useI18n } from '@/lib/i18n';
+import { getStripeCheckoutUrl } from '@/lib/billing';
+
+const PLAN_COMPARE: { label: string; trial: boolean | string; pro: boolean | string }[] = [
+  { label: 'Previsão de Caixa com IA', trial: false, pro: true },
+  { label: 'Posts para Instagram com IA', trial: false, pro: true },
+  { label: 'Comparador de faturas', trial: '5 por mês', pro: 'Ilimitado' },
+];
+
+const CompareCell = ({ v }: { v: boolean | string }) =>
+  typeof v === 'string'
+    ? <span className="text-xs text-foreground">{v}</span>
+    : v ? <Check size={16} className="text-green-500" /> : <X size={16} className="text-muted-foreground" />;
 
 const Configuracoes: React.FC = () => {
   const t = useT();
@@ -23,11 +35,16 @@ const Configuracoes: React.FC = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  const [activeTab, setActiveTab] = useState<'profile' | 'password' | 'subscription'>('profile');
+const [activeTab, setActiveTab] = useState<'profile' | 'password' | 'subscription' | 'data'>('profile');
   const [subscription, setSubscription] = useState<{ status: string; plan: string; current_period_end: string | null } | null>(null);
   const [cancellingSubscription, setCancellingSubscription] = useState(false);
   const [ajudaeStatus, setAjudaeStatus] = useState<{ plan: string; active: boolean; redeemed: boolean } | null>(null);
   const [applyingCoupon, setApplyingCoupon] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [revoking, setRevoking] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState('');
+  const [deletePassword, setDeletePassword] = useState('');
 
   useEffect(() => {
     setStoreName(config.storeName);
@@ -169,8 +186,80 @@ const Configuracoes: React.FC = () => {
     }
   };
 
+  const handleExportData = async () => {
+    setExporting(true);
+    setMessage(null);
+    try {
+      const data = await callFunction<Record<string, unknown>>(FUNCTIONS.exportMyData);
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `biztrivo-meus-dados-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      setMessage({ type: 'success', text: 'Seus dados foram exportados.' });
+    } catch (e: any) {
+      setMessage({ type: 'error', text: e?.status === 429 ? 'Aguarde alguns minutos para exportar novamente.' : 'Não foi possível exportar seus dados.' });
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleSignOutEverywhere = async () => {
+    if (!window.confirm('Isso desconecta sua conta em todos os dispositivos, inclusive neste. Continuar?')) return;
+    setRevoking(true);
+    setMessage(null);
+    try {
+      await callFunction(FUNCTIONS.revokeSessions);
+      await signOut();
+      navigate('/login');
+    } catch {
+      setMessage({ type: 'error', text: 'Não foi possível encerrar as sessões. Tente novamente.' });
+      setRevoking(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    const current = auth.currentUser;
+    if (!current || deleteConfirm.trim().toUpperCase() !== 'EXCLUIR') return;
+    setDeleting(true);
+    setMessage(null);
+    try {
+      if (hasPasswordLogin && current.email) {
+        await reauthenticateWithCredential(current, EmailAuthProvider.credential(current.email, deletePassword));
+      } else {
+        await reauthenticateWithPopup(current, new GoogleAuthProvider());
+      }
+      await current.getIdToken(true); // token novo com auth_time atualizado (o servidor confere)
+      await callFunction(FUNCTIONS.deleteMyAccount, { confirm: 'EXCLUIR' });
+      await signOut();
+      navigate('/');
+    } catch (err: any) {
+      const code = err?.code as string | undefined;
+      if (code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
+        setMessage({ type: 'error', text: 'Senha incorreta.' });
+      } else if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
+        setMessage({ type: 'error', text: 'Confirmação cancelada.' });
+      } else if (err?.status === 409) {
+        setMessage({ type: 'error', text: err.message });
+      } else {
+        setMessage({ type: 'error', text: 'Não foi possível excluir a conta. Tente novamente.' });
+      }
+      setDeleting(false);
+    }
+  };
+
   const isGracePeriod = subscription?.status === 'cancelled' && subscription?.current_period_end && new Date(subscription.current_period_end) > new Date();
   const gracePeriodEnd = subscription?.current_period_end ? new Date(subscription.current_period_end).toLocaleDateString(lang) : '';
+
+  const trialEnd = subscription?.plan === 'trial' && subscription.current_period_end ? new Date(subscription.current_period_end) : null;
+  const isTrial = !!trialEnd && trialEnd > new Date() && subscription?.status === 'active';
+  const trialDaysLeft = isTrial && trialEnd ? Math.ceil((trialEnd.getTime() - Date.now()) / 86400000) : null;
+  const showPlanCompare = !subscription || subscription.plan === 'free' || subscription.plan === 'trial';
+  const hasPasswordLogin = !!auth.currentUser?.providerData.some(p => p.providerId === 'password');
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
@@ -203,6 +292,10 @@ const Configuracoes: React.FC = () => {
             <button onClick={() => setActiveTab('subscription')}
               className={`flex-1 px-6 py-4 text-sm font-medium transition-colors ${activeTab === 'subscription' ? 'text-primary border-b-2 border-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}>
               <div className="flex items-center justify-center gap-2"><CreditCard size={18} /><span>{t('configuracoes.tab_subscription')}</span></div>
+            </button>
+            <button onClick={() => setActiveTab('data')}
+              className={`flex-1 px-6 py-4 text-sm font-medium transition-colors ${activeTab === 'data' ? 'text-primary border-b-2 border-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}>
+              <div className="flex items-center justify-center gap-2"><ShieldCheck size={18} /><span>Privacidade</span></div>
             </button>
           </div>
 
@@ -326,7 +419,9 @@ const Configuracoes: React.FC = () => {
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">{t('configuracoes.plan')}</span>
-                      <span className="font-medium text-foreground capitalize">{subscription?.plan && subscription.plan !== 'free' ? 'Biztrivo' : 'Free'}</span>
+<span className="font-medium text-foreground capitalize">
+  {subscription?.plan === 'trial' ? 'Experimental' : subscription?.plan && subscription.plan !== 'free' ? 'Biztrivo' : 'Free'}
+</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">{t('configuracoes.status')}</span>
@@ -340,6 +435,14 @@ const Configuracoes: React.FC = () => {
                          t('configuracoes.status_inactive')}
                       </span>
                     </div>
+                    {isTrial && trialEnd && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground">Teste termina em</span>
+                        <span className="font-medium text-foreground">
+                          {trialEnd.toLocaleDateString(lang)} · {trialDaysLeft} {trialDaysLeft === 1 ? 'dia' : 'dias'}
+                        </span>
+                      </div>
+                    )}
                     {isGracePeriod && (
                       <div className="flex justify-between items-center">
                         <span className="text-muted-foreground">{t('configuracoes.access_until')}</span>
@@ -348,6 +451,23 @@ const Configuracoes: React.FC = () => {
                     )}
                   </div>
                 </div>
+
+                {showPlanCompare && (
+                  <div className="rounded-lg border border-border overflow-hidden">
+                    <div className="grid grid-cols-[1fr_auto_auto] items-center text-sm">
+                      <div className="px-4 py-3 bg-muted font-semibold text-foreground">Recurso</div>
+                      <div className="px-4 py-3 bg-muted font-semibold text-muted-foreground text-center">Experimental</div>
+                      <div className="px-4 py-3 bg-primary/10 font-semibold text-primary text-center">Biztrivo</div>
+                      {PLAN_COMPARE.map(row => (
+                        <React.Fragment key={row.label}>
+                          <div className="px-4 py-3 border-t border-border text-foreground">{row.label}</div>
+                          <div className="px-4 py-3 border-t border-border flex justify-center"><CompareCell v={row.trial} /></div>
+                          <div className="px-4 py-3 border-t border-border flex justify-center bg-primary/5"><CompareCell v={row.pro} /></div>
+                        </React.Fragment>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {isGracePeriod && (
                   <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 flex items-start gap-3">
@@ -405,17 +525,52 @@ const Configuracoes: React.FC = () => {
                   </div>
                 )}
 
-                {subscription?.status !== 'active' && !isGracePeriod && (
+                {(subscription?.status !== 'active' || subscription?.plan === 'trial') && !isGracePeriod && (
                   <button
-                    onClick={() => {
-                      const email = user?.email || '';
-                      window.location.href = 'https://buy.stripe.com/dRm9AT25ccwKejpdkp00002';
-                    }}
+                    onClick={() => { window.location.href = getStripeCheckoutUrl(user?.email); }}
                     className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg flex items-center justify-center gap-2"
                   >
                     <CreditCard size={20} /><span>{t('configuracoes.subscribe_pro')}</span>
                   </button>
                 )}
+              </div>
+            )}
+
+            {activeTab === 'data' && (
+              <div className="space-y-8">
+                <section className="space-y-3">
+                  <h3 className="text-lg font-semibold text-foreground">Exportar meus dados</h3>
+                  <p className="text-sm text-muted-foreground">Baixe uma cópia dos seus dados (perfil, produtos, lançamentos do Caixa e cobranças) em arquivo JSON.</p>
+                  <button onClick={handleExportData} disabled={exporting}
+                    className="w-full py-3 rounded-lg font-semibold border border-border hover:bg-muted transition-all flex items-center justify-center gap-2 disabled:opacity-50">
+                    <Download size={20} /><span>{exporting ? 'Gerando arquivo...' : 'Exportar meus dados'}</span>
+                  </button>
+                </section>
+
+                <section className="space-y-3 border-t border-border pt-8">
+                  <h3 className="text-lg font-semibold text-foreground">Sessões</h3>
+                  <p className="text-sm text-muted-foreground">Desconecta sua conta em todos os dispositivos, inclusive neste. Use se perdeu um aparelho ou suspeita de acesso indevido. Pode levar até 1 hora para valer em todos os aparelhos.</p>
+                  <button onClick={handleSignOutEverywhere} disabled={revoking}
+                    className="w-full py-3 rounded-lg font-semibold border border-border hover:bg-muted transition-all flex items-center justify-center gap-2 disabled:opacity-50">
+                    <ShieldCheck size={20} /><span>{revoking ? 'Encerrando...' : 'Sair de todos os dispositivos'}</span>
+                  </button>
+                </section>
+
+                <section className="space-y-3 border-t border-border pt-8">
+                  <h3 className="text-lg font-semibold text-destructive">Excluir minha conta</h3>
+                  <p className="text-sm text-muted-foreground">Apaga de forma permanente seus dados, produtos, lançamentos e fotos. Não dá para desfazer. Se você tem assinatura ativa, cancele antes na aba Assinatura.</p>
+                  {hasPasswordLogin && (
+                    <input type="password" value={deletePassword} onChange={e => setDeletePassword(e.target.value)} placeholder="Sua senha atual"
+                      className="w-full px-4 py-3 border border-input rounded-lg bg-background text-foreground" />
+                  )}
+                  <input type="text" value={deleteConfirm} onChange={e => setDeleteConfirm(e.target.value)} placeholder="Digite EXCLUIR para confirmar"
+                    className="w-full px-4 py-3 border border-input rounded-lg bg-background text-foreground" />
+                  <button onClick={handleDeleteAccount}
+                    disabled={deleting || deleteConfirm.trim().toUpperCase() !== 'EXCLUIR' || (hasPasswordLogin && !deletePassword)}
+                    className="w-full bg-destructive/10 text-destructive py-3 rounded-lg font-semibold hover:bg-destructive/20 transition-all border border-destructive/30 flex items-center justify-center gap-2 disabled:opacity-50">
+                    <Trash2 size={20} /><span>{deleting ? 'Excluindo...' : 'Excluir minha conta'}</span>
+                  </button>
+                </section>
               </div>
             )}
           </div>
