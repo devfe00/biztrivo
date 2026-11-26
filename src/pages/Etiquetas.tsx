@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Printer, Plus, Trash2, Package } from 'lucide-react';
+import { digitsOnly, sanitizeMoney, sanitizeTaxId, blockInvalidNumberKeys } from '@/lib/inputMask';
 
 interface Addr { nome: string; doc: string; endereco: string; cidade: string; uf: string; cep: string; }
 interface Item { desc: string; qtd: string; valor: string; }
@@ -22,12 +23,12 @@ const AddrFields = ({ title, v, set }: { title: string; v: Addr; set: (a: Addr) 
     <h2 className="font-semibold font-heading">{title}</h2>
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
       <div><Label>Nome</Label><Input maxLength={80} value={v.nome} onChange={e => set({ ...v, nome: e.target.value })} /></div>
-      <div><Label>CPF/CNPJ</Label><Input maxLength={18} value={v.doc} onChange={e => set({ ...v, doc: e.target.value })} /></div>
+      <div><Label>CPF/CNPJ</Label><Input maxLength={18} value={v.doc} onChange={e => set({ ...v, doc: sanitizeTaxId(e.target.value) })} /></div>
       <div className="sm:col-span-2"><Label>Endereço (rua, nº, bairro, complemento)</Label><Input maxLength={160} value={v.endereco} onChange={e => set({ ...v, endereco: e.target.value })} /></div>
       <div><Label>Cidade</Label><Input maxLength={60} value={v.cidade} onChange={e => set({ ...v, cidade: e.target.value })} /></div>
       <div className="grid grid-cols-2 gap-3">
         <div><Label>UF</Label><Input maxLength={2} value={v.uf} onChange={e => set({ ...v, uf: e.target.value.toUpperCase() })} /></div>
-        <div><Label>CEP</Label><Input maxLength={9} value={v.cep} onChange={e => set({ ...v, cep: e.target.value })} /></div>
+        <div><Label>CEP</Label><Input maxLength={9} inputMode="numeric" value={v.cep} onChange={e => set({ ...v, cep: digitsOnly(e.target.value, 8).replace(/^(\d{5})(\d)/, '$1-$2') })} /></div>
       </div>
     </div>
   </Card>
@@ -89,14 +90,14 @@ const Etiquetas = () => {
         {items.map((it, i) => (
           <div key={i} className="grid grid-cols-12 gap-2 items-end">
             <div className="col-span-6"><Label>Item</Label><Input maxLength={80} value={it.desc} onChange={e => setItem(i, { desc: e.target.value })} /></div>
-            <div className="col-span-2"><Label>Qtd</Label><Input value={it.qtd} onChange={e => setItem(i, { qtd: e.target.value })} /></div>
-            <div className="col-span-3"><Label>Valor un.</Label><Input placeholder="0,00" value={it.valor} onChange={e => setItem(i, { valor: e.target.value })} /></div>
+            <div className="col-span-2"><Label>Qtd</Label><Input inputMode="numeric" value={it.qtd} onKeyDown={blockInvalidNumberKeys} onChange={e => setItem(i, { qtd: digitsOnly(e.target.value, 4) })} /></div>
+            <div className="col-span-3"><Label>Valor un.</Label><Input placeholder="0,00" inputMode="decimal" value={it.valor} onChange={e => setItem(i, { valor: sanitizeMoney(e.target.value) })} /></div>
             <button aria-label="Remover item" className="col-span-1 p-2 text-muted-foreground hover:text-destructive" onClick={() => setItems(items.filter((_, n) => n !== i))}><Trash2 className="w-4 h-4" /></button>
           </div>
         ))}
         <div className="flex flex-wrap items-center gap-3 justify-between">
           <Button variant="outline" onClick={() => setItems([...items, { desc: '', qtd: '1', valor: '' }])}><Plus className="w-4 h-4 mr-1" /> Item</Button>
-          <div className="flex items-center gap-2"><Label>Peso (kg)</Label><Input className="w-24" value={peso} onChange={e => setPeso(e.target.value)} /></div>
+          <div className="flex items-center gap-2"><Label>Peso (kg)</Label><Input className="w-24" inputMode="decimal" value={peso} onChange={e => setPeso(sanitizeMoney(e.target.value))} /></div>
           <p className="font-semibold">Total: {brl(total)}</p>
         </div>
       </Card>

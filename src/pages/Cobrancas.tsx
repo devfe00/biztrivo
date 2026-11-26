@@ -9,6 +9,7 @@ import { useBusinessT } from '@/lib/business-i18n';
 import { useStore } from '@/contexts/StoreContext';
 import { useI18n } from '@/lib/i18n';
 import type { BusinessRecord } from '@/lib/business';
+import { digitsOnly, sanitizeMoney } from '@/lib/inputMask';
 
 export default function Cobrancas() {
   const t=useBusinessT(); const {lang}=useI18n(); const {config,refreshData}=useStore();
@@ -26,10 +27,10 @@ export default function Cobrancas() {
   }
   return <div className="space-y-6"><h1 className="font-heading text-2xl font-bold">{t('receivable')}</h1>
     <div className="grid sm:grid-cols-2 gap-4 border-y border-border py-4"><div><p className="text-muted-foreground text-sm">{t('total')}</p><p className="text-2xl font-bold">{fmt(pending.reduce((s,r)=>s+r.amount,0))}</p></div><div><p className="text-muted-foreground text-sm">{t('overdue')}</p><p className="text-2xl font-bold text-destructive">{fmt(pending.filter(r=>r.due<today).reduce((s,r)=>s+r.amount,0))}</p></div></div>
-    <form className="grid sm:grid-cols-2 gap-4" onSubmit={e=>{e.preventDefault();void act(async()=>{await createInstallments({kind:'receivable',customer,phone:phone.replace(/\D/g,''),description,amount:Number(amount),due,status:'pending'},Number(count));setCustomer('');setDescription('');setAmount('');});}}>
-      <TextField label={t('customer')} value={customer} onChange={setCustomer}/><TextField label={t('phone')} value={phone} onChange={setPhone}/>
-      <TextField label={t('description')} value={description} onChange={setDescription}/><TextField label={t('amount')} type="number" min={0.01} step="0.01" value={amount} onChange={setAmount}/>
-      <TextField label={t('due')} type="date" value={due} onChange={setDue}/><TextField label={t('installments')} type="number" min={1} max={24} step="1" value={count} onChange={setCount}/>
+    <form className="grid sm:grid-cols-2 gap-4" onSubmit={e=>{e.preventDefault();void act(async()=>{await createInstallments({kind:'receivable',customer,phone:digitsOnly(phone,11),description,amount:Number(amount.replace(',','.')),due,status:'pending'},Number(count)||1);setCustomer('');setDescription('');setAmount('');});}}>
+      <TextField label={t('customer')} value={customer} onChange={setCustomer}/><TextField label={t('phone')} value={phone} onChange={v=>setPhone(digitsOnly(v,11))} inputMode="tel"/>
+      <TextField label={t('description')} value={description} onChange={setDescription}/><TextField label={t('amount')} type="number" min={0.01} step="0.01" value={amount} onChange={v=>setAmount(sanitizeMoney(v))} inputMode="decimal"/>
+      <TextField label={t('due')} type="date" value={due} onChange={setDue}/><TextField label={t('installments')} type="number" min={1} max={24} step="1" value={count} onChange={v=>setCount(digitsOnly(v,2))} inputMode="numeric"/>
       <Button disabled={busy||loading||error} className="sm:col-span-2 justify-self-start" type="submit">{t('save')}</Button>
     </form><p className="text-sm text-muted-foreground">{t('notice')}</p>
     <BusinessState loading={loading} error={error} empty={!charges.length} t={t}/>

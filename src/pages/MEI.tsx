@@ -11,7 +11,6 @@ import ptDict from '@/i18n/locales/pt.json';
 import MeiPlanning from '@/components/MeiPlanning';
 import { meiSummary } from '@/lib/business';
 
-// MEI existe apenas no Brasil: esta tela é sempre exibida em português.
 const tPt = (key: string, vars?: Record<string, string | number>): string => {
   const v = key.split('.').reduce<any>((acc, k) => (acc == null ? acc : acc[k]), ptDict as any);
   if (typeof v !== 'string') return key;
@@ -202,6 +201,7 @@ const MEI = () => {
           <div className="w-full max-w-xs space-y-2">
             <input
               type="text"
+              inputMode="numeric"
               value={cnpjInput}
               onChange={e => setCnpjInput(formatCNPJ(e.target.value))}
               placeholder={t('mei.cnpj_placeholder')}

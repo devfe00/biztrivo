@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Calculator, TrendingUp, DollarSign, Percent, Package, AlertCircle, AlertTriangle, Lightbulb } from 'lucide-react';
+import { sanitizeMoney } from '@/lib/inputMask';
 
 const Calculadora = () => {
   const t = useT();
@@ -66,21 +67,21 @@ const Calculadora = () => {
             <Label htmlFor="custo" className="flex items-center gap-2">
               <Package className="w-4 h-4 text-primary" /> {t('calculadora.cost_label')}
             </Label>
-            <Input id="custo" placeholder={t('calculadora.cost_placeholder')} value={custo} onChange={e => setCusto(e.target.value)} className={`mt-1 text-lg font-semibold ${errors.custo ? 'border-destructive' : ''}`} inputMode="decimal" />
+            <Input id="custo" placeholder={t('calculadora.cost_placeholder')} value={custo} onChange={e => setCusto(sanitizeMoney(e.target.value))} className={`mt-1 text-lg font-semibold ${errors.custo ? 'border-destructive' : ''}`} inputMode="decimal" />
             {renderFieldError('custo')}
           </div>
           <div>
             <Label htmlFor="impostos" className="flex items-center gap-2">
               <DollarSign className="w-4 h-4 text-warning" /> {t('calculadora.tax_label')}
             </Label>
-            <Input id="impostos" placeholder={t('calculadora.tax_placeholder')} value={impostos} onChange={e => setImpostos(e.target.value)} className={`mt-1 text-lg font-semibold ${errors.impostos ? 'border-destructive' : ''}`} inputMode="decimal" />
+            <Input id="impostos" placeholder={t('calculadora.tax_placeholder')} value={impostos} onChange={e => setImpostos(sanitizeMoney(e.target.value))} className={`mt-1 text-lg font-semibold ${errors.impostos ? 'border-destructive' : ''}`} inputMode="decimal" />
             {renderFieldError('impostos')}
           </div>
           <div>
             <Label htmlFor="margem" className="flex items-center gap-2">
               <Percent className="w-4 h-4 text-secondary" /> {t('calculadora.margin_label')}
             </Label>
-            <Input id="margem" placeholder={t('calculadora.margin_placeholder')} value={margem} onChange={e => setMargem(e.target.value)} className={`mt-1 text-lg font-semibold ${errors.margem ? 'border-destructive' : ''}`} inputMode="decimal" />
+            <Input id="margem" placeholder={t('calculadora.margin_placeholder')} value={margem} onChange={e => setMargem(sanitizeMoney(e.target.value))} className={`mt-1 text-lg font-semibold ${errors.margem ? 'border-destructive' : ''}`} inputMode="decimal" />
             {renderFieldError('margem')}
           </div>
         </div>

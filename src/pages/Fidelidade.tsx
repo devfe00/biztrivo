@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { addStamp, daysSinceLastPurchase, dormantCustomers } from '@/lib/loyalty';
+import { digitsOnly, blockInvalidNumberKeys } from '@/lib/inputMask';
 
 const waPhone = (p: string) => { const d = p.replace(/\D/g, ''); return d.length <= 11 ? `55${d}` : d; };
 
@@ -55,7 +56,7 @@ const Fidelidade = () => {
         <div className="flex items-center gap-2 mb-3"><AlertTriangle className="w-5 h-5 text-warning" /><h2 className="font-semibold font-heading">Venda parada</h2></div>
         <div className="flex items-center gap-2 text-sm mb-4">
           Clientes sem comprar há pelo menos
-          <Input type="number" min={7} max={365} value={days} onChange={e => setDays(Math.max(1, Number(e.target.value) || 30))} className="w-20 h-8" /> dias
+          <Input type="number" min={7} max={365} value={days} onKeyDown={blockInvalidNumberKeys} onChange={e => setDays(Math.max(1, Number(digitsOnly(e.target.value, 3)) || 30))} className="w-20 h-8" inputMode="numeric" /> dias
         </div>
         {dormant.length === 0 ? <p className="text-sm text-muted-foreground">Nenhum cliente parado.</p> : (
           <div className="space-y-2">
@@ -74,12 +75,12 @@ const Fidelidade = () => {
           <h2 className="font-semibold font-heading">Novo cliente no cartão</h2>
           <div className="grid sm:grid-cols-2 gap-3">
             <Input placeholder="Nome" value={name} onChange={e => setName(e.target.value)} maxLength={80} />
-            <Input placeholder="WhatsApp com DDD" value={phone} onChange={e => setPhone(e.target.value)} maxLength={20} />
+            <Input placeholder="WhatsApp com DDD" value={phone} onChange={e => setPhone(digitsOnly(e.target.value, 11))} maxLength={11} inputMode="tel" />
           </div>
           <div className="flex items-center gap-3 flex-wrap">
             <Button onClick={add}><Plus className="w-4 h-4 mr-1" /> Adicionar</Button>
             <span className="text-sm text-muted-foreground flex items-center gap-2">Compras para ganhar 1:
-              <Input type="number" min={2} max={50} value={goal} onChange={e => updateConfig({ loyaltyGoal: Number(e.target.value) || 10 })} className="w-20 h-8" />
+              <Input type="number" min={2} max={50} value={goal} onKeyDown={blockInvalidNumberKeys} onChange={e => updateConfig({ loyaltyGoal: Number(digitsOnly(e.target.value, 2)) || 10 })} className="w-20 h-8" inputMode="numeric" />
             </span>
           </div>
         </Card>
